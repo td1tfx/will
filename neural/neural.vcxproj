@@ -142,11 +142,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ActiveFunctions.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NeuralNet.cpp" />
     <ClCompile Include="NeuralNode.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ActiveFunctions.h" />
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralNode.h" />
   </ItemGroup>
