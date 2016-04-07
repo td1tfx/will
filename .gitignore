@@ -1,2 +1,7 @@
 *.pyc
 *.pdf
+*.tlog
+*.idb
+*.opendb
+*.sdf
+*.filters
