@@ -1,8 +1,10 @@
 #pragma once
 #include <vector>
+#include <map>
 #include <functional>
 
 #include "ActiveFunctions.h"
+
 
 class NeuralBond
 {
@@ -19,7 +21,7 @@ public:
 	NeuralNode();
 	virtual ~NeuralNode();
 
-	std::vector<NeuralBond> bonds;
+	std::map<NeuralNode*, NeuralBond> bonds;
 	double outputValue;
 	double totalInputValue;
 	void collectInputValue();
@@ -27,6 +29,9 @@ public:
 
 	std::function<double(double)> activeFunction = ActiveFunctions::sigmoid;
 	std::function<double(double)> feedbackFunction = ActiveFunctions::_sigmoid;
+
+	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
+	void connect(NeuralNode* node);
 
 };
 
