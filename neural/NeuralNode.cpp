@@ -20,8 +20,9 @@ void NeuralNode::collectInputValue()
 	for (auto &b : bonds)
 	{
 		totalInputValue += b.second.startNode->outputValue * b.second.weight;
+		printf("\t%lf, %lf\n", b.second.startNode->outputValue, b.second.weight);
 	}
-	//printf("%lf\n",totalInputValue);
+	printf("%lf\n",totalInputValue);
 }
 
 void NeuralNode::activeOutputValue()
@@ -41,6 +42,8 @@ void NeuralNode::connect(NeuralNode* node, double w /*= 0*/)
 	b.startNode = node;
 	b.endNode = this;
 	b.weight = w;
+	if (w == 0)
+		b.weight = 1.0*rand() / RAND_MAX;
 }
 
 void NeuralNode::setWeight(NeuralNode* node, double w /*= 0*/)

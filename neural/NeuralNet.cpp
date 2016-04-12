@@ -36,7 +36,7 @@ void NeuralNet::calOutput(double* input, double* output)
 {
 	for (int i = 0; i < inputNodeAmount; i++)
 	{
-		getLayer(0)->getNode(i)->totalInputValue = input[i];
+		getLayer(0)->getNode(i)->outputValue = input[i];
 	}
 	for (int l = 1; l < layers.size(); l++)
 	{

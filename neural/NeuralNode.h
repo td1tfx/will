@@ -9,7 +9,8 @@
 class NeuralBond
 {
 public:
-	double weight;
+	double weight = 0;
+	double learnSpeed = 1;
 	class NeuralNode* startNode;
 	class NeuralNode* endNode;
 };
