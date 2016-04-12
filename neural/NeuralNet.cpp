@@ -32,14 +32,28 @@ void NeuralNet::createLayers(int layerNumber)
 	}
 }
 
-void NeuralNet::learn(void* input, void* output)
+
+void NeuralNet::calOutput(double* input, double* output)
 {
-
-}
-
-void NeuralNet::train(void* input, void* output)
-{
-
+	for (int i = 0; i < inputNodeAmount; i++)
+	{
+		getLayer(0)->getNode(i)->totalInputValue = input[i];
+	}
+	for (int l = 1; l < layers.size(); l++)
+	{
+		auto layer = layers[l];
+		for (int n = 1; n < layer->nodes.size(); n++)
+		{
+			auto node = layer->getNode(n);
+			node->collectInputValue();
+			node->activeOutputValue();
+		}
+	}
+	auto layer = layers.back();
+	for (int i = 0; i < outputNodeAmount; i++)
+	{
+		output[i] = layer->getNode(i)->outputValue;
+	}
 }
 
 void NeuralNet::setLayers()

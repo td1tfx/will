@@ -41,7 +41,9 @@ public:
 	std::function<double(double)> feedbackFunction = ActiveFunctions::linear;
 
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
-	void connect(NeuralNode* node);
+	void connect(NeuralNode* node, double w = 0);
+
+	void setWeight(NeuralNode* node, double w = 0);
 
 };
 

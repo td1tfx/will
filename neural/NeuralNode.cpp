@@ -34,9 +34,19 @@ void NeuralNode::setFunctions(std::function<double(double)> _active, std::functi
 	feedbackFunction = _feedback;
 }
 
-void NeuralNode::connect(NeuralNode* node)
+void NeuralNode::connect(NeuralNode* node, double w /*= 0*/)
 {
 	auto &b = bonds[node];
 	b.startNode = node;
+	b.endNode = this;
+	b.weight = w;
+}
+
+void NeuralNode::setWeight(NeuralNode* node, double w /*= 0*/)
+{
+	//if (bonds.find(node) == nullptr)
+	{
+		bonds[node].weight = 0;
+	}
 }
 

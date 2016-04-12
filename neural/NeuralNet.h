@@ -22,15 +22,18 @@ public:
 
 	void createLayers(int layerAmount);  //包含输入和输出层
 
-	void learn(void* input, void* output);
+	void learn(double* input, double* output);
 
-	void train(void* input, void* output);
+	void train(double* input, double* output);
+
+	void calOutput(double* input, double* output);
 
 	//具体设置
 	void setLayers(); //具体的网络均改写这里
 
 	//数据
-	void* inputData = nullptr, *outputData = nullptr;
+	double* inputData = nullptr;
+	double* outputData = nullptr;
 	void readData(std::string& filename);
 
 };
