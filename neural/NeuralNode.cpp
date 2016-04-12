@@ -9,6 +9,9 @@ NeuralNode::NeuralNode()
 
 NeuralNode::~NeuralNode()
 {
+// 	for (auto &b : bonds)
+// 	{
+// 	}
 }
 
 void NeuralNode::collectInputValue()

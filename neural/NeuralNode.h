@@ -5,7 +5,7 @@
 
 #include "ActiveFunctions.h"
 
-
+//键连接类
 class NeuralBond
 {
 public:
@@ -14,21 +14,31 @@ public:
 	class NeuralNode* endNode;
 };
 
+//类型，隐藏，输入，输出
+typedef enum NeuralNodeType {
+	hidden,
+	input,
+	output,
+} NeuralNodeType;
+
+//节点
 class NeuralNode
 {
-
 public:
 	NeuralNode();
 	virtual ~NeuralNode();
 
-	std::map<NeuralNode*, NeuralBond> bonds;
+	NeuralNodeType type;
+
+	std::map<NeuralNode*, NeuralBond> bonds;  //这里好像只保存weight就行了
+
 	double outputValue;
 	double totalInputValue;
 	void collectInputValue();
 	void activeOutputValue();
 
-	std::function<double(double)> activeFunction = ActiveFunctions::sigmoid;
-	std::function<double(double)> feedbackFunction = ActiveFunctions::_sigmoid;
+	std::function<double(double)> activeFunction = ActiveFunctions::linear;
+	std::function<double(double)> feedbackFunction = ActiveFunctions::linear;
 
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
 	void connect(NeuralNode* node);
