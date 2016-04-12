@@ -32,7 +32,6 @@ void NeuralNet::createLayers(int layerNumber)
 	}
 }
 
-
 void NeuralNet::calOutput(double* input, double* output)
 {
 	for (int i = 0; i < inputNodeAmount; i++)
@@ -42,7 +41,7 @@ void NeuralNet::calOutput(double* input, double* output)
 	for (int l = 1; l < layers.size(); l++)
 	{
 		auto layer = layers[l];
-		for (int n = 1; n < layer->nodes.size(); n++)
+		for (int n = 0; n < layer->nodes.size(); n++)
 		{
 			auto node = layer->getNode(n);
 			node->collectInputValue();
@@ -54,18 +53,6 @@ void NeuralNet::calOutput(double* input, double* output)
 	{
 		output[i] = layer->getNode(i)->outputValue;
 	}
-}
-
-void NeuralNet::setLayers()
-{
-	auto layer0 = layers.at(0);
-	layer0->createNodes(inputNodeAmount, NeuralNodeType::Input);
-	
-	auto layer1 = layers.back();
-	layer1->createNodes(outputNodeAmount, NeuralNodeType::Output);
-	
-	layer1->connetPrevlayer(getLayer(1));
-	getLayer(1)->connetPrevlayer(layer0);
 }
 
 void NeuralNet::readData(std::string& filename)
@@ -97,3 +84,18 @@ void NeuralNet::readData(std::string& filename)
 	}
 }
 
+void NeuralNet::setLayers()
+{
+	auto layer0 = layers.at(0);
+	layer0->createNodes(inputNodeAmount, NeuralNodeType::Input);
+
+	auto layer1 = layers.back();
+	layer1->createNodes(outputNodeAmount, NeuralNodeType::Output);
+
+	auto layer = layers.at(1);
+	layer->createNodes(10);
+
+	layer1->connetPrevlayer(getLayer(1));
+	getLayer(1)->connetPrevlayer(layer0);
+	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
+}

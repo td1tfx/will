@@ -25,6 +25,7 @@ void NeuralLayer::createNodes(int nodeNumbers, NeuralNodeType type /*= hidden*/)
 	}
 }
 
+//两个神经层所有节点都连接
 void NeuralLayer::connetTwoLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 {
 	for (auto& startNode : startLayer->nodes)

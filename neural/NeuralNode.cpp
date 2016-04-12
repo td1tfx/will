@@ -16,11 +16,12 @@ NeuralNode::~NeuralNode()
 
 void NeuralNode::collectInputValue()
 {
-	double totalInputValue = 0;
+	totalInputValue = 0;
 	for (auto &b : bonds)
 	{
 		totalInputValue += b.second.startNode->outputValue * b.second.weight;
 	}
+	//printf("%lf\n",totalInputValue);
 }
 
 void NeuralNode::activeOutputValue()

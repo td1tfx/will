@@ -15,6 +15,7 @@ public:
 	std::vector<NeuralLayer*> layers;
 
 	NeuralLayer*& getLayer(int number) { return (layers.at(number)); }
+	int getLayerAmount() { return layers.size(); };
 
 	int inputNodeAmount;
 	int outputNodeAmount;
@@ -22,19 +23,20 @@ public:
 
 	void createLayers(int layerAmount);  //包含输入和输出层
 
-	void learn(double* input, double* output);
+	void learn(double* input, double* output);  //学习一组数据
 
-	void train(double* input, double* output);
+	void train(double* input, double* output, int groupAmount);  //学习一批数据
 
-	void calOutput(double* input, double* output);
-
-	//具体设置
-	void setLayers(); //具体的网络均改写这里
+	void calOutput(double* input, double* output);  //计算一组输出
 
 	//数据
 	double* inputData = nullptr;
 	double* outputData = nullptr;
 	void readData(std::string& filename);
+
+
+	//具体设置
+	void setLayers(); //具体的网络均改写这里
 
 };
 

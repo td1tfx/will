@@ -8,8 +8,10 @@ public:
 	NeuralLayer();
 	virtual ~NeuralLayer();
 
+
 	std::vector<NeuralNode*> nodes;
 	NeuralNode*& getNode(int number) { return (nodes.at(number)); }
+	int getNodeAmount() { return nodes.size(); };
 
 	void createNodes(int nodeAmount, NeuralNodeType type = Hidden);
 	static void connetTwoLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
