@@ -16,9 +16,9 @@ public:
 
 //类型，隐藏，输入，输出
 typedef enum NeuralNodeType {
-	hidden,
-	input,
-	output,
+	Hidden,
+	Input,
+	Output,
 } NeuralNodeType;
 
 //节点

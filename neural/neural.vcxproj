@@ -143,6 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActiveFunctions.cpp" />
+    <ClCompile Include="libconvert.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralNet.cpp" />
     <ClCompile Include="NeuralNode.cpp" />
@@ -150,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActiveFunctions.h" />
+    <ClInclude Include="libconvert.h" />
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralNode.h" />
     <ClInclude Include="NeuralLayer.h" />

@@ -9,8 +9,8 @@ public:
 	virtual ~NeuralLayer();
 
 	std::vector<NeuralNode*> nodes;
-	void createNodes(int nodeAmount, NeuralNodeType type = hidden);
-	void connetTwoLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
+	void createNodes(int nodeAmount, NeuralNodeType type = Hidden);
+	static void connetTwoLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);
 	//void connet(NueralLayer nextLayer);
