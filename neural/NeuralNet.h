@@ -39,7 +39,7 @@ public:
 
 
 	//具体设置
-	void setLayers(); //具体的网络均改写这里
+	virtual void setLayers(); //具体的网络均改写这里
 
 };
 

@@ -15,12 +15,13 @@ NeuralLayer::~NeuralLayer()
 	}
 }
 
-void NeuralLayer::createNodes(int nodeNumbers, NeuralNodeType type /*= hidden*/)
+void NeuralLayer::createNodes(int nodeAmount, int dataGroupAmount, NeuralNodeType type /*= Hidden*/)
 {
-	for (int i = 1; i <= nodeNumbers; i++)
+	for (int i = 1; i <= nodeAmount; i++)
 	{
 		auto node = new NeuralNode();
 		node->type = type;
+		node->setDataGroupAmount(dataGroupAmount);
 		nodes.push_back(node);
 	}
 }

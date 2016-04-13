@@ -5,7 +5,7 @@ void run();
 int main(int argc, char* argv[])
 {
 	run();
-#ifdef _DEBUG
+#ifdef _WIN32
 	printf("debug end.\n");
 	getchar();
 #endif

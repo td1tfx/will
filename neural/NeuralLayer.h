@@ -13,7 +13,7 @@ public:
 	NeuralNode*& getNode(int number) { return (nodes.at(number)); }
 	int getNodeAmount() { return nodes.size(); };
 
-	void createNodes(int nodeAmount, NeuralNodeType type = Hidden);
+	void createNodes(int nodeAmount, int dataGroupAmount = 0, NeuralNodeType type = Hidden);
 	static void connetTwoLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);

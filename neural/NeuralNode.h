@@ -41,7 +41,11 @@ public:
 	NeuralBond*& getNextBond(NeuralNode* node) { return nextBonds[node]; };  
 
 	double outputValue;
-	double totalInputValue;
+	double inputValue;
+	double expect;
+
+	void setExpect(double expect, int i = -1);
+
 	void collectInputValue();
 	void activeOutputValue();
 
@@ -59,7 +63,17 @@ public:
 	void updateWeight(NeuralNode* startNode, NeuralNode* endNode, double learnSpeed, double delta);
 
 	double delta;
-	void updateDelta(double expect = 0);
+	void updateOneDelta();
+
+	//多组数据
+	int dataGroupAmount = 0;
+	std::vector<double> outputValues;
+	std::vector<double> inputValues;
+	std::vector<double> expects;
+	std::vector<double> deltas;
+
+	void setDataGroupAmount(int n);
+	void updateDelta();
 
 };
 

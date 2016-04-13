@@ -21,5 +21,7 @@ public:
 	static double dsigmoid(double v);
 	static double linear(double v) { return v; }
 	static double dlinear(double v) { return 0; }
+	static double exp1(double v) { return exp(v) - 1; }
+	static double dexp1(double v) { return exp(v); }
 };
 
