@@ -21,13 +21,14 @@ public:
 	int outputNodeAmount;
 	int dataGroupAmount;
 
-	double learnSpeed = 1;
+	double learnSpeed = 0.1;
 
 	void createLayers(int layerAmount);  //包含输入和输出层
 
 	void learn(double* input, double* output);  //学习一组数据
 
 	void train();  //学习一批数据
+	void test();  
 
 	void activeOutputValue(double* input, double* output);  //计算一组输出
 

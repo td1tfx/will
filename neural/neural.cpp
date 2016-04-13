@@ -17,10 +17,9 @@ void run()
 	auto net = new NeuralNet();
 	std::string filename = "data.txt";
 	net->readData(filename);
-	net->createLayers(3);
 	net->setLayers();
 	net->train();
-
+	net->test();
 	//double a[2] = { 1, 2 };
 	//double b[1] = { 3 };
 

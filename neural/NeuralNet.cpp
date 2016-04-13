@@ -36,7 +36,7 @@ void NeuralNet::learn(double* input, double* output)
 {
 	auto o = new double[outputNodeAmount];
 	activeOutputValue(input, o);
-	printf("output = %lf, %lf\n", o[0], output[0]);
+	//printf("output = %14.12lf, %14.12lf\n", o[0], output[0]);
 
 	//这里是输出层
 	auto layer_output = layers.back();
@@ -50,7 +50,7 @@ void NeuralNet::learn(double* input, double* output)
 			bond.updateWeight(learnSpeed);
 		}
 	}
-	for (int l = layers.size() - 1; l > 0; l--)
+	for (int l = layers.size() - 2; l >= 0; l--)
 	{
 		auto layer = layers[l];
 		for (int j = 0; j < layer->nodes.size(); j++)
@@ -65,16 +65,24 @@ void NeuralNet::learn(double* input, double* output)
 		}
 	}
 	delete o;
-
 }
 
 void NeuralNet::train()
 {
-	//测试中，暂时只算一个
-	for (int i = 0; i < 1; i++)
+	for (int j = 1; j <= 1000; j++)
+	for (int i = 0; i < dataGroupAmount; i++)
 	{
-		for (int j = 1; j <= 10;j++)
 		learn(inputData + i*inputNodeAmount, outputData + i*outputNodeAmount);
+	}
+}
+
+void NeuralNet::test()
+{
+	auto o = new double[outputNodeAmount];
+	for (int i = 0; i < dataGroupAmount; i++)
+	{
+		activeOutputValue(inputData+inputNodeAmount*i, o);
+		printf("%14.12lf\t%14.12lf\n", o[0], outputData[i]);
 	}
 }
 
@@ -130,28 +138,37 @@ void NeuralNet::readData(std::string& filename)
 			outputData[k2++] = v.at(k++);
 		}
 	}
+	//测试用
+	dataGroupAmount = 10;
 }
 
 void NeuralNet::setLayers()
 {
+	learnSpeed = 0.1;
+	int nl = 3;
+	this->createLayers(nl);
 	auto layer0 = layers.at(0);
 	layer0->createNodes(inputNodeAmount, NeuralNodeType::Input);
 
 	auto layer1 = layers.back();
 	layer1->createNodes(outputNodeAmount, NeuralNodeType::Output);
-
-	auto layer = layers.at(1);
-	layer->createNodes(10);
-	for (auto node : layer->nodes)
-	{
-		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
-	}
 	for (auto node : layer1->nodes)
 	{
 		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 	}
 
-	layer1->connetPrevlayer(getLayer(1));
-	getLayer(1)->connetPrevlayer(layer0);
+	for (int i = 1; i <= nl-2; i++)
+	{
+		auto layer = layers.at(i);
+		layer->createNodes(10);
+		for (auto node : layer->nodes)
+		{
+			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
+		}
+	}
+	for (int i = 1; i < layers.size(); i++)
+	{		
+		layers[i]->connetPrevlayer(layers[i - 1]);
+	}
 	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
 }
