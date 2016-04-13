@@ -47,7 +47,7 @@ void NeuralNet::learn(double* input, double* output)
 		for (auto b : node->prevBonds)
 		{
 			auto& bond = b.second;
-			bond.updateWeight(learnSpeed);
+			bond->updateWeight(learnSpeed);
 		}
 	}
 	for (int l = layers.size() - 2; l >= 0; l--)
@@ -60,7 +60,7 @@ void NeuralNet::learn(double* input, double* output)
 			for (auto b : node->prevBonds)
 			{
 				auto& bond = b.second;
-				bond.updateWeight(learnSpeed);
+				bond->updateWeight(learnSpeed);
 			}
 		}
 	}
@@ -118,8 +118,8 @@ void NeuralNet::readData(std::string& filename)
 		return;
 	std::vector<double> v;
 	int n = findNumbers(str, v);
-	inputNodeAmount = int(v.at(0));
-	outputNodeAmount = int(v.at(1));
+	inputNodeAmount = int(v[0]);
+	outputNodeAmount = int(v[1]);
 
 	dataGroupAmount = (n - 2) / (inputNodeAmount + outputNodeAmount);
 
@@ -131,11 +131,11 @@ void NeuralNet::readData(std::string& filename)
 	{
 		for (int j = 1; j <= inputNodeAmount; j++)
 		{
-			inputData[k1++] = v.at(k++);
+			inputData[k1++] = v[k++];
 		}
 		for (int j = 1; j <= outputNodeAmount; j++)
 		{
-			outputData[k2++] = v.at(k++);
+			outputData[k2++] = v[k++];
 		}
 	}
 	//²âÊÔÓÃ

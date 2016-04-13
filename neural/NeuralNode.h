@@ -34,8 +34,11 @@ public:
 	NeuralNodeType type;
 	std::string tag;
 
-	std::map<NeuralNode*, NeuralBond> prevBonds;  //这里好像只保存weight就行了
-	std::map<NeuralNode*, NeuralBond> nextBonds;  //这里好像只保存weight就行了
+	std::map<NeuralNode*, NeuralBond*> prevBonds;  //这里好像只保存weight就行了
+	std::map<NeuralNode*, NeuralBond*> nextBonds;  //next实际为prev的镜像，start和end相同时保存的是同一个指针
+
+	NeuralBond*& getPrevBond(NeuralNode* node) { return prevBonds[node]; };
+	NeuralBond*& getNextBond(NeuralNode* node) { return nextBonds[node]; };  
 
 	double outputValue;
 	double totalInputValue;
