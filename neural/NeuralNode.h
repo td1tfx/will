@@ -30,6 +30,7 @@ public:
 	virtual ~NeuralNode();
 
 	NeuralNodeType type;
+	std::string tag;
 
 	std::map<NeuralNode*, NeuralBond> bonds;  //这里好像只保存weight就行了
 
@@ -38,13 +39,17 @@ public:
 	void collectInputValue();
 	void activeOutputValue();
 
-	std::function<double(double)> activeFunction = ActiveFunctions::linear;
-	std::function<double(double)> feedbackFunction = ActiveFunctions::linear;
+	ActiveFunctions af;
+
+	std::function<double(double)> activeFunction = af.linear;
+	std::function<double(double)> feedbackFunction = af.linear;
 
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
 	void connect(NeuralNode* node, double w = 0);
 
 	void setWeight(NeuralNode* node, double w = 0);
+
+	void updateWeight(NeuralBond* node, double learnSpeed, double delta);
 
 };
 

@@ -54,3 +54,8 @@ void NeuralNode::setWeight(NeuralNode* node, double w /*= 0*/)
 	}
 }
 
+void NeuralNode::updateWeight(NeuralBond* node, double learnSpeed, double delta)
+{
+	node->weight = +learnSpeed*delta*this->outputValue;
+}
+

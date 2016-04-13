@@ -25,9 +25,9 @@ public:
 
 	void learn(double* input, double* output);  //学习一组数据
 
-	void train(double* input, double* output, int groupAmount);  //学习一批数据
+	void train();  //学习一批数据
 
-	void calOutput(double* input, double* output);  //计算一组输出
+	void activeOutputValue(double* input, double* output);  //计算一组输出
 
 	//数据
 	double* inputData = nullptr;

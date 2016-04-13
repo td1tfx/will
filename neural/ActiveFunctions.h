@@ -15,8 +15,10 @@ public:
 	ActiveFunctions();
 	virtual ~ActiveFunctions();
 	//static void setFunctions(class NeuralNode* node, std::function<double(double)> activeFunction, std::function<double(double)> feedbackFunction);
-	static double sigmoid(double input);
-	static double _sigmoid(double output);
-	static double linear(double input) { return input; }
+
+	double c = 0, f = 0;
+	static double sigmoid(double v);
+	static double dsigmoid(double v);
+	static double linear(double v) { return v; }
 };
 

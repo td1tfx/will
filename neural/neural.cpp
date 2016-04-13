@@ -19,13 +19,12 @@ void run()
 	net->readData(filename);
 	net->createLayers(3);
 	net->setLayers();
+	net->train();
 
-	double a[2] = { 1, 2 };
-	double b[1] = { 3 };
+	//double a[2] = { 1, 2 };
+	//double b[1] = { 3 };
 
-	net->calOutput(a,b);
-
-	printf("output = %lf\n",b[0]);
+	//net->activeOutputValue(a,b);
 
 	delete net;
 }

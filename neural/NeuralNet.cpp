@@ -32,7 +32,25 @@ void NeuralNet::createLayers(int layerNumber)
 	}
 }
 
-void NeuralNet::calOutput(double* input, double* output)
+void NeuralNet::learn(double* input, double* output)
+{
+	auto output0 = new double[outputNodeAmount];
+	activeOutputValue(input, output0);
+	printf("output = %lf, %lf\n", output0[0], output[0]);
+	delete output0;
+}
+
+void NeuralNet::train()
+{
+	//测试中，暂时只算一个
+	for (int i = 0; i < 1; i++)
+	{
+		learn(inputData + i*inputNodeAmount, outputData + i*outputNodeAmount);
+	}
+}
+
+//注意：这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序
+void NeuralNet::activeOutputValue(double* input, double* output)
 {
 	for (int i = 0; i < inputNodeAmount; i++)
 	{
@@ -55,6 +73,7 @@ void NeuralNet::calOutput(double* input, double* output)
 	}
 }
 
+//这里的处理可能不是很好
 void NeuralNet::readData(std::string& filename)
 {
 	std::string str = readStringFromFile(filename);
@@ -68,18 +87,18 @@ void NeuralNet::readData(std::string& filename)
 	dataGroupAmount = (n - 2) / (inputNodeAmount + outputNodeAmount);
 
 	int k = 2;
+	int k1 = 0, k2 = 0;
 	inputData = new double[inputNodeAmount * dataGroupAmount];
 	outputData = new double[outputNodeAmount * dataGroupAmount];
 	for (int i = 1; i <= dataGroupAmount; i++)
 	{
-		int k1 = 0, k2 = 0;
 		for (int j = 1; j <= inputNodeAmount; j++)
 		{
-			((double*)inputData)[k1++] = v.at(k++);
+			inputData[k1++] = v.at(k++);
 		}
 		for (int j = 1; j <= outputNodeAmount; j++)
 		{
-			((double*)outputData)[k2++] = v.at(k++);
+			outputData[k2++] = v.at(k++);
 		}
 	}
 }
@@ -94,6 +113,14 @@ void NeuralNet::setLayers()
 
 	auto layer = layers.at(1);
 	layer->createNodes(10);
+	for (auto node : layer->nodes)
+	{
+		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
+	}
+	for (auto node : layer1->nodes)
+	{
+		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
+	}
 
 	layer1->connetPrevlayer(getLayer(1));
 	getLayer(1)->connetPrevlayer(layer0);
