@@ -13,6 +13,8 @@ public:
 	double learnSpeed = 1;
 	class NeuralNode* startNode;
 	class NeuralNode* endNode;
+
+	void updateWeight(double learnSpeed);
 };
 
 //类型，隐藏，输入，输出
@@ -32,7 +34,8 @@ public:
 	NeuralNodeType type;
 	std::string tag;
 
-	std::map<NeuralNode*, NeuralBond> bonds;  //这里好像只保存weight就行了
+	std::map<NeuralNode*, NeuralBond> prevBonds;  //这里好像只保存weight就行了
+	std::map<NeuralNode*, NeuralBond> nextBonds;  //这里好像只保存weight就行了
 
 	double outputValue;
 	double totalInputValue;
@@ -41,15 +44,19 @@ public:
 
 	ActiveFunctions af;
 
+	//feedback是active的导数
 	std::function<double(double)> activeFunction = af.linear;
-	std::function<double(double)> feedbackFunction = af.linear;
+	std::function<double(double)> feedbackFunction = af.dlinear;
 
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
 	void connect(NeuralNode* node, double w = 0);
 
 	void setWeight(NeuralNode* node, double w = 0);
 
-	void updateWeight(NeuralBond* node, double learnSpeed, double delta);
+	void updateWeight(NeuralNode* startNode, NeuralNode* endNode, double learnSpeed, double delta);
+
+	double delta;
+	void updateDelta(double expect = 0);
 
 };
 

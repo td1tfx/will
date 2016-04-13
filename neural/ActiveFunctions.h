@@ -20,5 +20,6 @@ public:
 	static double sigmoid(double v);
 	static double dsigmoid(double v);
 	static double linear(double v) { return v; }
+	static double dlinear(double v) { return 0; }
 };
 

@@ -34,10 +34,38 @@ void NeuralNet::createLayers(int layerNumber)
 
 void NeuralNet::learn(double* input, double* output)
 {
-	auto output0 = new double[outputNodeAmount];
-	activeOutputValue(input, output0);
-	printf("output = %lf, %lf\n", output0[0], output[0]);
-	delete output0;
+	auto o = new double[outputNodeAmount];
+	activeOutputValue(input, o);
+	printf("output = %lf, %lf\n", o[0], output[0]);
+
+	//这里是输出层
+	auto layer_output = layers.back();
+	for (int j = 0; j < layer_output->nodes.size(); j++)
+	{
+		auto node = layer_output->getNode(j);
+		node->updateDelta(output[j]);
+		for (auto b : node->prevBonds)
+		{
+			auto& bond = b.second;
+			bond.updateWeight(learnSpeed);
+		}
+	}
+	for (int l = layers.size() - 1; l > 0; l--)
+	{
+		auto layer = layers[l];
+		for (int j = 0; j < layer->nodes.size(); j++)
+		{
+			auto node = layer->getNode(j);
+			node->updateDelta();
+			for (auto b : node->prevBonds)
+			{
+				auto& bond = b.second;
+				bond.updateWeight(learnSpeed);
+			}
+		}
+	}
+	delete o;
+
 }
 
 void NeuralNet::train()
@@ -45,6 +73,7 @@ void NeuralNet::train()
 	//测试中，暂时只算一个
 	for (int i = 0; i < 1; i++)
 	{
+		for (int j = 1; j <= 10;j++)
 		learn(inputData + i*inputNodeAmount, outputData + i*outputNodeAmount);
 	}
 }
