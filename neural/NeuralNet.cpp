@@ -37,14 +37,6 @@ void NeuralNet::learn(double* input, double* output)
 	auto output_real = new double[outputNodeAmount*dataGroupAmount];
 	activeOutputValue(input, output_real);
 
-	double s = 0;
-	for (int i = 0; i < dataGroupAmount; i++)
-	{
-		//printf("%f\t", output_real[i]/ output[i]-1);
-		s += (output_real[i] - output[i])* (output_real[i] - output[i]);
-	}
-	printf("%f\n",s);
-
 	//这里是输出层
 	//正规的方式应该是逐步回溯，这里处理的方法比较简单
 	auto layer_output = layers.back();
@@ -88,8 +80,21 @@ void NeuralNet::learn(double* input, double* output)
 void NeuralNet::train()
 {
 	for (int j = 1; j <= 10000000; j++)
+	{
 		learn(inputData, outputData);
-
+		double s = 0;
+		auto& o = layers.back()->getNode(0)->outputValues;
+		if (j % 1000 == 0) 
+		{
+			for (int i = 0; i < dataGroupAmount; i++)
+			{
+				//printf("%f\t", output_real[i]/ output[i]-1);
+				double s1 = o[i] - outputData[i];
+				s += s1*s1;
+			}
+			printf("%f\n", s);
+		}
+	}
 }
 
 void NeuralNet::test()
@@ -171,8 +176,8 @@ void NeuralNet::readData(std::string& filename)
 //此处是具体的网络结构
 void NeuralNet::setLayers()
 {
-	learnSpeed = .5;
-	int nl = 3;
+	learnSpeed = 0.5;
+	int nl = 4;
 	this->createLayers(nl);
 	auto layer_input = layers.at(0);
 	layer_input->createNodes(inputNodeAmount, dataGroupAmount, NeuralNodeType::Input);
