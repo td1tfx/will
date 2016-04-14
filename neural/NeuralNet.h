@@ -19,7 +19,7 @@ public:
 
 	int inputNodeAmount;
 	int outputNodeAmount;
-	int dataGroupAmount;
+	int dataAmount;
 
 	double learnSpeed = 0.1;
 
@@ -28,15 +28,20 @@ public:
 	void learn(double* input, double* output);  //学习一组数据
 
 	void train(int times = 1000000, double tol = 0.0001);  //学习一批数据
-	void test();  
-
+	
 	void activeOutputValue(double* input, double* output, int amount = -1);  //计算一组输出
 
 	//数据
 	double* inputData = nullptr;
-	double* outputData = nullptr;
-	void readData(std::string& filename);
+	double* expectData = nullptr;
+	void readData(std::string& filename, double* input =nullptr, double* output = nullptr, int amount = -1);
 
+	std::vector<bool> isTest;
+	double* inputTestData = nullptr;
+	double* expectTestData = nullptr;
+	int testDataAmount;
+	void selectTest();
+	void test();
 
 	//具体设置
 	virtual void setLayers(); //具体的网络均改写这里
