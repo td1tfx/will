@@ -101,11 +101,12 @@ void NeuralNet::test()
 
 //计算输出
 //这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序，待完善后修改
-void NeuralNet::activeOutputValue(double* input, double* output)
+void NeuralNet::activeOutputValue(double* input, double* output, int amount /*= -1*/)
 {
+	if (amount < 0) amount = dataGroupAmount;
 	for (int i = 0; i < inputNodeAmount; i++)
 	{
-		for (int j = 0; j < dataGroupAmount; j++)
+		for (int j = 0; j < amount; j++)
 		{
 			getLayer(0)->getNode(i)->outputValues[j] = input[j*inputNodeAmount + i];
 		}
@@ -132,11 +133,13 @@ void NeuralNet::activeOutputValue(double* input, double* output)
 	}
 }
 
+
 //这里的处理可能不是很好
 void NeuralNet::readData(std::string& filename)
 {
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
 	std::string str = readStringFromFile(filename);
+	str = str + "\n";
 	if (str == "")
 		return;
 	std::vector<double> v;
@@ -203,13 +206,14 @@ void NeuralNet::setLayers()
 
 void NeuralNet::outputWeight()
 {
+	printf("\nNet information:\n", layers.size());
 	printf("%d\tlayers\n", layers.size());
 	for (int i = 0; i < layers.size(); i++)
 	{
-		printf("%d layer has %d\tnodes\n", i, layers[i]->getNodeAmount());
+		printf("layer %d has %d nodes\n", i, layers[i]->getNodeAmount());
 	}
 	//printf("start\tend\tweight\n");
-	printf("----------------------------------\n");
+	printf("---------------------------------------\n");
 	for (int i = 0; i < layers.size() - 1; i++)
 	{
 		auto& l1 = layers[i];

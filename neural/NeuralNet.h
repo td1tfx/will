@@ -30,7 +30,7 @@ public:
 	void train(int times = 1000000, double tol = 0.0001);  //学习一批数据
 	void test();  
 
-	void activeOutputValue(double* input, double* output);  //计算一组输出
+	void activeOutputValue(double* input, double* output, int amount = -1);  //计算一组输出
 
 	//数据
 	double* inputData = nullptr;

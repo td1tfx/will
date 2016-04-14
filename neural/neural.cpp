@@ -5,8 +5,8 @@ void run();
 int main(int argc, char* argv[])
 {
 	run();
+	printf("run end.\n");
 #ifdef _WIN32
-	printf("debug end.\n");
 	getchar();
 #endif
 	return 0;
@@ -15,10 +15,10 @@ int main(int argc, char* argv[])
 void run()
 {
 	auto net = new NeuralNet();
-	std::string filename = "data1.txt";
+	std::string filename = "data3.txt";
 	net->readData(filename);
 	net->setLayers();
-	net->train(10000000);
+	net->train(100000);
 	net->test();
 	net->outputWeight();
 	//double a[2] = { 1, 2 };
