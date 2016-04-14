@@ -1,6 +1,5 @@
 #include "NeuralNode.h"
-
-
+#include <cstdlib>
 
 NeuralNode::NeuralNode()
 {
@@ -75,7 +74,7 @@ void NeuralNode::connect(NeuralNode* node, double w /*= 0*/)
 {
 	if (w == 0)
 	{
-		w = 1.0*rand() / RAND_MAX-0.5;
+		w = 1.0 * rand() / RAND_MAX - 0.5;
 	}
 	auto bond = new NeuralBond();
 	bond->startNode = node;

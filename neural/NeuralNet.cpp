@@ -187,7 +187,7 @@ void NeuralNet::setLayers()
 	for (int i = 1; i <= nl - 2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(50, dataGroupAmount, Hidden);
+		layer->createNodes(7, dataGroupAmount, Hidden);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
