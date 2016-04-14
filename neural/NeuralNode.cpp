@@ -33,6 +33,8 @@ void NeuralNode::collectInputValue()
 	{
 		inputValues[i] = 0;
 	}
+	if (type == Const)
+		return;
 	for (auto &b : prevBonds)
 	{
 		inputValue += b.second->startNode->outputValue * b.second->weight;
@@ -48,6 +50,14 @@ void NeuralNode::collectInputValue()
 //м╛ио
 void NeuralNode::activeOutputValue()
 {
+	if (type == Const)
+	{
+		for (int i = 0; i < dataGroupAmount; i++)
+		{
+			outputValues[i] = -1;
+		}
+		return;
+	}
 	outputValue = activeFunction(inputValue);
 	for (int i = 0; i < dataGroupAmount; i++)
 	{
@@ -83,7 +93,7 @@ void NeuralNode::setWeight(NeuralNode* node, double w /*= 0*/)
 {
 	//if (bonds.find(node) == nullptr)
 	{
-		prevBonds[node]->weight = 0;
+		prevBonds[node]->weight = w;
 	}
 }
 
@@ -143,6 +153,8 @@ void NeuralNode::setDataGroupAmount(int n)
 	outputValues.resize(n);
 	expects.resize(n);
 	deltas.resize(n);
+	setVectorValue(outputValues);
+
 }
 
 void NeuralBond::updateWeight(double learnSpeed)
@@ -153,7 +165,7 @@ void NeuralBond::updateWeight(double learnSpeed)
 	if (n <= 0)
 	{
 		auto& delta = endNode->delta;
-		w += learnSpeed*delta*endNode->outputValue;
+		w += learnSpeed*delta*startNode->outputValue;
 	}
 	else
 	{
@@ -161,10 +173,10 @@ void NeuralBond::updateWeight(double learnSpeed)
 		auto& deltas = endNode->deltas;
 		for (int i = 0; i < n; i++)
 		{
-			delta_w += learnSpeed*deltas[i]*endNode->outputValues[i];
+			delta_w += learnSpeed*deltas[i]*startNode->outputValues[i];
 		}
 		delta_w /= n;
 		w += delta_w;
 	}
-	startNode->nextBonds[endNode]->weight = w;
+	//startNode->nextBonds[endNode]->weight = w;
 }

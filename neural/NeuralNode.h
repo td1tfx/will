@@ -22,6 +22,7 @@ typedef enum NeuralNodeType {
 	Hidden,
 	Input,
 	Output,
+	Const,
 } NeuralNodeType;
 
 //½Úµã
@@ -69,6 +70,8 @@ public:
 	std::vector<double> inputValues;
 	std::vector<double> expects;
 	std::vector<double> deltas;
+
+	void setVectorValue(std::vector<double>& vec, double x = -1) { for (auto& v : vec) v = x; }
 
 	void setDataGroupAmount(int n);
 	void updateDelta();

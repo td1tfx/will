@@ -27,7 +27,7 @@ public:
 
 	void learn(double* input, double* output);  //学习一组数据
 
-	void train();  //学习一批数据
+	void train(int times = 1000000, double tol = 0.0001);  //学习一批数据
 	void test();  
 
 	void activeOutputValue(double* input, double* output);  //计算一组输出

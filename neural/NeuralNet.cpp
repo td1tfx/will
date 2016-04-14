@@ -67,14 +67,14 @@ void NeuralNet::learn(double* input, double* output)
 	delete output_real;
 }
 
-void NeuralNet::train()
+void NeuralNet::train(int times, double tol)
 {
-	for (int count = 0; count<10000000; count++)
+	for (int count = 0; count < times; count++)
 	{
 		learn(inputData, outputData);
 		double s = 0;
 		auto& o = layers.back()->getNode(0)->outputValues;
-		if (count % 1000 == 0) 
+		if (count % 1000 == 0)
 		{
 			for (int i = 0; i < dataGroupAmount; i++)
 			{
@@ -82,9 +82,9 @@ void NeuralNet::train()
 				double s1 = 1 - o[i] / outputData[i];
 				s += s1*s1;
 			}
-			fprintf(stdout, "%d, %f, %f\n", count, s, s/dataGroupAmount);
-			if (s / dataGroupAmount < 0.0001) break;
-		}		
+			fprintf(stdout, "%d, %f, %f\n", count, s, s / dataGroupAmount);
+			if (s / dataGroupAmount < tol) break;
+		}
 	}
 }
 
@@ -92,9 +92,10 @@ void NeuralNet::test()
 {
 	auto o = new double[outputNodeAmount*dataGroupAmount];
 	activeOutputValue(inputData, o);
+	printf("\nresults:\n---------------------------------------\n");
 	for (int i = 0; i < dataGroupAmount; i++)
 	{
-		printf("%lf\t%lf\t%14.12lf\t%14.12lf\n", inputData[i*2], inputData[i*2+1], o[i], outputData[i]);
+		printf("%14.12lf\t%14.12lf\n", o[i], outputData[i]);
 	}
 }
 
@@ -161,20 +162,20 @@ void NeuralNet::readData(std::string& filename)
 		}
 	}
 	//测试用
-	dataGroupAmount = 1;
+	//dataGroupAmount = 3;
 }
 
 //此处是具体的网络结构
 void NeuralNet::setLayers()
 {
 	learnSpeed = 0.5;
-	int nl = 2;
+	int nl = 3;
 	this->createLayers(nl);
 	auto layer_input = layers.at(0);
-	layer_input->createNodes(inputNodeAmount, dataGroupAmount, NeuralNodeType::Input);
+	layer_input->createNodes(inputNodeAmount+1, dataGroupAmount, Input, true);
 
 	auto layer_output = layers.back();
-	layer_output->createNodes(outputNodeAmount, dataGroupAmount, NeuralNodeType::Output);
+	layer_output->createNodes(outputNodeAmount, dataGroupAmount, Output);
 
 	for (auto node : layer_output->nodes)
 	{
@@ -186,7 +187,7 @@ void NeuralNet::setLayers()
 	for (int i = 1; i <= nl - 2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(5, dataGroupAmount);
+		layer->createNodes(50, dataGroupAmount, Hidden);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
