@@ -79,7 +79,7 @@ void NeuralNet::learn(double* input, double* output)
 
 void NeuralNet::train()
 {
-	for (int j = 1; j <= 10000000; j++)
+	for (int j = 0; j <= 10000; j++)
 	{
 		learn(inputData, outputData);
 		double s = 0;
@@ -92,7 +92,7 @@ void NeuralNet::train()
 				double s1 = o[i] - outputData[i];
 				s += s1*s1;
 			}
-			printf("%f\n", s);
+			fprintf(stdout, "%f, %f\n", s, s/dataGroupAmount);
 		}
 	}
 }
@@ -170,14 +170,14 @@ void NeuralNet::readData(std::string& filename)
 		}
 	}
 	//测试用
-	//dataGroupAmount = 4;
+	//dataGroupAmount = 6;
 }
 
 //此处是具体的网络结构
 void NeuralNet::setLayers()
 {
-	learnSpeed = 0.5;
-	int nl = 4;
+	learnSpeed = .1;
+	int nl = 3;
 	this->createLayers(nl);
 	auto layer_input = layers.at(0);
 	layer_input->createNodes(inputNodeAmount, dataGroupAmount, NeuralNodeType::Input);
@@ -190,18 +190,53 @@ void NeuralNet::setLayers()
 		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 	}
 
+	//layers[1]->createNodes(34, dataGroupAmount);
+	//layers[2]->createNodes(34, dataGroupAmount);
 	for (int i = 1; i <= nl-2; i++)
 	{
-		auto layer = layers.at(i);
-		layer->createNodes(50, dataGroupAmount);
+		auto layer = layers[i];
+		layer->createNodes(10, dataGroupAmount);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 		}
 	}
+
 	for (int i = 1; i < layers.size(); i++)
 	{		
 		layers[i]->connetPrevlayer(layers[i - 1]);
 	}
 	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
+}
+
+void NeuralNet::outputWeight()
+{
+	printf("%d\tlayers\n", layers.size());
+	for (int i = 0; i < layers.size(); i++)
+	{
+		printf("%d layer has %d\tnodes\n", i, layers[i]->getNodeAmount());
+	}
+	//printf("start\tend\tweight\n");
+	printf("----------------------------------\n");
+	for (int i = 0; i < layers.size() - 1; i++)
+	{
+		auto& l1 = layers[i];
+		auto& l2 = layers[i+1];
+		for (int j1 = 0; j1 < l1->getNodeAmount(); j1++)
+		{
+			auto& n1 = l1->getNode(j1);
+			for (int j2 = 0; j2 < l2->getNodeAmount(); j2++)
+			{
+				auto& n2 = l2->getNode(j2);
+				for (auto& b : n1->nextBonds)
+				{
+					auto& bond = b.second;
+					if (n1==bond->startNode&&n2==bond->endNode)
+					{
+						printf(" %d_%d\t%d_%d\t%14.11lf\n", i, j1, i + 1, j2, b.second->weight);
+					}
+				}
+			}
+		}
+	}
 }

@@ -40,6 +40,7 @@ public:
 
 	//具体设置
 	virtual void setLayers(); //具体的网络均改写这里
+	void outputWeight(); //具体的网络均改写这里
 
 };
 

@@ -20,6 +20,7 @@ void run()
 	net->setLayers();
 	net->train();
 	net->test();
+	net->outputWeight();
 	//double a[2] = { 1, 2 };
 	//double b[1] = { 3 };
 
