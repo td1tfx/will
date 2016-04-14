@@ -44,8 +44,9 @@ public:
 	void test();
 
 	//具体设置
-	virtual void setLayers(); //具体的网络均改写这里
+	virtual void setLayers(double learnSpeed = 0.5, int layerAmount = 3, bool haveConstNode = true); //具体的网络均改写这里
 	void outputWeight(); //具体的网络均改写这里
+	void createByFile(std::string& filename);
 
 };
 

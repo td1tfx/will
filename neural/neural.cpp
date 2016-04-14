@@ -15,11 +15,11 @@ int main(int argc, char* argv[])
 void run()
 {
 	auto net = new NeuralNet();
-	std::string filename = "data.txt";
+	std::string filename = "data1.txt";
 	net->readData(filename);
 	net->setLayers();
 	net->selectTest();
-	net->train(200000,1e-4);
+	net->train(int(1e7),1e-4);
 	net->test();
 	net->outputWeight();
 	//double a[2] = { 1, 2 };

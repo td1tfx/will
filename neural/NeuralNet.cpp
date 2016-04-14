@@ -230,14 +230,15 @@ void NeuralNet::readData(std::string& filename, double* input, double* output, i
 }
 
 //此处是具体的网络结构
-void NeuralNet::setLayers()
+void NeuralNet::setLayers(double learnSpeed, int layerAmount, bool haveConstNode)
 {
-	learnSpeed = 0.5;
-	int nl = 3;
-	this->createLayers(nl);
+	this->createLayers(layerAmount);
 	auto layer_input = layers.at(0);
-	layer_input->createNodes(inputNodeAmount+1, dataAmount, Input, true);
 
+	if (haveConstNode)
+		layer_input->createNodes(inputNodeAmount + 1, dataAmount, Input, true);
+	else
+		layer_input->createNodes(inputNodeAmount, dataAmount, Input, false);
 	auto layer_output = layers.back();
 	layer_output->createNodes(outputNodeAmount, dataAmount, Output);
 
@@ -248,10 +249,10 @@ void NeuralNet::setLayers()
 
 	//layers[1]->createNodes(34, dataGroupAmount);
 	//layers[2]->createNodes(34, dataGroupAmount);
-	for (int i = 1; i <= nl - 2; i++)
+	for (int i = 1; i <= layerAmount - 2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(7, dataAmount, Hidden);
+		layer->createNodes(50, dataAmount, Hidden);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
@@ -296,4 +297,9 @@ void NeuralNet::outputWeight()
 			}
 		}
 	}
+}
+
+void NeuralNet::createByFile(std::string& filename)
+{
+
 }
