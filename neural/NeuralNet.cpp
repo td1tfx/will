@@ -50,17 +50,7 @@ void NeuralNet::learn(double* input, double* output)
 		}
 	}
 
-	for (int j = 0; j < layer_output->nodes.size(); j++)
-	{
-		auto node = layer_output->getNode(j);
-		node->updateDelta();
-		for (auto b : node->prevBonds)
-		{
-			auto& bond = b.second;
-			bond->updateWeight(learnSpeed);
-		}
-	}
-	for (int l = layers.size() - 2; l >= 0; l--)
+	for (int l = layers.size() - 1; l >= 0; l--)
 	{
 		auto layer = layers[l];
 		for (int j = 0; j < layer->nodes.size(); j++)
@@ -79,7 +69,7 @@ void NeuralNet::learn(double* input, double* output)
 
 void NeuralNet::train()
 {
-	for (int count = 0; ; count++)
+	for (int count = 0; count<10000000; count++)
 	{
 		learn(inputData, outputData);
 		double s = 0;
@@ -177,8 +167,8 @@ void NeuralNet::readData(std::string& filename)
 //此处是具体的网络结构
 void NeuralNet::setLayers()
 {
-	learnSpeed = 0.3;
-	int nl = 4;
+	learnSpeed = 0.5;
+	int nl = 2;
 	this->createLayers(nl);
 	auto layer_input = layers.at(0);
 	layer_input->createNodes(inputNodeAmount, dataGroupAmount, NeuralNodeType::Input);
@@ -193,10 +183,10 @@ void NeuralNet::setLayers()
 
 	//layers[1]->createNodes(34, dataGroupAmount);
 	//layers[2]->createNodes(34, dataGroupAmount);
-	for (int i = 1; i <= nl-2; i++)
+	for (int i = 1; i <= nl - 2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(7, dataGroupAmount);
+		layer->createNodes(5, dataGroupAmount);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);

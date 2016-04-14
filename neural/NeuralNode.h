@@ -49,11 +49,9 @@ public:
 	void collectInputValue();
 	void activeOutputValue();
 
-	ActiveFunctions af;
-
 	//feedback是active的导数
-	std::function<double(double)> activeFunction = af.linear;
-	std::function<double(double)> dactiveFunction = af.dlinear;
+	std::function<double(double)> activeFunction = ActiveFunctions::linear;
+	std::function<double(double)> dactiveFunction = ActiveFunctions::dlinear;
 
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
 	void connect(NeuralNode* node, double w = 0);
