@@ -14,14 +14,20 @@ class ActiveFunctions
 public:
 	ActiveFunctions();
 	virtual ~ActiveFunctions();
-	//static void setFunctions(class NeuralNode* node, std::function<double(double)> activeFunction, std::function<double(double)> feedbackFunction);
+	//static xoid setFunctions(class NeuralNode* node, std::function<double(double)> activeFunction, std::function<double(double)> feedbackFunction);
 
 	double c = 0, f = 0;
-	static double sigmoid(double v);
-	static double dsigmoid(double v);
-	static double linear(double v) { return v; }
-	static double dlinear(double v) { return 0; }
-	static double exp1(double v) { return exp(v) - 1; }
-	static double dexp1(double v) { return exp(v); }
+	static double sigmoid(double x);
+	static double dsigmoid(double x);
+	static double linear(double x) { return x; }
+	static double dlinear(double x) { return 1; }
+	static double exp1(double x) { return exp(x) - 1; }
+	static double dexp1(double x) { return exp(x); }
+	static double tanh1(double x) { return tanh(x); }
+	static double dtanh1(double x) { return 1/cosh(x)/cosh(x); }
+
+	static double sin1(double x) { return sin(x); }
+	static double dsin1(double x) { return cos(x); }
+
 };
 

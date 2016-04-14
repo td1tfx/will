@@ -79,21 +79,22 @@ void NeuralNet::learn(double* input, double* output)
 
 void NeuralNet::train()
 {
-	for (int j = 0; j <= 10000; j++)
+	for (int count = 0; ; count++)
 	{
 		learn(inputData, outputData);
 		double s = 0;
 		auto& o = layers.back()->getNode(0)->outputValues;
-		if (j % 1000 == 0) 
+		if (count % 1000 == 0) 
 		{
 			for (int i = 0; i < dataGroupAmount; i++)
 			{
 				//printf("%f\t", output_real[i]/ output[i]-1);
-				double s1 = o[i] - outputData[i];
+				double s1 = 1 - o[i] / outputData[i];
 				s += s1*s1;
 			}
-			fprintf(stdout, "%f, %f\n", s, s/dataGroupAmount);
-		}
+			fprintf(stdout, "%d, %f, %f\n", count, s, s/dataGroupAmount);
+			if (s / dataGroupAmount < 0.0001) break;
+		}		
 	}
 }
 
@@ -103,7 +104,7 @@ void NeuralNet::test()
 	activeOutputValue(inputData, o);
 	for (int i = 0; i < dataGroupAmount; i++)
 	{
-		//printf("%lf\t%lf\t%14.12lf\t%14.12lf\n", inputData[i*2], inputData[i*2+1], o[i], outputData[i]);
+		printf("%lf\t%lf\t%14.12lf\t%14.12lf\n", inputData[i*2], inputData[i*2+1], o[i], outputData[i]);
 	}
 }
 
@@ -170,14 +171,14 @@ void NeuralNet::readData(std::string& filename)
 		}
 	}
 	//测试用
-	//dataGroupAmount = 6;
+	dataGroupAmount = 1;
 }
 
 //此处是具体的网络结构
 void NeuralNet::setLayers()
 {
-	learnSpeed = .1;
-	int nl = 3;
+	learnSpeed = 0.3;
+	int nl = 4;
 	this->createLayers(nl);
 	auto layer_input = layers.at(0);
 	layer_input->createNodes(inputNodeAmount, dataGroupAmount, NeuralNodeType::Input);
@@ -195,7 +196,7 @@ void NeuralNet::setLayers()
 	for (int i = 1; i <= nl-2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(10, dataGroupAmount);
+		layer->createNodes(7, dataGroupAmount);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);

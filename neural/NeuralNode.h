@@ -53,7 +53,7 @@ public:
 
 	//feedback是active的导数
 	std::function<double(double)> activeFunction = af.linear;
-	std::function<double(double)> feedbackFunction = af.dlinear;
+	std::function<double(double)> dactiveFunction = af.dlinear;
 
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
 	void connect(NeuralNode* node, double w = 0);

@@ -17,13 +17,13 @@ ActiveFunctions::~ActiveFunctions()
 // 	node->feedbackFunction = feedbackFunction;
 // }
 
-double ActiveFunctions::sigmoid(double v)
+double ActiveFunctions::sigmoid(double x)
 {
-	return 1.0 / (1 + exp(-v));
+	return 1.0 / (1 + exp(-x));
 }
 
-double ActiveFunctions::dsigmoid(double v)
+double ActiveFunctions::dsigmoid(double x)
 {
-	double a = 1 + exp(-v);
-	return exp(-v) / (a*a);
+	double a = 1 + exp(-x);
+	return exp(-x) / (a*a);
 }

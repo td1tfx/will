@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 void run()
 {
 	auto net = new NeuralNet();
-	std::string filename = "data.txt";
+	std::string filename = "data2.txt";
 	net->readData(filename);
 	net->setLayers();
 	net->train();

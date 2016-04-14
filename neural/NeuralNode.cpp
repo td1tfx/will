@@ -58,7 +58,7 @@ void NeuralNode::activeOutputValue()
 void NeuralNode::setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback)
 {
 	activeFunction = _active;
-	feedbackFunction = _feedback;
+	dactiveFunction = _feedback;
 }
 
 void NeuralNode::connect(NeuralNode* node, double w /*= 0*/)
@@ -99,7 +99,7 @@ void NeuralNode::updateOneDelta()
 	delta = 0;
 	if (this->type == Output)
 	{
-		delta = (expect - outputValue)*feedbackFunction(inputValue);
+		delta = (expect - outputValue)*dactiveFunction(inputValue);
 	}
 	else
 	{
@@ -109,7 +109,7 @@ void NeuralNode::updateOneDelta()
 			auto& node = bond->endNode;
 			delta += node->delta*bond->weight;
 		}
-		delta = delta*feedbackFunction(inputValue);
+		delta = delta*dactiveFunction(inputValue);
 	}
 }
 
@@ -121,7 +121,7 @@ void NeuralNode::updateDelta()
 		deltas[i] = 0;
 		if (this->type == Output)
 		{
-			deltas[i] = (expects[i] - outputValues[i])*feedbackFunction(inputValues[i]);
+			deltas[i] = (expects[i] - outputValues[i])*dactiveFunction(inputValues[i]);
 		}
 		else
 		{
@@ -131,7 +131,7 @@ void NeuralNode::updateDelta()
 				auto& node = bond->endNode;
 				deltas[i] += node->deltas[i] *bond->weight;
 			}
-			deltas[i] *= feedbackFunction(inputValues[i]);
+			deltas[i] *= dactiveFunction(inputValues[i]);
 		}
 	}
 }
