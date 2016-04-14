@@ -25,7 +25,7 @@ void NeuralLayer::createNodes(int nodeAmount, int dataGroupAmount /*= 0*/, Neura
 		node->setDataGroupAmount(dataGroupAmount);
 		if (haveConstNode && i == nodeAmount - 1)
 		{
-			node->type == Const;
+			node->type = Const;
 		}
 		nodes.push_back(node);
 	}

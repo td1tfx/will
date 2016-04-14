@@ -2,7 +2,7 @@
 #include <vector>
 #include <map>
 #include <functional>
-
+#include <string>
 #include "ActiveFunctions.h"
 
 //¼üÁ¬½ÓÀà
