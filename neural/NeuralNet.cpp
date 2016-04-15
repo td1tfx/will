@@ -129,7 +129,7 @@ void NeuralNet::test()
 	printf("\nTrain data comparing with expection:\n---------------------------------------\n");
 	for (int i = 0; i < dataAmount; i++)
 	{
-		printf("%14.12lf\t%14.12lf\n", output_train[i], expectData[i]);
+		printf("%14.10lf\t%14.10lf\n", output_train[i], expectData[i]);
 	}
 	delete output_train;
 
@@ -138,7 +138,7 @@ void NeuralNet::test()
 	printf("\nTest data:\n---------------------------------------\n");
 	for (int i = 0; i < testDataAmount; i++)
 	{
-		printf("%14.12lf\t%14.12lf\n", output_test[i], expectTestData[i]);
+		printf("%14.10lf\t%14.10lf\n", output_test[i], expectTestData[i]);
 		//for (int j = 0; j < inputNodeAmount; j++)
 		//	printf("%14.12lf\t", inputTestData[i*inputNodeAmount + j]);
 		//for (int j = 0; j < outputNodeAmount; j++)

@@ -17,13 +17,4 @@ ActiveFunctions::~ActiveFunctions()
 // 	node->feedbackFunction = feedbackFunction;
 // }
 
-double ActiveFunctions::sigmoid(double x)
-{
-	return 1.0 / (1 + exp(-x));
-}
 
-double ActiveFunctions::dsigmoid(double x)
-{
-	double a = 1 + exp(-x);
-	return exp(-x) / (a*a);
-}
