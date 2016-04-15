@@ -45,7 +45,10 @@ public:
 	double inputValue;
 	double expect;
 
-	void setExpect(double expect, int i = -1);
+	void setExpect(double x, int i = -1);  //设置期待值，一般仅用于输出节点
+	void setInput(double x, int i = -1);   //设置输入值，可以用于常数节点
+	void setOutput(double x, int i = -1);  //设置输出值，一般仅用于输入节点
+	double getOutput(int i = -1);
 
 	void collectInputValue();
 	void activeOutputValue();
@@ -65,7 +68,8 @@ public:
 	void updateOneDelta();
 
 	//多组数据
-	int dataGroupAmount = 0;
+	//没有下标安全检查，使用需慎重！
+	int dataAmount = 0;
 	std::vector<double> outputValues;
 	std::vector<double> inputValues;
 	std::vector<double> expects;

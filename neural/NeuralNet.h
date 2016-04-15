@@ -17,8 +17,8 @@ public:
 	NeuralLayer*& getLayer(int number) { return (layers.at(number)); }
 	int getLayerAmount() { return layers.size(); };
 
-	int inputNodeAmount;
-	int outputNodeAmount;
+	int inputAmount;
+	int outputAmount;
 	int dataAmount;
 
 	double learnSpeed = 0.1;
