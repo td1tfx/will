@@ -18,16 +18,18 @@ NeuralLayer::~NeuralLayer()
 void NeuralLayer::createNodes(int nodeAmount, int dataAmount /*= 0*/, NeuralNodeType type /*= Hidden*/, bool haveConstNode /*= false*/)
 {
 	//！！！注意实际上是多出了一个node，最后一个node的输出无论为何都恒定为1且不与前一层连接
+	nodes.resize(nodeAmount);
 	for (int i = 0; i < nodeAmount; i++)
 	{
 		auto node = new NeuralNode();
 		node->type = type;
+		node->id = i;
 		node->setDataGroupAmount(dataAmount);
 		if (haveConstNode && i == nodeAmount - 1)
 		{
 			node->type = Const;
 		}
-		nodes.push_back(node);
+		nodes[i] = node;
 	}
 }
 

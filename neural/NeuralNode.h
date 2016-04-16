@@ -34,6 +34,7 @@ public:
 
 	NeuralNodeType type;
 	std::string tag;
+	int id;
 
 	std::map<NeuralNode*, NeuralBond*> prevBonds;  //这里好像只保存weight就行了
 	std::map<NeuralNode*, NeuralBond*> nextBonds;  //next实际为prev的镜像，start和end相同时保存的是同一个指针
@@ -52,6 +53,7 @@ public:
 
 	void collectInputValue();
 	void activeOutputValue();
+	void active();
 
 	//feedback是active的导数
 	std::function<double(double)> activeFunction = ActiveFunctions::sigmoid;
@@ -82,6 +84,7 @@ public:
 
 	void setDataGroupAmount(int n);
 	void updateDelta();
+	void BackPropagation(double learnSpeed = 0.5);
 
 };
 

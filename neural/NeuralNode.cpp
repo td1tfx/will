@@ -35,6 +35,7 @@ void NeuralNode::setInput(double x, int i /*= -1*/)
 
 void NeuralNode::setOutput(double x, int i /*= -1*/)
 {
+	if (type == Const) return;
 	this->outputValue = x;
 	if (i >= 0 && i < dataAmount)
 	{
@@ -86,6 +87,12 @@ void NeuralNode::activeOutputValue()
 	{
 		outputValues[i] = activeFunction(inputValues[i]);
 	}
+}
+
+void NeuralNode::active()
+{
+	collectInputValue();
+	activeOutputValue();
 }
 
 void NeuralNode::setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback)
@@ -175,6 +182,16 @@ void NeuralNode::updateDelta()
 			}
 			deltas[i] *= dactiveFunction(inputValues[i]);
 		}
+	}
+}
+
+void NeuralNode::BackPropagation(double learnSpeed /*= 0.5*/)
+{
+	updateDelta();
+	for (auto b : prevBonds)
+	{
+		auto& bond = b.second;
+		bond->updateWeight(learnSpeed);
 	}
 }
 

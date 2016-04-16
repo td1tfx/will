@@ -19,70 +19,17 @@ NeuralNet::~NeuralNet()
 	if (expectTestData) delete expectTestData;
 }
 
-void NeuralNet::createLayers(int layerNumber)
+void NeuralNet::createLayers(int amount)
 {
-	for (int i = 1; i <= layerNumber; i++)
+	layers.resize(amount);
+	for (int i = 0; i < amount; i++)
 	{
 		auto layer = new NeuralLayer();
-		layers.push_back(layer);
+		layer->id = i;
+		layers[i] = layer;
 	}
 }
 
-void NeuralNet::learn(double* input, double* output)
-{
-	auto output_real = new double[outputAmount*dataAmount];
-	activeOutputValue(input, output_real);
-
-	//这里是输出层
-	//正规的方式应该是逐步回溯，这里处理的方法比较简单
-	auto layer_output = layers.back();
-	int k = 0;
-	for (int j = 0; j < dataAmount; j++)
-	{
-		for (int i = 0; i < outputAmount; i++)
-		{
-			auto& node = layer_output->getNode(i);
-			node->setExpect(output[k++], j);
-		}
-	}
-
-	for (int l = layers.size() - 1; l >= 0; l--)
-	{
-		auto layer = layers[l];
-		for (int j = 0; j < layer->nodes.size(); j++)
-		{
-			auto node = layer->getNode(j);
-			node->updateDelta();
-			for (auto b : node->prevBonds)
-			{
-				auto& bond = b.second;
-				bond->updateWeight(learnSpeed);
-			}
-		}
-	}
-	delete output_real;
-}
-
-void NeuralNet::train(int times, double tol)
-{
-	for (int count = 0; count < times; count++)
-	{
-		learn(inputData, expectData);
-		double s = 0;
-		auto& o = layers.back()->getNode(0)->outputValues;
-		if (count % 1000 == 0)
-		{
-			for (int i = 0; i < dataAmount; i++)
-			{
-				//printf("%f\t", output_real[i]/ output[i]-1);
-				double s1 = 1 - o[i] / expectData[i];
-				s += s1*s1;
-			}
-			fprintf(stdout, "step = %d,\tmean square error = %f\n", count, s / dataAmount);
-			if (s / dataAmount < tol) break;
-		}
-	}
-}
 
 //这里拆一部分数据为测试数据，写法有hack性质
 void NeuralNet::selectTest()
@@ -154,36 +101,82 @@ void NeuralNet::test()
 void NeuralNet::activeOutputValue(double* input, double* output, int amount /*= -1*/)
 {
 	if (amount < 0) amount = dataAmount;
-	for (int i = 0; i < inputAmount; i++)
+	for (auto& node : getFirstLayer()->getNodes())
 	{
-		for (int j = 0; j < amount; j++)
+		for (int i = 0; i < amount; i++)
 		{
 			//对于输入节点，是强制设置输入
-			getLayer(0)->getNode(i)->setOutput(input[j*inputAmount + i], j);
+			node->setOutput(input[i*inputAmount + node->id], i);
 		}
 	}
 
-	for (int l = 1; l < layers.size(); l++)
+	for (int i = 1; i < layers.size(); i++)
 	{
-		auto layer = layers[l];
-		for (int n = 0; n < layer->nodes.size(); n++)
+		for (auto& node : layers[i]->getNodes())
 		{
-			auto node = layer->getNode(n);
-			node->collectInputValue();
-			node->activeOutputValue();
+			node->active();			
 		}
 	}
-	auto layer = layers.back();
 
-	for (int i = 0; i < outputAmount; i++)
+	for (auto& node : getLastLayer()->getNodes())
 	{
-		for (int j = 0; j < amount; j++)
+		for (int i = 0; i < amount; i++)
 		{
-			output[j*outputAmount + i] = layer->getNode(i)->getOutput(j);
+			output[i*outputAmount + node->id] = node->getOutput(i);
 		}
 	}
 }
 
+
+void NeuralNet::learn(double* input, double* output)
+{
+	auto output_real = new double[outputAmount*dataAmount];
+	activeOutputValue(input, output_real);
+
+	//这里是输出层
+	//正规的方式应该是逐步回溯，这里处理的方法比较简单
+	auto layer_output = layers.back();
+	int k = 0;
+	for (int i = 0; i < dataAmount; i++)
+	{
+		for (auto& node : layer_output->getNodes())
+		{
+			node->setExpect(output[i*outputAmount+node->id], i);
+		}
+	}
+
+	//反向传播
+	for (int i_layer = layers.size() - 1; i_layer >= 0; i_layer--)
+	{
+		auto layer = layers[i_layer];
+		for (auto& node : layer->getNodes())
+		{
+			node->BackPropagation(learnSpeed);
+		}
+	}
+	delete output_real;
+}
+
+void NeuralNet::train(int times, double tol)
+{
+	for (int count = 0; count < times; count++)
+	{
+		learn(inputData, expectData);
+		double s = 0;
+		auto& o = layers.back()->getNode(0)->outputValues;
+		if (count % 1000 == 0)
+		{
+			for (int i = 0; i < dataAmount; i++)
+			{
+				//printf("%f\t", output_real[i]/ output[i]-1);
+				double s1 = 1 - o[i] / expectData[i];
+				s += s1*s1;
+			}
+			fprintf(stdout, "step = %d,\tmean square error = %f\n", count, s / dataAmount);
+			if (s / dataAmount < tol) break;
+		}
+	}
+}
 
 //这里的处理可能不是很好
 void NeuralNet::readData(std::string filename, double* input /*=nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
@@ -215,13 +208,13 @@ void NeuralNet::readData(std::string filename, double* input /*=nullptr*/, doubl
 	}	
 
 	int k = 2, k1 = 0, k2 = 0;
-	for (int i = 1; i <= amount; i++)
+	for (int i_data = 1; i_data <= amount; i_data++)
 	{
-		for (int j = 1; j <= inputAmount; j++)
+		for (int i = 1; i <= inputAmount; i++)
 		{
 			input[k1++] = v[k++];
 		}
-		for (int j = 1; j <= outputAmount; j++)
+		for (int i = 1; i <= outputAmount; i++)
 		{
 			output[k2++] = v[k++];
 		}
@@ -234,28 +227,26 @@ void NeuralNet::outputWeight()
 {
 	printf("\nNet information:\n", layers.size());
 	printf("%d\tlayers\n", layers.size());
-	for (int i = 0; i < layers.size(); i++)
+	for (int i_layer = 0; i_layer < layers.size(); i_layer++)
 	{
-		printf("layer %d has %d nodes\n", i, layers[i]->getNodeAmount());
+		printf("layer %d has %d nodes\n", i_layer, layers[i_layer]->getNodeAmount());
 	}
 	//printf("start\tend\tweight\n");
 	printf("---------------------------------------\n");
-	for (int i = 0; i < layers.size() - 1; i++)
+	for (int i_layer = 0; i_layer < layers.size() - 1; i_layer++)
 	{
-		auto& l1 = layers[i];
-		auto& l2 = layers[i + 1];
-		for (int j1 = 0; j1 < l1->getNodeAmount(); j1++)
+		auto& layer1 = layers[i_layer];
+		auto& layer2 = layers[i_layer + 1];
+		for (auto& node1 : layer1->getNodes())
 		{
-			auto& n1 = l1->getNode(j1);
-			for (int j2 = 0; j2 < l2->getNodeAmount(); j2++)
+			for (auto& node2 : layer2->getNodes())
 			{
-				auto& n2 = l2->getNode(j2);
-				for (auto& b : n1->nextBonds)
+				for (auto& b : node1->nextBonds)
 				{
 					auto& bond = b.second;
-					if (n1 == bond->startNode&&n2 == bond->endNode)
+					if (node1 == bond->startNode && node2 == bond->endNode)
 					{
-						printf(" %d_%d\t%d_%d\t%14.11lf\n", i, j1, i + 1, j2, b.second->weight);
+						printf(" %d_%d\t%d_%d\t%14.11lf\n", i_layer, node1->id, i_layer + 1, node2->id, b.second->weight);
 					}
 				}
 			}
@@ -276,7 +267,7 @@ void NeuralNet::createByData(bool haveConstNode, int layerAmount)
 	auto layer_output = layers.back();
 	layer_output->createNodes(outputAmount, dataAmount, Output);
 
-	for (auto node : layer_output->nodes)
+	for (auto& node : layer_output->getNodes())
 	{
 		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 	}
@@ -286,8 +277,8 @@ void NeuralNet::createByData(bool haveConstNode, int layerAmount)
 	for (int i = 1; i <= layerAmount - 2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(20, dataAmount, Hidden);
-		for (auto node : layer->nodes)
+		layer->createNodes(7, dataAmount, Hidden);
+		for (auto& node : layer->getNodes())
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 		}

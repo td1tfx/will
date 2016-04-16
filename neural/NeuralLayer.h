@@ -8,8 +8,11 @@ public:
 	NeuralLayer();
 	virtual ~NeuralLayer();
 
+	int id;
 
 	std::vector<NeuralNode*> nodes;
+	std::vector<NeuralNode*>& getNodes() { return nodes; }
+
 	NeuralNode*& getNode(int number) { return (nodes.at(number)); }
 	int getNodeAmount() { return nodes.size(); };
 

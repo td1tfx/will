@@ -13,6 +13,9 @@ public:
 
 	//神经层
 	std::vector<NeuralLayer*> layers;
+	std::vector<NeuralLayer*>& getLayers() { return layers; }
+
+	int id;
 
 	NeuralLayer*& getLayer(int number) { return layers[number]; }
 	NeuralLayer*& getFirstLayer() { return layers[0]; }
@@ -26,7 +29,7 @@ public:
 	double learnSpeed = 0.5;
 	void setLearnSpeed(double s) { learnSpeed = s; }
 
-	void createLayers(int layerAmount);  //包含输入和输出层
+	void createLayers(int amount);  //包含输入和输出层
 
 	void learn(double* input, double* output);  //学习一组数据
 
