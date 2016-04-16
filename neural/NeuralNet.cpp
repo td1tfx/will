@@ -78,7 +78,7 @@ void NeuralNet::train(int times, double tol)
 				double s1 = 1 - o[i] / expectData[i];
 				s += s1*s1;
 			}
-			fprintf(stdout, "%d, %f, %f\n", count, s, s / dataAmount);
+			fprintf(stdout, "step = %d,\tmean square error = %f\n", count, s / dataAmount);
 			if (s / dataAmount < tol) break;
 		}
 	}
@@ -286,7 +286,7 @@ void NeuralNet::createByData(bool haveConstNode, int layerAmount)
 	for (int i = 1; i <= layerAmount - 2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(7, dataAmount, Hidden);
+		layer->createNodes(20, dataAmount, Hidden);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
