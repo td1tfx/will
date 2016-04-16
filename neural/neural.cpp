@@ -1,20 +1,24 @@
 #include "NeuralNet.h"
 
-void run_neural();
-
-int option = 0;
+void run_neural(int option = 0);
 
 int main(int argc, char* argv[])
 {
-	run_neural();
-	printf("run end.\n");
+	int option = 0;
+	if (argc > 1)
+	{
+		int option = atoi(argv[1]);
+	}
+	run_neural(option);
+	printf("Run neural net end.\n");
+	
 #ifdef _WIN32
 	getchar();
 #endif
 	return 0;
 }
 
-void run_neural()
+void run_neural(int option)
 {
 	auto net = new NeuralNet();
 	
