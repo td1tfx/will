@@ -95,10 +95,10 @@ void NeuralNode::active()
 	activeOutputValue();
 }
 
-void NeuralNode::setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback)
+void NeuralNode::setFunctions(std::function<double(double)> _active, std::function<double(double)> _dactive)
 {
 	activeFunction = _active;
-	dactiveFunction = _feedback;
+	dactiveFunction = _dactive;
 }
 
 void NeuralNode::connect(NeuralNode* start, NeuralNode* end, double w /*= 0*/)

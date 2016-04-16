@@ -59,7 +59,7 @@ public:
 	std::function<double(double)> activeFunction = ActiveFunctions::sigmoid;
 	std::function<double(double)> dactiveFunction = ActiveFunctions::dsigmoid;
 
-	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _feedback);
+	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _dactive);
 
 	static void connect(NeuralNode* start, NeuralNode* end, double w = 0);
 	void connectStart(NeuralNode* node, double w = 0);
