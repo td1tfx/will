@@ -94,22 +94,31 @@ void NeuralNode::setFunctions(std::function<double(double)> _active, std::functi
 	dactiveFunction = _feedback;
 }
 
-void NeuralNode::connect(NeuralNode* node, double w /*= 0*/)
+void NeuralNode::connect(NeuralNode* start, NeuralNode* end, double w /*= 0*/)
 {
 	if (w == 0)
 	{
 		w = 1.0 * rand() / RAND_MAX - 0.5;
 	}
 	auto bond = new NeuralBond();
-	bond->startNode = node;
-	bond->endNode = this;
+	bond->startNode = start;
+	bond->endNode = end;
 	bond->weight = w;
 	//这里内部维护两组连接，其中前连接为主，后连接主要用于计算delta
 	//前连接
-	this->prevBonds[node] = bond;
+	end->prevBonds[start] = bond;
 	//后连接
-	node->nextBonds[this] = bond;
+	start->nextBonds[end] = bond;
+}
 
+void NeuralNode::connectStart(NeuralNode* node, double w /*= 0*/)
+{
+	connect(node, this, w);
+}
+
+void NeuralNode::connectEnd(NeuralNode* node, double w /*= 0*/)
+{
+	connect(this, node, w);
 }
 
 void NeuralNode::setWeight(NeuralNode* node, double w /*= 0*/)

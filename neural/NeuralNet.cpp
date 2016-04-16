@@ -133,6 +133,7 @@ void NeuralNet::test()
 	}
 	delete output_train;
 
+	if (testDataAmount <= 0) return;
 	auto output_test = new double[outputAmount*testDataAmount];
 	activeOutputValue(inputTestData, output_test, testDataAmount);
 	printf("\nTest data:\n---------------------------------------\n");
@@ -185,11 +186,10 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount /*= 
 
 
 //这里的处理可能不是很好
-void NeuralNet::readData(std::string& filename, double* input, double* output, int amount)
+void NeuralNet::readData(std::string filename, double* input /*=nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
 {
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
-	std::string str = readStringFromFile(filename);
-	str = str + "\n";
+	std::string str = readStringFromFile(filename) + "\n";
 	if (str == "")
 		return;
 	std::vector<double> v;
@@ -230,8 +230,41 @@ void NeuralNet::readData(std::string& filename, double* input, double* output, i
 	//dataGroupAmount = 3;
 }
 
+void NeuralNet::outputWeight()
+{
+	printf("\nNet information:\n", layers.size());
+	printf("%d\tlayers\n", layers.size());
+	for (int i = 0; i < layers.size(); i++)
+	{
+		printf("layer %d has %d nodes\n", i, layers[i]->getNodeAmount());
+	}
+	//printf("start\tend\tweight\n");
+	printf("---------------------------------------\n");
+	for (int i = 0; i < layers.size() - 1; i++)
+	{
+		auto& l1 = layers[i];
+		auto& l2 = layers[i + 1];
+		for (int j1 = 0; j1 < l1->getNodeAmount(); j1++)
+		{
+			auto& n1 = l1->getNode(j1);
+			for (int j2 = 0; j2 < l2->getNodeAmount(); j2++)
+			{
+				auto& n2 = l2->getNode(j2);
+				for (auto& b : n1->nextBonds)
+				{
+					auto& bond = b.second;
+					if (n1 == bond->startNode&&n2 == bond->endNode)
+					{
+						printf(" %d_%d\t%d_%d\t%14.11lf\n", i, j1, i + 1, j2, b.second->weight);
+					}
+				}
+			}
+		}
+	}
+}
+
 //此处是具体的网络结构
-void NeuralNet::setLayers(double learnSpeed, int layerAmount, bool haveConstNode)
+void NeuralNet::createByData(bool haveConstNode, int layerAmount)
 {
 	this->createLayers(layerAmount);
 	auto layer_input = layers.at(0);
@@ -253,7 +286,7 @@ void NeuralNet::setLayers(double learnSpeed, int layerAmount, bool haveConstNode
 	for (int i = 1; i <= layerAmount - 2; i++)
 	{
 		auto layer = layers[i];
-		layer->createNodes(50, dataAmount, Hidden);
+		layer->createNodes(7, dataAmount, Hidden);
 		for (auto node : layer->nodes)
 		{
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
@@ -267,40 +300,44 @@ void NeuralNet::setLayers(double learnSpeed, int layerAmount, bool haveConstNode
 	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
 }
 
-void NeuralNet::outputWeight()
+void NeuralNet::createByLoad(std::string filename, bool haveConstNode)
 {
-	printf("\nNet information:\n", layers.size());
-	printf("%d\tlayers\n", layers.size());
-	for (int i = 0; i < layers.size(); i++)
+	std::string str = readStringFromFile(filename) + "\n";
+	if (str == "")
+		return;
+	std::vector<double> v;
+	int n = findNumbers(str, v);
+	std::vector<int> v_int;
+	v_int.resize(n);
+	for (int i = 0; i < n; i++)
 	{
-		printf("layer %d has %d nodes\n", i, layers[i]->getNodeAmount());
+		v_int[i] = int(v[i]);
 	}
-	//printf("start\tend\tweight\n");
-	printf("---------------------------------------\n");
-	for (int i = 0; i < layers.size() - 1; i++)
+	int k = 0;
+	
+	this->createLayers(v_int[k++]);
+
+	for (int i = 0; i < getLayerAmount(); i++)
 	{
-		auto& l1 = layers[i];
-		auto& l2 = layers[i+1];
-		for (int j1 = 0; j1 < l1->getNodeAmount(); j1++)
+		NeuralNodeType t = Hidden;
+		if (i == 0) t = Input;
+		if (i == getLayerAmount() - 1) t = Output;
+		getLayer(v_int[k])->createNodes(v_int[k + 1], dataAmount, t);
+		for (auto node : getLayer(v_int[k])->nodes)
 		{
-			auto& n1 = l1->getNode(j1);
-			for (int j2 = 0; j2 < l2->getNodeAmount(); j2++)
-			{
-				auto& n2 = l2->getNode(j2);
-				for (auto& b : n1->nextBonds)
-				{
-					auto& bond = b.second;
-					if (n1==bond->startNode&&n2==bond->endNode)
-					{
-						printf(" %d_%d\t%d_%d\t%14.11lf\n", i, j1, i + 1, j2, b.second->weight);
-					}
-				}
-			}
+			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 		}
+		k += 2;
 	}
-}
-
-void NeuralNet::createByFile(std::string& filename)
-{
-
+	for (; k < n; k += 5)
+	{
+		NeuralNode::connect(getLayer(v_int[k])->getNode(v_int[k + 1]), getLayer(v_int[k + 2])->getNode(v_int[k + 3]), v[k + 4]);
+	}
+	if (haveConstNode)
+	{
+		auto layer = getFirstLayer();
+		layer->getNode(layer->getNodeAmount() - 1)->type = Const;
+	}
+	//inputAmount = getLayer(0)->getNodeAmount();
+	//outputAmount = getLayer(get)
 }
