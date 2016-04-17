@@ -40,7 +40,7 @@ public:
 	//数据
 	double* inputData = nullptr;
 	double* expectData = nullptr;
-	void readData(std::string filename, double* input =nullptr, double* output = nullptr, int amount = -1);
+	void readData(const std::string& filename, double* input =nullptr, double* output = nullptr, int amount = -1);
 
 	std::vector<bool> isTest;
 	double* inputTestData = nullptr;
@@ -52,7 +52,7 @@ public:
 	//具体设置
 	virtual void createByData(bool haveConstNode = true, int layerAmount = 3); //具体的网络均改写这里
 	void outputWeight(); //具体的网络均改写这里
-	void createByLoad(std::string filename, bool haveConstNode = true);
+	void createByLoad(const std::string& filename, bool haveConstNode = true);
 
 };
 

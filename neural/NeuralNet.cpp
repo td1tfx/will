@@ -179,7 +179,7 @@ void NeuralNet::train(int times, double tol)
 }
 
 //这里的处理可能不是很好
-void NeuralNet::readData(std::string filename, double* input /*=nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
+void NeuralNet::readData(const std::string& filename, double* input /*=nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
 {
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
 	std::string str = readStringFromFile(filename) + "\n";
@@ -291,7 +291,7 @@ void NeuralNet::createByData(bool haveConstNode, int layerAmount)
 	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
 }
 
-void NeuralNet::createByLoad(std::string filename, bool haveConstNode)
+void NeuralNet::createByLoad(const std::string& filename, bool haveConstNode /*= true*/)
 {
 	std::string str = readStringFromFile(filename) + "\n";
 	if (str == "")
