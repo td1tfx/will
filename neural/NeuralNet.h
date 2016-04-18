@@ -1,6 +1,7 @@
 #pragma once
 #include <stdio.h>
 #include <vector>
+#include <string.h>
 #include "NeuralLayer.h"
 #include "NeuralNode.h"
 #include "lib/libconvert.h"

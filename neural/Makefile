@@ -1,6 +1,6 @@
 CXX=g++
-CPPFLAGS=-I. -O2  -std=c++11
-SOURCES=$(wildcard *.cpp)
+CPPFLAGS=-I. -I./lib -O2  -std=c++11
+SOURCES=$(wildcard *.cpp) $(wildcard lib/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=neural
 
