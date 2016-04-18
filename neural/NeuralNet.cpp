@@ -122,10 +122,7 @@ void NeuralNet::test()
 //这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序，待完善后修改
 void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 {
-	for (auto& node : nodes)
-	{
-		node->actived = false;
-	}
+
 	
 	for (auto& node : getFirstLayer()->getNodeVector())
 	{
@@ -139,6 +136,7 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 
 	if (activeMode == ByLayer)
 	{
+		//分层反向传播
 		for (int i = 1; i < layers.size(); i++)
 		{
 			for (auto& node : layers[i]->getNodeVector())
@@ -149,6 +147,11 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 	}
 	else
 	{
+		//按照神经元逐步回溯
+		for (auto& node : nodes)
+		{
+			node->actived = false;
+		}
 		std::vector<NeuralNode*> calstack;
 		for (auto& node : getLastLayer()->getNodeVector())
 		{
@@ -158,16 +161,16 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 		while (calstack.size() > 0)
 		{
 			auto node = calstack.back();
-			bool all_prev_actived = true;
+			bool all_prev_finished = true;
 			for (auto& b : node->prevBonds)
 			{
 				if (b.second->startNode->actived == false)
 				{
-					all_prev_actived = false;
+					all_prev_finished = false;
 					calstack.push_back(b.second->startNode);
 				}
 			}
-			if (all_prev_actived)
+			if (all_prev_finished)
 			{
 				node->active();
 				calstack.pop_back();
@@ -175,13 +178,15 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 		}
 	}
 
-
-
-	for (auto& node : getLastLayer()->getNodeVector())
+	//在学习阶段可以不输出
+	if (output)
 	{
-		for (int i = 0; i < amount; i++)
+		for (auto& node : getLastLayer()->getNodeVector())
 		{
-			output[i*outputAmount + node->id] = node->getOutput(i);
+			for (int i = 0; i < amount; i++)
+			{
+				output[i*outputAmount + node->id] = node->getOutput(i);
+			}
 		}
 	}
 }
@@ -193,8 +198,7 @@ void NeuralNet::learn(double* input, double* output, int amount)
 	if (amount <= 0) return;
 	if (amount > nodeDataAmount) amount = nodeDataAmount;
 
-	auto output_real = new double[outputAmount*amount];
-	activeOutputValue(input, output_real, amount);
+	activeOutputValue(input, nullptr, amount);
 
 	//这里是输出层
 	//正规的方式应该是逐步回溯，这里处理的方法比较简单
@@ -208,16 +212,50 @@ void NeuralNet::learn(double* input, double* output, int amount)
 		}
 	}
 
-	//反向传播
-	for (int i_layer = layers.size() - 1; i_layer >= 0; i_layer--)
+	if (backPropageteMode == ByLayer)
 	{
-		auto layer = layers[i_layer];
-		for (auto& node : layer->getNodeVector())
+		//按层反向传播
+		for (int i_layer = layers.size() - 1; i_layer >= 0; i_layer--)
 		{
-			node->BackPropagation(learnSpeed);
+			auto layer = layers[i_layer];
+			for (auto& node : layer->getNodeVector())
+			{
+				node->backPropagate(learnSpeed);
+			}
 		}
 	}
-	delete output_real;
+	else
+	{
+		//回溯计算
+		for (auto& node : nodes)
+		{
+			node->backPropageted = false;
+		}
+		std::vector<NeuralNode*> calstack;
+		for (auto& node : getFirstLayer()->getNodeVector())
+		{
+			calstack.push_back(node);
+		}
+
+		while (calstack.size() > 0)
+		{
+			auto node = calstack.back();
+			bool all_next_finished = true;
+			for (auto& b : node->nextBonds)
+			{
+				if (b.second->endNode->backPropageted == false)
+				{
+					all_next_finished = false;
+					calstack.push_back(b.second->endNode);
+				}
+			}
+			if (all_next_finished)
+			{
+				node->backPropagate(learnSpeed);
+				calstack.pop_back();
+			}
+		}
+	}
 }
 
 //训练一批数据，输出步数和误差

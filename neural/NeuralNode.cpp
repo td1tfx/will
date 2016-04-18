@@ -32,12 +32,14 @@ void NeuralNode::setInput(double x, int i /*= -1*/)
 	if (i >= 0 && i < dataAmount)
 	{
 		this->inputValues[i] = x;
+		if (type == Input)
+			this->outputValues[i] = x;
 	}
+	if (type == Const) return;
 }
 
 void NeuralNode::setOutput(double x, int i /*= -1*/)
 {
-	actived = true;
 	if (type == Const) return;
 	//this->outputValue = x;
 	if (i >= 0 && i < dataAmount)
@@ -78,6 +80,7 @@ void NeuralNode::collectInputValue()
 //同上
 void NeuralNode::activeOutputValue()
 {
+	actived = true;
 	if (type == Const)
 	{
 		//outputValue = -1;
@@ -87,12 +90,12 @@ void NeuralNode::activeOutputValue()
 		}
 		return;
 	}
+	if (type == Input) return;
 	//outputValue = activeFunction(inputValue);
 	for (int i = 0; i < dataAmount; i++)
 	{
 		outputValues[i] = activeFunction(inputValues[i]);
 	}
-	actived = true;
 }
 
 void NeuralNode::active()
@@ -181,8 +184,9 @@ void NeuralNode::updateDelta()
 }
 
 //反向传播
-void NeuralNode::BackPropagation(double learnSpeed /*= 0.5*/)
+void NeuralNode::backPropagate(double learnSpeed /*= 0.5*/)
 {
+	backPropageted = true;
 	updateDelta();
 	for (auto b : prevBonds)
 	{

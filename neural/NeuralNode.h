@@ -83,9 +83,9 @@ public:
 	void setDataAmount(int n);
 	int getDataAmount() { return dataAmount; }
 	void updateDelta();
-	void BackPropagation(double learnSpeed = 0.5);
+	void backPropagate(double learnSpeed = 0.5);
 
-	bool actived, propageted;
+	bool actived, backPropageted;
 
 };
 
