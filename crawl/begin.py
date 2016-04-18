@@ -1,7 +1,5 @@
-# ------------------------------------ 
-# 
+# ------------------------------------  
 # xie dian sha ma ??????
-# 
 # ------------------------------------
 
 import urllib2
@@ -9,6 +7,7 @@ import urllib
 import re
 from bs4 import BeautifulSoup
 import HTMLParser
+import os
 
 # remove the html tags from the content
 def filter_tags(text):
@@ -42,7 +41,9 @@ def get_text(url):
         name = re.sub(r'\/', '', url)
         name = re.sub(r'http:', '', name)
         name = re.sub(r'https:', '', name)
-        urllib.urlretrieve(url, name) 
+        name = 'pdf/' + name
+        if not os.path.isfile(name):
+            urllib.urlretrieve(url, name) 
         text = pdf2txt.pdf2txt(name)
     else:
         response = urllib2.urlopen(url)
@@ -90,11 +91,11 @@ if __name__ == '__main__':
     # -------------------------
 
     for url in url_list:
-        #print url[len(url)-4:len(url)]
-        #try:
+        print url[len(url)-4:len(url)]
+        try:
             text = get_text(url)
-            print find_value(text,['dielectric constant']), url
-        #except:
+            print find_value(text,['dielectric constant']), ' from ', url
+        except:
             print 'something wrong!', url
         
 
