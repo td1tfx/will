@@ -95,7 +95,7 @@ void NeuralNet::test()
 	//输出全部数据
 	setNodeDataAmount(realDataAmount);
 	activeOutputValue(inputData, output_train, realDataAmount);
-	printf("\n%d groups train data comparing with expection:\n---------------------------------------\n", realDataAmount);
+	fprintf(stdout, "\n%d groups train data comparing with expection:\n---------------------------------------\n", realDataAmount);
 	for (int i = 0; i < realDataAmount; i++)
 	{
 		printf("%14.10lf\t%14.10lf\n", output_train[i], expectData[i]);
@@ -105,10 +105,10 @@ void NeuralNet::test()
 	if (testDataAmount <= 0) return;
 	auto output_test = new double[outputAmount*testDataAmount];
 	activeOutputValue(inputTestData, output_test, testDataAmount);
-	printf("\n%d groups test data:\n---------------------------------------\n", testDataAmount);
+	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", testDataAmount);
 	for (int i = 0; i < testDataAmount; i++)
 	{
-		printf("%14.10lf\t%14.10lf\n", output_test[i], expectTestData[i]);
+		fprintf(stdout, "%14.10lf\t%14.10lf\n", output_test[i], expectTestData[i]);
 		//for (int j = 0; j < inputNodeAmount; j++)
 		//	printf("%14.12lf\t", inputTestData[i*inputNodeAmount + j]);
 		//for (int j = 0; j < outputNodeAmount; j++)
@@ -306,7 +306,7 @@ void NeuralNet::train(int times, double tol)
 
 //读取数据
 //这里的处理可能不是很好
-void NeuralNet::readData(const std::string& filename, double* input /*=nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
+void NeuralNet::readData(const char* filename, double* input /*= nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
 {
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
 	std::string str = readStringFromFile(filename) + "\n";
@@ -351,16 +351,20 @@ void NeuralNet::readData(const std::string& filename, double* input /*=nullptr*/
 }
 
 //输出键结值
-void NeuralNet::outputBondWeight()
+void NeuralNet::outputBondWeight(const char* filename)
 {
-	printf("\nNet information:\n", layers.size());
-	printf("%d\tlayers\n", layers.size());
+	FILE *fout = stdout;
+	if (filename)
+		fout = fopen(filename, "w+t");
+
+	fprintf(fout,"\nNet information:\n", layers.size());
+	fprintf(fout,"%d\tlayers\n", layers.size());
 	for (int i_layer = 0; i_layer < layers.size(); i_layer++)
 	{
-		printf("layer %d has %d nodes\n", i_layer, layers[i_layer]->getNodeAmount());
+		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->getNodeAmount());
 	}
 	//printf("start\tend\tweight\n");
-	printf("---------------------------------------\n");
+	fprintf(fout,"---------------------------------------\n");
 	for (int i_layer = 0; i_layer < layers.size() - 1; i_layer++)
 	{
 		auto& layer1 = layers[i_layer];
@@ -374,12 +378,14 @@ void NeuralNet::outputBondWeight()
 					auto& bond = b.second;
 					if (node1 == bond->startNode && node2 == bond->endNode)
 					{
-						printf(" %d_%d\t%d_%d\t%14.11lf\n", i_layer, node1->id, i_layer + 1, node2->id, b.second->weight);
+						fprintf(fout, " %d_%d\t%d_%d\t%14.11lf\n", i_layer, node1->id, i_layer + 1, node2->id, b.second->weight);
 					}
 				}
 			}
 		}
 	}
+	if (filename)
+		fclose(fout);
 }
 
 //依据输入数据创建神经网
@@ -422,7 +428,7 @@ void NeuralNet::createByData(bool haveConstNode /*= true*/, int layerAmount /*= 
 }
 
 //依据键结值创建神经网
-void NeuralNet::createByLoad(const std::string& filename, bool haveConstNode /*= true*/)
+void NeuralNet::createByLoad(const char* filename, bool haveConstNode /*= true*/)
 {
 	std::string str = readStringFromFile(filename) + "\n";
 	if (str == "")
