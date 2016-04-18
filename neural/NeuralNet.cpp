@@ -390,15 +390,15 @@ void NeuralNet::outputBondWeight(const char* filename)
 
 //依据输入数据创建神经网
 //此处是具体的网络结构
-void NeuralNet::createByData(bool haveConstNode /*= true*/, int layerAmount /*= 3*/, int nodesPerLayer /*= 7*/)
+void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int layerAmount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
 	this->createLayers(layerAmount);
 	auto layer_input = layers.at(0);
 
-	if (haveConstNode)
-		layer_input->createNodes(inputAmount + 1, Input, true);
+	if (layerMode == HaveConstNode)
+		layer_input->createNodes(inputAmount + 1, Input, layerMode);
 	else
-		layer_input->createNodes(inputAmount, Input, false);
+		layer_input->createNodes(inputAmount, Input, layerMode);
 	auto layer_output = layers.back();
 	layer_output->createNodes(outputAmount, Output);
 

@@ -2,6 +2,13 @@
 #include <vector>
 #include "NeuralNode.h"
 
+typedef enum 
+{
+	HaveNotConstNode = 0,
+	HaveConstNode = 1,
+
+}NeuralLayerMode;
+
 //神经层
 //注意神经层实际上不是必须的
 class NeuralLayer
@@ -18,7 +25,7 @@ public:
 	NeuralNode*& getNode(int number) { return nodes[number]; }
 	int getNodeAmount() { return nodes.size(); };
 
-	void createNodes(int nodeAmount, NeuralNodeType type = Hidden, bool haveConstNode = false, int dataAmount = 0);
+	void createNodes(int nodeAmount, NeuralNodeType type = Hidden, NeuralLayerMode layerMode = HaveNotConstNode, int dataAmount = 0);
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);
