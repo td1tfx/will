@@ -15,6 +15,7 @@ NeuralLayer::~NeuralLayer()
 	}
 }
 
+//创建神经元
 void NeuralLayer::createNodes(int nodeAmount, NeuralNodeType type /*= Hidden*/, bool haveConstNode /*= false*/, int dataAmount /*= 0*/)
 {
 	//！！！注意实际上是多出了一个node，最后一个node的输出无论为何都恒定为1且不与前一层连接

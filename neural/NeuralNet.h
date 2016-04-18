@@ -1,13 +1,14 @@
 #pragma once
 #include <stdio.h>
 #include <vector>
+#include <stack>
 #include "NeuralLayer.h"
 #include "NeuralNode.h"
 #include "libconvert.h"
 
 
 //学习模式
-typedef enum NeuralNetLearnMode
+typedef enum 
 {
 	Online,
 	Batch,
@@ -15,6 +16,16 @@ typedef enum NeuralNetLearnMode
 	//通常情况下批量学习会考虑全局优先，应为首选
 	//在线学习每次都更新所有键结值，批量学习每一批数据更新一次键结值
 } NeuralNetLearnMode;
+
+//学习模式
+typedef enum 
+{
+	ByLayer,
+	ByNode,
+	//输入向量如果0的项较多，在线学习会比较快
+	//通常情况下批量学习会考虑全局优先，应为首选
+	//在线学习每次都更新所有键结值，批量学习每一批数据更新一次键结值
+} NeuralNetAciveMode;
 
 
 //神经网
@@ -71,10 +82,12 @@ public:
 
 	//具体设置
 	virtual void createByData(bool haveConstNode = true, int layerAmount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
-	void outputWeight(); //具体的网络均改写这里
+	void outputBondWeight(); //具体的网络均改写这里
 	void createByLoad(const std::string& filename, bool haveConstNode = true);
 
 	void setNodeDataAmount(int amount);
+
+	NeuralNetAciveMode activeMode = ByNode;
 
 };
 

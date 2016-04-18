@@ -2,6 +2,8 @@
 #include <vector>
 #include "NeuralNode.h"
 
+//神经层
+//注意神经层实际上不是必须的
 class NeuralLayer
 {
 public:
@@ -10,7 +12,7 @@ public:
 
 	int id;
 
-	std::vector<NeuralNode*> nodes;
+	std::vector<NeuralNode*> nodes;  //保存神经元
 	std::vector<NeuralNode*>& getNodeVector() { return nodes; }
 
 	NeuralNode*& getNode(int number) { return nodes[number]; }

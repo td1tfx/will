@@ -19,6 +19,7 @@ NeuralNet::~NeuralNet()
 	if (expectTestData) delete expectTestData;
 }
 
+//保存所有节点到一个vector里面
 void NeuralNet::initNodes()
 {
 	for (auto& layer : this->getLayerVector())
@@ -30,11 +31,13 @@ void NeuralNet::initNodes()
 	}
 }
 
+//设置学习模式
 void NeuralNet::setLearnMode(NeuralNetLearnMode lm)
 {
 	learnMode = lm;
 }
 
+//创建神经层
 void NeuralNet::createLayers(int amount)
 {
 	layers.resize(amount);
@@ -83,6 +86,7 @@ void NeuralNet::selectTest()
 	realDataAmount -= testDataAmount;
 }
 
+//输出拟合的结果和测试集的结果
 void NeuralNet::test()
 {
 
@@ -118,6 +122,11 @@ void NeuralNet::test()
 //这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序，待完善后修改
 void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 {
+	for (auto& node : nodes)
+	{
+		node->actived = false;
+	}
+	
 	for (auto& node : getFirstLayer()->getNodeVector())
 	{
 		for (int i = 0; i < amount; i++)
@@ -127,13 +136,46 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 		}
 	}
 
-	for (int i = 1; i < layers.size(); i++)
+
+	if (activeMode == ByLayer)
 	{
-		for (auto& node : layers[i]->getNodeVector())
+		for (int i = 1; i < layers.size(); i++)
 		{
-			node->active();			
+			for (auto& node : layers[i]->getNodeVector())
+			{
+				node->active();
+			}
 		}
 	}
+	else
+	{
+		std::vector<NeuralNode*> calstack;
+		for (auto& node : getLastLayer()->getNodeVector())
+		{
+			calstack.push_back(node);
+		}
+
+		while (calstack.size() > 0)
+		{
+			auto node = calstack.back();
+			bool all_prev_actived = true;
+			for (auto& b : node->prevBonds)
+			{
+				if (b.second->startNode->actived == false)
+				{
+					all_prev_actived = false;
+					calstack.push_back(b.second->startNode);
+				}
+			}
+			if (all_prev_actived)
+			{
+				node->active();
+				calstack.pop_back();
+			}
+		}
+	}
+
+
 
 	for (auto& node : getLastLayer()->getNodeVector())
 	{
@@ -178,6 +220,7 @@ void NeuralNet::learn(double* input, double* output, int amount)
 	delete output_real;
 }
 
+//训练一批数据，输出步数和误差
 void NeuralNet::train(int times, double tol)
 {
 	int a = realDataAmount;
@@ -223,6 +266,7 @@ void NeuralNet::train(int times, double tol)
 	delete output;
 }
 
+//读取数据
 //这里的处理可能不是很好
 void NeuralNet::readData(const std::string& filename, double* input /*=nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
 {
@@ -268,7 +312,8 @@ void NeuralNet::readData(const std::string& filename, double* input /*=nullptr*/
 	//dataGroupAmount = 3;
 }
 
-void NeuralNet::outputWeight()
+//输出键结值
+void NeuralNet::outputBondWeight()
 {
 	printf("\nNet information:\n", layers.size());
 	printf("%d\tlayers\n", layers.size());
@@ -299,6 +344,7 @@ void NeuralNet::outputWeight()
 	}
 }
 
+//依据输入数据创建神经网
 //此处是具体的网络结构
 void NeuralNet::createByData(bool haveConstNode /*= true*/, int layerAmount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
@@ -334,8 +380,10 @@ void NeuralNet::createByData(bool haveConstNode /*= true*/, int layerAmount /*= 
 		layers[i]->connetPrevlayer(layers[i - 1]);
 	}
 	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
+	initNodes();
 }
 
+//依据键结值创建神经网
 void NeuralNet::createByLoad(const std::string& filename, bool haveConstNode /*= true*/)
 {
 	std::string str = readStringFromFile(filename) + "\n";
@@ -374,10 +422,12 @@ void NeuralNet::createByLoad(const std::string& filename, bool haveConstNode /*=
 		auto layer = getFirstLayer();
 		layer->getNode(layer->getNodeAmount() - 1)->type = Const;
 	}
+	initNodes();
 	//inputAmount = getLayer(0)->getNodeAmount();
 	//outputAmount = getLayer(get)
 }
 
+//设置每个节点的数据量
 void NeuralNet::setNodeDataAmount(int amount)
 {
 	nodeDataAmount = amount;

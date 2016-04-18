@@ -37,6 +37,7 @@ void NeuralNode::setInput(double x, int i /*= -1*/)
 
 void NeuralNode::setOutput(double x, int i /*= -1*/)
 {
+	actived = true;
 	if (type == Const) return;
 	//this->outputValue = x;
 	if (i >= 0 && i < dataAmount)
@@ -91,6 +92,7 @@ void NeuralNode::activeOutputValue()
 	{
 		outputValues[i] = activeFunction(inputValues[i]);
 	}
+	actived = true;
 }
 
 void NeuralNode::active()
@@ -154,6 +156,7 @@ void NeuralNode::updateOneDelta()
 	*/
 }
 
+
 void NeuralNode::updateDelta()
 {
 	//this->updateOneDelta();
@@ -177,6 +180,7 @@ void NeuralNode::updateDelta()
 	}
 }
 
+//·´Ïò´«²¥
 void NeuralNode::BackPropagation(double learnSpeed /*= 0.5*/)
 {
 	updateDelta();

@@ -5,7 +5,7 @@
 #include <string>
 #include "ActiveFunctions.h"
 
-
+//键
 class NeuralBond
 {
 public:
@@ -18,15 +18,16 @@ public:
 };
 
 
-//类型，隐藏，输入，输出
-typedef enum NeuralNodeType {
+//神经元的类型，包含隐藏，输入，输出
+typedef enum 
+{
 	Hidden,
 	Input,
 	Output,
 	Const,
 } NeuralNodeType;
 
-//节点
+//神经元，神经节点
 class NeuralNode
 {
 public:
@@ -46,6 +47,14 @@ public:
 	//double outputValue;
 	//double inputValue;
 	//double expect;
+	
+	//多组数据
+	//没有下标安全检查，使用需慎重！
+	static int dataAmount;
+	std::vector<double> outputValues;
+	std::vector<double> inputValues;
+	std::vector<double> expects;
+	std::vector<double> deltas;
 
 	void setExpect(double x, int i = -1);  //设置期待值，一般仅用于输出节点
 	void setInput(double x, int i = -1);   //设置输入值，可以用于常数节点
@@ -67,15 +76,7 @@ public:
 	void connectEnd(NeuralNode* node, double w = 0);
 
 	//double delta;
-	void updateOneDelta();
-
-	//多组数据
-	//没有下标安全检查，使用需慎重！
-	static int dataAmount;
-	std::vector<double> outputValues;
-	std::vector<double> inputValues;
-	std::vector<double> expects;
-	std::vector<double> deltas;
+	void updateOneDelta();  //无用
 
 	void setVectorValue(std::vector<double>& vec, double x = -1) { for (auto& v : vec) v = x; }
 
@@ -84,7 +85,7 @@ public:
 	void updateDelta();
 	void BackPropagation(double learnSpeed = 0.5);
 
-	bool calculated, propageted;
+	bool actived, propageted;
 
 };
 

@@ -33,7 +33,7 @@ void run_neural(int option)
 	net->selectTest();
 	net->train(int(1e7), 1e-4);
 	net->test();
-	net->outputWeight();
+	net->outputBondWeight();
 
 	delete net;
 
