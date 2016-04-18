@@ -1,6 +1,8 @@
 #include "NeuralNode.h"
 #include <cstdlib>
 
+int NeuralNode::dataAmount = 0;
+
 NeuralNode::NeuralNode()
 {
 	dataAmount = 0;
@@ -47,7 +49,7 @@ double NeuralNode::getOutput(int i /*= -1*/)
 {
 	//if (i < 0) return outputValue;
 	//else 
-		return outputValues[i];
+	return outputValues[i];
 }
 
 //这里将多数据的情况写在了一起，可能需要调整
@@ -130,20 +132,6 @@ void NeuralNode::connectEnd(NeuralNode* node, double w /*= 0*/)
 	connect(this, node, w);
 }
 
-void NeuralNode::setWeight(NeuralNode* node, double w /*= 0*/)
-{
-	//if (bonds.find(node) == nullptr)
-	{
-		prevBonds[node]->weight = w;
-	}
-}
-
-void NeuralNode::updateWeight(NeuralNode* startNode, NeuralNode* endNode, double learnSpeed, double delta)
-{
-	//double& w = endNode->prevBonds[startNode]->weight;
-	//w += learnSpeed*delta*endNode->outputValue;
-	//startNode->nextBonds[endNode]->weight = w;
-}
 
 void NeuralNode::updateOneDelta()
 {
@@ -182,7 +170,7 @@ void NeuralNode::updateDelta()
 			{
 				auto& bond = b.second;
 				auto& node = bond->endNode;
-				deltas[i] += node->deltas[i] *bond->weight;
+				deltas[i] += node->deltas[i] * bond->weight;
 			}
 			deltas[i] *= dactiveFunction(inputValues[i]);
 		}
@@ -211,24 +199,14 @@ void NeuralNode::setDataAmount(int n)
 
 void NeuralBond::updateWeight(double learnSpeed)
 {
-	auto startNode = this->startNode, endNode = this->endNode;
-	double& w = endNode->prevBonds[startNode]->weight;
+	auto& w = endNode->prevBonds[startNode]->weight;
 	int n = startNode->dataAmount;
-	/*if (startNode->learnMode == Online)
+
+	double delta_w = 0;
+	for (int i = 0; i < n; i++)
 	{
-		auto& delta = endNode->delta;
-		w += learnSpeed*delta*startNode->outputValue;
+		delta_w += learnSpeed*endNode->deltas[i] * startNode->outputValues[i];
 	}
-	else*/
-	{
-		double delta_w = 0;
-		auto& deltas = endNode->deltas;
-		for (int i = 0; i < n; i++)
-		{
-			delta_w += learnSpeed*deltas[i]*startNode->outputValues[i];
-		}
-		delta_w /= n;
-		w += delta_w;
-	}
-	//startNode->nextBonds[endNode]->weight = w;
+	delta_w /= n;
+	w += delta_w;
 }

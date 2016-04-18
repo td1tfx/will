@@ -24,12 +24,12 @@ void run_neural(int option)
 
 	net->readData("data.txt");
 	if (option == 0)
-		net->createByData();
+		net->createByData(true, 3, 7);
 	else
 		net->createByLoad("save2.txt");
 
 	net->setLearnSpeed(0.5);
-	net->setLearnMode(Online);
+	net->setLearnMode(NeuralNetLearnMode::Online);
 	net->selectTest();
 	net->train(int(1e7), 1e-4);
 	net->test();

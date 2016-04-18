@@ -11,9 +11,9 @@ public:
 	int id;
 
 	std::vector<NeuralNode*> nodes;
-	std::vector<NeuralNode*>& getNodes() { return nodes; }
+	std::vector<NeuralNode*>& getNodeVector() { return nodes; }
 
-	NeuralNode*& getNode(int number) { return (nodes.at(number)); }
+	NeuralNode*& getNode(int number) { return nodes[number]; }
 	int getNodeAmount() { return nodes.size(); };
 
 	void createNodes(int nodeAmount, NeuralNodeType type = Hidden, bool haveConstNode = false, int dataAmount = 0);

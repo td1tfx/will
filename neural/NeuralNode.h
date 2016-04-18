@@ -5,7 +5,7 @@
 #include <string>
 #include "ActiveFunctions.h"
 
-//键连接类
+
 class NeuralBond
 {
 public:
@@ -17,6 +17,7 @@ public:
 	void updateWeight(double learnSpeed);
 };
 
+
 //类型，隐藏，输入，输出
 typedef enum NeuralNodeType {
 	Hidden,
@@ -24,7 +25,6 @@ typedef enum NeuralNodeType {
 	Output,
 	Const,
 } NeuralNodeType;
-
 
 //节点
 class NeuralNode
@@ -66,16 +66,12 @@ public:
 	void connectStart(NeuralNode* node, double w = 0);
 	void connectEnd(NeuralNode* node, double w = 0);
 
-	void setWeight(NeuralNode* node, double w = 0);
-
-	void updateWeight(NeuralNode* startNode, NeuralNode* endNode, double learnSpeed, double delta);
-
 	//double delta;
 	void updateOneDelta();
 
 	//多组数据
 	//没有下标安全检查，使用需慎重！
-	int dataAmount = 0;
+	static int dataAmount;
 	std::vector<double> outputValues;
 	std::vector<double> inputValues;
 	std::vector<double> expects;
@@ -88,8 +84,7 @@ public:
 	void updateDelta();
 	void BackPropagation(double learnSpeed = 0.5);
 
-	//LearnMode learnMode = Batch;
-	//void setLearnMode(LearnMode lm) { learnMode = lm; }
+	bool calculated, propageted;
 
 };
 
