@@ -22,8 +22,7 @@ def find_value(text, key):
     return value
 
 #url='http://www.iiss.sanu.ac.rs/download/vol40_3/vol40_3_02.pdf'
-#urllib.urlretrieve(url, 'www.iiss.sanu.ac.rsdownloadvol40_3vol40_3_02.pdf') 
-text = pdf2txt.pdf2txt('www.iiss.sanu.ac.rsdownloadvol40_3vol40_3_02.pdf')
+text = pdf2txt.pdf2txt('pdf/asianjournalofchemistry21102009.weebly.comuploads29712971446026-s117-s124.pdf')
 print text
 print find_value(text,['dielectric constant'])
 

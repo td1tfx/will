@@ -1,5 +1,5 @@
 # ------------------------------------  
-# xie dian sha ma ??????
+# xie dian sha ma 
 # ------------------------------------
 
 import urllib2
@@ -8,6 +8,7 @@ import re
 from bs4 import BeautifulSoup
 import HTMLParser
 import os
+import pdf2txt
 
 # remove the html tags from the content
 def filter_tags(text):
@@ -91,12 +92,13 @@ if __name__ == '__main__':
     # -------------------------
 
     for url in url_list:
-        print url[len(url)-4:len(url)]
+        #print url[len(url)-4:len(url)]
         try:
             text = get_text(url)
             print find_value(text,['dielectric constant']), ' from ', url
         except:
             print 'something wrong!', url
+    print 'End.'
         
 
 

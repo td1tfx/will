@@ -8,3 +8,4 @@
 *.enc
 *.iobj
 *.ipdb
+*/.vscode/*
