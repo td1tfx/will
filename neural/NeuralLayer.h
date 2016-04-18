@@ -16,7 +16,7 @@ public:
 	NeuralNode*& getNode(int number) { return (nodes.at(number)); }
 	int getNodeAmount() { return nodes.size(); };
 
-	void createNodes(int nodeAmount, int dataAmount = 0, NeuralNodeType type = Hidden, bool haveConstNode = false);
+	void createNodes(int nodeAmount, NeuralNodeType type = Hidden, bool haveConstNode = false, int dataAmount = 0);
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);

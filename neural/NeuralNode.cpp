@@ -17,7 +17,7 @@ NeuralNode::~NeuralNode()
 
 void NeuralNode::setExpect(double x, int i /*= -1*/)
 {
-	this->expect = x;
+	//this->expect = x;
 	if (i >= 0 && i < dataAmount)
 	{
 		this->expects[i] = x;
@@ -26,7 +26,7 @@ void NeuralNode::setExpect(double x, int i /*= -1*/)
 
 void NeuralNode::setInput(double x, int i /*= -1*/)
 {
-	this->inputValue = x;
+	//this->inputValue = x;
 	if (i >= 0 && i < dataAmount)
 	{
 		this->inputValues[i] = x;
@@ -36,7 +36,7 @@ void NeuralNode::setInput(double x, int i /*= -1*/)
 void NeuralNode::setOutput(double x, int i /*= -1*/)
 {
 	if (type == Const) return;
-	this->outputValue = x;
+	//this->outputValue = x;
 	if (i >= 0 && i < dataAmount)
 	{
 		this->outputValues[i] = x;
@@ -45,14 +45,15 @@ void NeuralNode::setOutput(double x, int i /*= -1*/)
 
 double NeuralNode::getOutput(int i /*= -1*/)
 {
-	if (i < 0) return outputValue;
-	else return outputValues[i];
+	//if (i < 0) return outputValue;
+	//else 
+		return outputValues[i];
 }
 
 //这里将多数据的情况写在了一起，可能需要调整
 void NeuralNode::collectInputValue()
 {
-	inputValue = 0;
+	//inputValue = 0;
 	for (int i = 0; i < dataAmount; i++)
 	{
 		inputValues[i] = 0;
@@ -61,7 +62,7 @@ void NeuralNode::collectInputValue()
 		return;
 	for (auto &b : prevBonds)
 	{
-		inputValue += b.second->startNode->outputValue * b.second->weight;
+		//inputValue += b.second->startNode->outputValue * b.second->weight;
 		for (int i = 0; i < dataAmount; i++)
 		{
 			inputValues[i] += b.second->startNode->outputValues[i] * b.second->weight;
@@ -76,13 +77,14 @@ void NeuralNode::activeOutputValue()
 {
 	if (type == Const)
 	{
+		//outputValue = -1;
 		for (int i = 0; i < dataAmount; i++)
 		{
 			outputValues[i] = -1;
 		}
 		return;
 	}
-	outputValue = activeFunction(inputValue);
+	//outputValue = activeFunction(inputValue);
 	for (int i = 0; i < dataAmount; i++)
 	{
 		outputValues[i] = activeFunction(inputValues[i]);
@@ -138,13 +140,14 @@ void NeuralNode::setWeight(NeuralNode* node, double w /*= 0*/)
 
 void NeuralNode::updateWeight(NeuralNode* startNode, NeuralNode* endNode, double learnSpeed, double delta)
 {
-	double& w = endNode->prevBonds[startNode]->weight;
-	w += learnSpeed*delta*endNode->outputValue;
+	//double& w = endNode->prevBonds[startNode]->weight;
+	//w += learnSpeed*delta*endNode->outputValue;
 	//startNode->nextBonds[endNode]->weight = w;
 }
 
 void NeuralNode::updateOneDelta()
 {
+	/*
 	delta = 0;
 	if (this->type == Output)
 	{
@@ -160,11 +163,12 @@ void NeuralNode::updateOneDelta()
 		}
 		delta = delta*dactiveFunction(inputValue);
 	}
+	*/
 }
 
 void NeuralNode::updateDelta()
 {
-	this->updateOneDelta();
+	//this->updateOneDelta();
 	for (int i = 0; i < dataAmount; i++)
 	{
 		deltas[i] = 0;
@@ -195,7 +199,7 @@ void NeuralNode::BackPropagation(double learnSpeed /*= 0.5*/)
 	}
 }
 
-void NeuralNode::setDataGroupAmount(int n)
+void NeuralNode::setDataAmount(int n)
 {
 	dataAmount = n;
 	inputValues.resize(n);
@@ -203,7 +207,6 @@ void NeuralNode::setDataGroupAmount(int n)
 	expects.resize(n);
 	deltas.resize(n);
 	setVectorValue(outputValues);
-
 }
 
 void NeuralBond::updateWeight(double learnSpeed)
@@ -211,12 +214,12 @@ void NeuralBond::updateWeight(double learnSpeed)
 	auto startNode = this->startNode, endNode = this->endNode;
 	double& w = endNode->prevBonds[startNode]->weight;
 	int n = startNode->dataAmount;
-	if (n <= 0)
+	/*if (startNode->learnMode == Online)
 	{
 		auto& delta = endNode->delta;
 		w += learnSpeed*delta*startNode->outputValue;
 	}
-	else
+	else*/
 	{
 		double delta_w = 0;
 		auto& deltas = endNode->deltas;

@@ -25,6 +25,7 @@ typedef enum NeuralNodeType {
 	Const,
 } NeuralNodeType;
 
+
 //节点
 class NeuralNode
 {
@@ -42,9 +43,9 @@ public:
 	NeuralBond*& getPrevBond(NeuralNode* node) { return prevBonds[node]; };
 	NeuralBond*& getNextBond(NeuralNode* node) { return nextBonds[node]; };  
 
-	double outputValue;
-	double inputValue;
-	double expect;
+	//double outputValue;
+	//double inputValue;
+	//double expect;
 
 	void setExpect(double x, int i = -1);  //设置期待值，一般仅用于输出节点
 	void setInput(double x, int i = -1);   //设置输入值，可以用于常数节点
@@ -69,7 +70,7 @@ public:
 
 	void updateWeight(NeuralNode* startNode, NeuralNode* endNode, double learnSpeed, double delta);
 
-	double delta;
+	//double delta;
 	void updateOneDelta();
 
 	//多组数据
@@ -82,9 +83,13 @@ public:
 
 	void setVectorValue(std::vector<double>& vec, double x = -1) { for (auto& v : vec) v = x; }
 
-	void setDataGroupAmount(int n);
+	void setDataAmount(int n);
+	int getDataAmount() { return dataAmount; }
 	void updateDelta();
 	void BackPropagation(double learnSpeed = 0.5);
+
+	//LearnMode learnMode = Batch;
+	//void setLearnMode(LearnMode lm) { learnMode = lm; }
 
 };
 

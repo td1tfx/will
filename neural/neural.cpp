@@ -4,7 +4,7 @@ void run_neural(int option = 0);
 
 int main(int argc, char* argv[])
 {
-	int option = 1;
+	int option = 0;
 	if (argc > 1)
 	{
 		int option = atoi(argv[1]);
@@ -22,15 +22,16 @@ void run_neural(int option)
 {
 	auto net = new NeuralNet();
 
-	net->readData("data2.txt");
+	net->readData("data.txt");
 	if (option == 0)
 		net->createByData();
 	else
 		net->createByLoad("save2.txt");
 
 	net->setLearnSpeed(0.5);
-	//net->selectTest();
-	net->train(int(2e5), 1e-3);
+	net->setLearnMode(Online);
+	net->selectTest();
+	net->train(int(1e7), 1e-4);
 	net->test();
 	net->outputWeight();
 
