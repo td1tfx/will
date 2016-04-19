@@ -87,23 +87,25 @@ def get_url_list(root_url):
 
 if __name__ == '__main__':
     # use bing to search the content
-    root_url = 'http://www.bing.com/search?q=barium+titanate+dielectric+constant'
 
-    url_list = get_url_list(root_url)
+    for first in range(1, 101, 10):
+        root_url = 'http://www.bing.com/search?q=barium+titanate+dielectric+constant&first=' + str(first)
 
-    # test code
-    #url = 'http://onlinelibrary.wiley.com/doi/10.1111/j.1551-2916.2008.02693.x/abstract'
-    #del alist[0]
-    #text = get_text(url)
-    # print text
-    # print find_value(text,['dielectric constant']), url
-    # -------------------------
+        url_list = get_url_list(root_url)
 
-    for url in url_list:
-        # print url[len(url)-4:len(url)]
-        try:
-            text = get_text(url)
-            print find_value(text, ['dielectric constant']), ' from ', url
-        except:
-            print 'something wrong! from', url
+        # test code
+        #url = 'http://onlinelibrary.wiley.com/doi/10.1111/j.1551-2916.2008.02693.x/abstract'
+        #del alist[0]
+        #text = get_text(url)
+        # print text
+        # print find_value(text,['dielectric constant']), url
+        # -------------------------
+
+        for url in url_list:
+            # print url[len(url)-4:len(url)]
+            try:
+                text = get_text(url)
+                print find_value(text, ['dielectric constant']), ' from ', url
+            except:
+                print 'something wrong! from', url
     print 'End.'
