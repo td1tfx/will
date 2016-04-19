@@ -17,6 +17,7 @@ def filter_tags(text):
     text = re.sub(r'</?\w+[^>]*>', '', text)
     text = re.sub(r'<\![^>]*>', '', text)
     text = re.sub(r'[^\x00-\x7f]', '', text)
+    text = re.sub(r'[\(\)\[\]\{\}]', ' ', text)
     return text
 
 
@@ -29,13 +30,14 @@ def find_value(text, key):
         if words[k].lower() == 'dielectric' and words[k + 1].lower(
         ) == 'constant':
             words_sub = words[k:k + 10]
-            # print words_sub
+            #print words_sub
             for word in words_sub:
                 if re.match('[0-9,.~]+', word):
                     word = re.sub(r'[,;~]', '', word)
                     try:
                         one_value = float(word)
                         value.append(one_value)
+                        break
                     except:
                         one_value = 0
     return value
@@ -80,14 +82,13 @@ def get_url_list(root_url):
             h = i.attrs['href']
             if h.find('http') == 0 and h.find(t1) < 0 and h.find(t2) < 0:
                 url_list.append(h)
-                print h
+                # print h
     return url_list
 
 # Main Program -----------------
 
 if __name__ == '__main__':
     # use bing to search the content
-
     for first in range(1, 101, 10):
         root_url = 'http://www.bing.com/search?q=barium+titanate+dielectric+constant&first=' + str(first)
 
