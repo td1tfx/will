@@ -23,23 +23,28 @@ def filter_tags(text):
 
 # find the values in the content
 def find_value(text, key):
+    words = text.lower().split()
     value = []
-    keys = key[0].split()
-    words = text.split()
-    for k in range(len(words)):
-        if words[k].lower() == 'dielectric' and words[k + 1].lower(
-        ) == 'constant':
-            words_sub = words[k:k + 10]
-            #print words_sub
-            for word in words_sub:
-                if re.match('[0-9,.~]+', word):
-                    word = re.sub(r'[,;~]', '', word)
-                    try:
-                        one_value = float(word)
-                        value.append(one_value)
-                        break
-                    except:
-                        one_value = 0
+    for onekey in key:
+        keys = onekey.split()
+        for i_word in range(len(words)):
+            finded = True
+            for i_key in range(len(keys)):
+                if words[i_word + i_key] != keys[i_key]:
+                    finded = False
+                    break
+            if finded:
+                words_sub = words[i_word:i_word +10]
+                # print words_sub
+                for word in words_sub:
+                    if re.match('[0-9,.~]+', word):
+                        word = re.sub(r'[,;~]', '', word)
+                        try:
+                            one_value = float(word)
+                            value.append(one_value)
+                            break
+                        except:
+                            one_value = 0
     return value
 
 
@@ -91,22 +96,13 @@ if __name__ == '__main__':
     # use bing to search the content
     for first in range(1, 101, 10):
         root_url = 'http://www.bing.com/search?q=barium+titanate+dielectric+constant&first=' + str(first)
-
         url_list = get_url_list(root_url)
-
-        # test code
-        #url = 'http://onlinelibrary.wiley.com/doi/10.1111/j.1551-2916.2008.02693.x/abstract'
-        #del alist[0]
-        #text = get_text(url)
-        # print text
-        # print find_value(text,['dielectric constant']), url
-        # -------------------------
 
         for url in url_list:
             # print url[len(url)-4:len(url)]
             try:
                 text = get_text(url)
-                print find_value(text, ['dielectric constant']), ' from ', url
+                print find_value(text, ['dielectric constant', 'permitivity']), ' from ', url
             except:
                 print 'something wrong! from', url
     print 'End.'
