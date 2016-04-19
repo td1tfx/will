@@ -1,0 +1,116 @@
+[7000.0]  from  https://en.wikipedia.org/wiki/Barium_titanate
+[3.0, 2.0, 15.0, 5.0]  from  http://rimstar.org/materials/dielectrics/barium_titanate_capacitor_batio3.htm
+[4500.0, 2000.0, 7000.0, 16.0, 4.0, 239.0]  from  http://www.doiserbia.nb.rs/img/doi/0350-820X/2008/0350-820X0803235V.pdf
+something wrong! from http://www.sciencedirect.com/science/article/pii/S0167931707003152
+[]  from  http://www.banglajol.info/index.php/JBAS/article/viewFile/2434/2169
+[]  from  http://www.tf.uns.ac.rs/publikacije/PAC/pdf/PAC%2009%2010.pdf
+[80.1, 1.89, 7.0]  from  https://en.wikipedia.org/wiki/Relative_static_permittivity
+[]  from  http://www.conductivecompounds.com/pdf/bt-101-el-dielectric.pdf
+[21.0]  from  http://asianjournalofchemistry21102009.weebly.com/uploads/2/9/7/1/2971446/026-s117-s124.pdf
+[6.4]  from  http://www.ajer.org/papers/v2(8)/A0280107.pdf
+WARNING:root:Some characters could not be decoded, and were replaced with REPLACEMENT CHARACTER.
+[]  from  http://iopscience.iop.org/article/10.1088/0508-3443/18/12/303/pdf
+[]  from  http://www.conductivecompounds.com/pdf/bt-101-el-dielectric.pdf
+[]  from  http://www.banglajol.info/index.php/JBAS/article/viewFile/2434/2169
+[500.0, 3000.0]  from  http://onlinelibrary.wiley.com/doi/10.1111/j.1551-2916.2008.02693.x/abstract
+[]  from  http://link.springer.com/content/pdf/10.1007/bf00720188.pdf
+[]  from  https://www.researchgate.net/publication/237612331_Structure_and_Dielectric_Properties_of_Perovskite_Barium_Titanate_BaTiO3
+[1.0, 1.0]  from  http://ira.lib.polyu.edu.hk/bitstream/10397/461/1/barium-titanate_04.pdf
+[80.1, 1.89, 7.0]  from  https://en.wikipedia.org/wiki/Relative_static_permittivity
+[]  from  http://www.worldscientific.com/doi/pdf/10.1142/S2010194513009859
+something wrong! from http://www.google.com/patents/US2803553
+[1500.0]  from  http://www.doiserbia.nb.rs/img/doi/0350-820X/2008/0350-820X0802155V.pdf
+[1.0, 211.0, 110.0]  from  http://mse2.kaist.ac.kr/~ncrl/pub/2016_Ceramics international 42 7141.pdf
+[3.0, 35.0, 3.0, 12.0, 13.0, 29.0, 9.2, 50.0, 14.0]  from  http://www.expresspolymlett.com/articles/EPL-0002119_article.pdf
+[1000.0, 10000.0]  from  http://www.tplinc.com/Titanate_Powders.html
+[12.0, 4.0, 20.0, 8.0, 4.0, 13.7, 12.0, 19.0, 60.0]  from  http://homepages.rpi.edu/~nelsoj/CEIDP_2011.pdf
+[]  from  http://www.sestechno.com/pro1/2p.pdf
+[6200.0]  from  http://www.nanoshel.com/product/barium-titanate-powders/
+[]  from  http://adsabs.harvard.edu/abs/1947PhRv...71..890R
+[]  from  http://www.aensiweb.com/old/jasr/jasr/2006/1319-1322.pdf
+[]  from  https://scholarship.rice.edu/handle/1911/18193
+[154.0, 7.0]  from  http://www.globalspec.com/industrial-directory/dielectric_constant_batio3
+[]  from  http://www.globalspec.com/productfinder
+[15.0, 1.0, 6.0]  from  http://rimstar.org/materials/dielectrics/barium_titanate_capacitor_epoxy_100415.htm
+[]  from  http://www.ncbi.nlm.nih.gov/pubmed/22008305
+something wrong! from http://www.nsti.org/publications/Nanotech/2008/pdf/174.pdf
+[1.0, 2.0, 6400.0]  from  http://www.iiserkol.ac.in/~ph324/ExptManuals/DielectricConstant.pdf
+[52.0, 123.0, 194.0, 123.0]  from  http://www.researchgate.net/profile/Nirav_Joshi/publication/253735258_Temperature_dependence_dielectric_properties_of_modified_barium_titanate-PVB_composites/links/00463537818e5a046c000000.pdf
+[500.0, 3000.0, 1002000.0, 3.0, 1.0, 2.0, 10.0, 1.0, 2.0, 10.0, 500.0]  from  http://onlinelibrary.wiley.com/doi/10.1111/j.1551-2916.2008.02693.x/full
+[1000.0]  from  http://www.azom.com/article.aspx?ArticleID=8507
+[]  from  http://pubs.rsc.org/en/content/articlelanding/2014/ra/c4ra08694e#!
+[]  from  http://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=616616
+[]  from  http://ieeexplore.ieee.org/xpl/mostRecentIssue.jsp?punumber=4866
+[25.0, 4100.0, 25.0]  from  http://www.scielo.br/pdf/ce/v51n319/26794.pdf
+[5.0, 16.0, 5.0, 1.0, 5.0, 48.0]  from  http://www.imt.ro/romjist/Volum10/Number10_4/pdf/04-Miclea.pdf
+[1000.0]  from  http://www.azom.com/article.aspx?ArticleID=8507
+[]  from  http://iopscience.iop.org/article/10.1143/JJAP.51.041503/pdf
+[1969.0, 3.0]  from  http://scitation.aip.org/content/aip/journal/jap/40/2/10.1063/1.1657443
+[1000.0]  from  http://www.tplinc.com/Barium_Titanate.html
+something wrong! from http://pdf.easechem.com/pdf/14/v35n1a05.pdf
+[]  from  http://link.springer.com/content/pdf/10.1007%2FBF02748828.pdf
+[]  from  https://calhoun.nps.edu/handle/10945/46911
+[]  from  https://calhoun.nps.edu/handle/10945/16
+[]  from  https://calhoun.nps.edu/handle/10945/17
+[1.0]  from  http://scitation.aip.org/content/aip/journal/jap/47/1/10.1063/1.322330
+[]  from  http://ieeexplore.ieee.org/iel6/8221/25319/01136249.pdf?arnumber=1136249
+[]  from  http://ieeexplore.ieee.org/iel6/8221/xpl/RecentIssue.jsp?punumber=8221
+[25.0, 25.0]  from  http://www.scielo.br/scielo.php?pid=S0366-69132005000300007&script=sci_arttext
+[25.0, 4100.0, 25.0]  from  http://www.scielo.br/pdf/ce/v51n319/26794.pdf
+[15000.0]  from  http://gdckathua.com/pdffolder/currentjournal/BariumtitanatePaul.pdf
+[15.0, 8.0, 1000.0, 15.0, 1.0, 10.0, 14.814, 15.0]  from  http://www.jpier.org/PIER/pier121/11.11080815.pdf
+[]  from  http://www.worldscientific.com/doi/pdf/10.1142/S0218625X08011305?src=recsys
+WARNING:root:Some characters could not be decoded, and were replaced with REPLACEMENT CHARACTER.
+[]  from  http://tigerprints.clemson.edu/cgi/viewcontent.cgi?article=1305&context=all_theses
+[2.0]  from  http://www.tf.uns.ac.rs/publikacije/PAC/pdf/PAC%2008%2001.pdf
+[1.0]  from  https://www.deepdyve.com/lp/elsevier/hall-effect-and-dielectric-properties-of-mn-doped-barium-titanate-S87UA5iJpn
+[8000.0, 35005000.0, 2324.0, 8.0, 8000.0, 8000.0]  from  https://ir.nctu.edu.tw/bitstream/11536/10905/1/000246273900009.pdf
+[8000.0, 35005000.0, 2324.0, 8.0, 8000.0, 8000.0]  from  https://ir.nctu.edu.tw/bitstream/11536/10905/1/000246273900009.pdf
+[]  from  http://www.globalspec.com/industrial-directory/barium_titanate_capacitor
+[]  from  http://www.globalspec.com/productfinder
+[11.0]  from  http://www.iosrjournals.org/iosr-jeee/Papers/Vol9-issue5/Version-3/C09531013.pdf
+[]  from  http://oai.dtic.mil/oai/oai?verb=getRecord&metadataPrefix=html&identifier=AD0493441
+something wrong! from https://www.google.com/patents/US2695239
+[70.0]  from  https://www.deepdyve.com/lp/wiley/oscillograph-study-of-dielectric-properties-of-barium-titanate-6C5kIvx3vT
+[]  from  http://ira.lib.polyu.edu.hk/handle/10397/461
+[]  from  http://pubs.rsc.org/en/content/articlelanding/2014/ra/c4ra08694e
+[]  from  http://cds.ismrm.org/protected/11MProceedings/files/622.pdf
+[1.0, 3500.0, 1.0, 1.0]  from  http://www.scielo.org.ar/scielo.php?script=sci_arttext&pid=S0327-07932005000100005
+[]  from  http://www.scientific.net/AMR.795.500
+[]  from  http://www.sigmaaldrich.com/catalog/product/aldrich/467634?lang=en&region=US
+[1.0, 3500.0]  from  http://www.laar.uns.edu.ar/indexes/articv_3501/vol35_p29.pdf
+something wrong! from http://waset.org/publications/10001532/dielectric-and-impedance-spectroscopy-of-samarium-and-lanthanum-doped-barium-titanate-at-room-temperature
+[4000.0]  from  http://www.ijaestonline.com/admin/post_image/1415720472_Synthesis_of_Barium_Titanate_Compounds_with_Enhanced_Dielectric_Properties_at_Room_Temperature_.pdf
+something wrong! from http://www.electronicsandbooks.com/eab1/manual/Magazine/T/Thermochimica%20Acta/41_78/0040603180850878.pdf
+something wrong! from http://www.kadmusarts.com/titanate_dielectric_constant-mproducts/
+[8000.0]  from  https://ir.nctu.edu.tw/handle/11536/10905
+[]  from  https://ir.nctu.edu.tw/handle/11536/1
+[]  from  https://ir.nctu.edu.tw/handle/11536/5
+[33000.0, 10.0]  from  http://www.greencarcongress.com/2007/04/new_nanocomposi.html
+[]  from  http://frdms.npust.edu.tw/FRDMS/FileUpload/1175/1175_RE03_96_133992-1.pdf
+[]  from  http://www.ncbi.nlm.nih.gov/pubmed/23858874
+[]  from  http://www.scientific.net/KEM.350.59
+WARNING:root:Some characters could not be decoded, and were replaced with REPLACEMENT CHARACTER.
+[]  from  http://publications.drdo.gov.in/ojs/index.php/dsj/article/download/1730/826
+[93.0]  from  https://www.jstage.jst.go.jp/article/matertrans/43/11/43_11_2880/_article
+WARNING:root:Some characters could not be decoded, and were replaced with REPLACEMENT CHARACTER.
+[]  from  http://www.choe.cn/Barium%20Titanate.ppt
+[]  from  https://view.officeapps.live.com/op/view.aspx?src=http%3A%2F%2Fwww.choe.cn%2FBarium%2520Titanate.ppt
+[3900.0]  from  http://tttmetalpowder.com/barium-titanate-powder-901/
+something wrong! from http://repository.kulib.kyoto-u.ac.jp/dspace/bitstream/2433/75437/1/chd032_2_043.pdf
+something wrong! from http://www.getnanomaterials.com/catalogsearch/result/?q=barium+titanate
+[]  from  http://www.surfacenet.de/html/batio3.html
+[]  from  http://www.thermograde.com/products/titanate/barium-titanate-bati-
+[]  from  http://www.nature.com/nature/journal/v161/n4087/abs/161325a0.html
+[]  from  http://www.nature.com/nature/index.html
+[]  from  http://www.nature.com/nature/archive/
+[]  from  http://www.nature.com/nature/journal/v161/n4087/index.html#nw
+[1.0, 3.0, 15.0, 3.0, 12.0, 1000.0, 1000.0, 1000.0, 5.39, 1000.0, 22.0, 29.0, 7.0, 13.7, 60.0, 3.6]  from  http://www-heparin.rpi.edu/main/files/papers/51c5ef10d31fd2.46079487.pdf
+[]  from  http://www.osti.gov/scitech/biblio/20880042
+[104.0]  from  http://www.trivenichemical.com/titanate-1.html
+[]  from  http://www.matweb.com/search/datasheettext.aspx?matguid=b030bd8a82774bff8e485986efe77af5
+[]  from  http://www.thermograde.com/products/titanate/barium-titanate-bati03-2-
+[7000.0]  from  http://www.bing.com/knows/Barium%20titanate
+something wrong! from http://www.google.nl/patents/EP1013608A1?cl=en
+[500.0, 3000.0]  from  http://www.ingentaconnect.com/content/bsc/jace/2008/00000091/00000011/art00017
+[11.0]  from  http://www.peerflix.com/buy-dielectric-constant-of-barium-titanate
