@@ -6,13 +6,15 @@
 import urllib2
 import urllib
 import re
-import HTMLParser
 import os
+import sys
 from bs4 import BeautifulSoup
 import pdf2txt
-
+#import HTMLParser
 
 # remove the html tags from the content
+
+
 def filter_tags(text):
     text = re.sub(r'</?\w+[^>]*>', '', text)
     text = re.sub(r'<\![^>]*>', '', text)
@@ -34,8 +36,8 @@ def find_value(text, key):
                     finded = False
                     break
             if finded:
-                words_sub = words[i_word:i_word +10]
-                # print words_sub
+                words_sub = words[i_word:i_word + 10]
+                print words_sub
                 for word in words_sub:
                     if re.match('[0-9,.~]+', word):
                         word = re.sub(r'[,;~]', '', word)
@@ -46,6 +48,7 @@ def find_value(text, key):
                         except:
                             one_value = 0
     return value
+    
 
 
 # get text of one html page
@@ -90,19 +93,50 @@ def get_url_list(root_url):
                 # print h
     return url_list
 
+
 # Main Program -----------------
 
 if __name__ == '__main__':
-    # use bing to search the content
+
+    # find the args
+    argv = sys.argv
+    argm = []
+    argp = []
+    pro = []
+    temppro = ''
+    search_str = ''
+    # 1 - name of material, 2 - name of property
+    arg_state = 0
+    for i in range(1, len(argv)):
+        if argv[i] == '-m':
+            arg_state = 1
+            continue
+        if argv[i] == '-p':
+            arg_state = 2
+            continue
+        # if arg_state == 1:
+        #    argm.append(argv[i])
+        if arg_state == 2:
+            argp.append(argv[i])
+            temppro = temppro + argv[i] + ' '
+        search_str = search_str + '+' + argv[i]
+    search_str = search_str[1:]
+    pro.append(temppro)
+
+    fineded_url = set()
     for first in range(1, 101, 10):
-        root_url = 'http://www.bing.com/search?q=barium+titanate+dielectric+constant&first=' + str(first)
+        # use bing to search the content
+        root_url = 'http://www.bing.com/search?q=' + search_str + '&first=' + str(first)
+        print(root_url)
         url_list = get_url_list(root_url)
 
         for url in url_list:
-            # print url[len(url)-4:len(url)]
-            try:
-                text = get_text(url)
-                print find_value(text, ['dielectric constant', 'permitivity']), ' from ', url
-            except:
-                print 'something wrong! from', url
+            if url not in fineded_url:
+                fineded_url.add(url);
+                # print url[len(url)-4:len(url)]
+                try:
+                    text = get_text(url)
+                    print find_value(text, pro), ' from ', url
+                except:
+                    print 'something wrong! from', url
     print 'End.'
