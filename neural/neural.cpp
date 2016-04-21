@@ -22,18 +22,18 @@ void run_neural(int option)
 {
 	auto net = new NeuralNet();
 
-	net->readData("data.txt");
+	net->readData("data4.txt");
 	if (option == 0)
 		net->createByData(NeuralLayerMode::HaveConstNode, 3, 7);
 	else
 		net->createByLoad("save2.txt");
 
 	net->setLearnSpeed(0.5);
-	net->setLearnMode(NeuralNetLearnMode::Online);
+	net->setLearnMode(NeuralNetLearnMode::Batch);
 	net->selectTest();
-	net->train(int(1e7), 1e-4);
+	net->train(int(1e5), 1e-4);
 	net->test();
-	net->outputBondWeight("save.txt");
+	//net->outputBondWeight("save.txt");
 
 	delete net;
 

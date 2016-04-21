@@ -98,7 +98,11 @@ void NeuralNet::test()
 	fprintf(stdout, "\n%d groups train data comparing with expection:\n---------------------------------------\n", realDataAmount);
 	for (int i = 0; i < realDataAmount; i++)
 	{
-		printf("%14.10lf\t%14.10lf\n", output_train[i], expectData[i]);
+		for (int j = 0; j < outputAmount; j++)
+		{
+			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_train[i*outputAmount + j], expectData[i*outputAmount + j]);
+		}
+		fprintf(stdout, "\n");
 	}
 	delete output_train;
 
@@ -108,12 +112,11 @@ void NeuralNet::test()
 	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", testDataAmount);
 	for (int i = 0; i < testDataAmount; i++)
 	{
-		fprintf(stdout, "%14.10lf\t%14.10lf\n", output_test[i], expectTestData[i]);
-		//for (int j = 0; j < inputNodeAmount; j++)
-		//	printf("%14.12lf\t", inputTestData[i*inputNodeAmount + j]);
-		//for (int j = 0; j < outputNodeAmount; j++)
-		//	printf("%14.12lf\t", outputTestData[i*outputNodeAmount + j]);
-		//printf("\n");
+		for (int j = 0; j < outputAmount; j++)
+		{
+			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_test[i*outputAmount + j], expectTestData[i*outputAmount + j]);
+		}
+		fprintf(stdout, "\n");
 	}
 	delete output_test;
 }
@@ -292,11 +295,14 @@ void NeuralNet::train(int times, double tol)
 			setNodeDataAmount(a);
 			for (int i = 0; i < realDataAmount; i++)
 			{
-				//printf("%f\t", output_real[i]/ output[i]-1);
-				double e1 = 1 - output[i] / expectData[i];
-				e += e1*e1;
+				for (int j = 0; j < outputAmount; j++)
+				{
+					//double e1 = 1 - output[i*outputAmount + j] / expectData[i*outputAmount + j];
+					double e1 = output[i*outputAmount + j] - expectData[i*outputAmount + j];
+					e += e1*e1;
+				}
 			}
-			e = e / realDataAmount;
+			e = e / (realDataAmount*outputAmount);
 			fprintf(stdout, "step = %d,\tmean square error = %f\n", count, e);
 			if (e < tol) break;
 		}		
