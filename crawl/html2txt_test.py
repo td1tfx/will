@@ -1,6 +1,7 @@
 import re
 import pdf2txt
 import urllib
+import nltk
 
 
 def filter_tags(htmlstr):
@@ -67,6 +68,10 @@ def find_value(text, key):
     
 if __name__ == '__main__':
     #url='http://www.iiss.sanu.ac.rs/download/vol40_3/vol40_3_02.pdf'
-    text = pdf2txt.pdf2txt('pdf/asianjournalofchemistry21102009.weebly.comuploads29712971446026-s117-s124.pdf')
+    #text = pdf2txt.pdf2txt('pdf/asianjournalofchemistry21102009.weebly.comuploads29712971446026-s117-s124.pdf')
+    myfile = open("bt.txt")
+    text = myfile.read()
+    
+    nltk.word_tokenize(text)
     print text
     print find_value(text,['dielectric constant'])

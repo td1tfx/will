@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # -----------------------------------------
-# 这是一个用来在网页上找钛酸钡介电常数的爬虫
+# 这是一个爬虫
 # -----------------------------------------
 
 import urllib2
@@ -10,6 +10,7 @@ import os
 import sys
 from bs4 import BeautifulSoup
 import pdf2txt
+import nltk
 #import HTMLParser
 
 # remove the html tags from the content
@@ -37,7 +38,7 @@ def find_value(text, key):
                     break
             if finded:
                 words_sub = words[i_word:i_word + 10]
-                print words_sub
+                # print words_sub
                 for word in words_sub:
                     if re.match('[0-9,.~]+', word):
                         word = re.sub(r'[,;~]', '', word)
@@ -81,7 +82,7 @@ def get_url_list(root_url):
     root_a = root_bs.findAll('a', recursive=True)
     url_list = []
 
-    # remove microsoft's links
+    # remove microsoft's links for bing
     t1 = 'translator'
     t2 = 'go.microsoft'
     t = [t1, t2]
@@ -124,10 +125,10 @@ if __name__ == '__main__':
     pro.append(temppro)
 
     fineded_url = set()
-    for first in range(1, 101, 10):
+    for first in range(1, 91, 10):
         # use bing to search the content
         root_url = 'http://www.bing.com/search?q=' + search_str + '&first=' + str(first)
-        print(root_url)
+        # print(root_url)
         url_list = get_url_list(root_url)
 
         for url in url_list:

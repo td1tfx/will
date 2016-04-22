@@ -22,7 +22,7 @@ void run_neural(int option)
 {
 	auto net = new NeuralNet();
 
-	net->readData("data4.txt");
+	net->readData("data3.txt");
 	if (option == 0)
 		net->createByData(NeuralLayerMode::HaveConstNode, 3, 7);
 	else

@@ -24,10 +24,13 @@ public:
 	static double exp1(double x) { return exp(x) - 1; }
 	static double dexp1(double x) { return exp(x); }
 	static double tanh1(double x) { return tanh(x); }
-	static double dtanh1(double x) { return 1/cosh(x)/cosh(x); }
+	static double dtanh1(double x) { return 1 / cosh(x) / cosh(x); }
 
-	static double sign1(double x) { return x>0?1:-1; }
-	static double dsign1(double x) { return 1 / cosh(x) / cosh(x); }
+	static double sign1(double x) { return x > 0 ? 1 : -1; }
+	static double dsign1(double x) { return 1; }
+
+	static double is(double x) { return x > 0.5 ? 1 : 0; }
+	static double dis(double x) { return 1; }
 
 };
 
