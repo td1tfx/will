@@ -353,7 +353,7 @@ void NeuralNet::readData(const char* filename, double* input /*= nullptr*/, doub
 		}
 	}
 	//测试用
-	//dataGroupAmount = 3;
+	//realDataAmount = 10;
 }
 
 //输出键结值
