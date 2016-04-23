@@ -24,6 +24,15 @@ typedef enum
 	ByNode,
 } NeuralNetCalMode;
 
+//工作模式
+typedef enum
+{
+	Fit,
+	Classify,
+	//工作模式有拟合和分类
+	//分类模式会筛选最大值设为1，其他设为0
+} NeuralNetWorkMode;
+
 
 //神经网
 class NeuralNet
@@ -56,6 +65,9 @@ public:
 	double learnSpeed = 0.5;
 	void setLearnSpeed(double s) { learnSpeed = s; }
 	void setLearnMode(NeuralNetLearnMode lm);
+
+	NeuralNetWorkMode workMode = Fit;
+	void setWorkMode(NeuralNetWorkMode wm) { workMode = wm; }
 
 	void createLayers(int amount);  //包含输入和输出层
 

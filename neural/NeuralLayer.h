@@ -30,5 +30,6 @@ public:
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);
 	//void connet(NueralLayer nextLayer);
+	void markMax();
 };
 

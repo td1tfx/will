@@ -180,7 +180,8 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 			}
 		}
 	}
-
+	if (workMode==Classify)
+		getLastLayer()->markMax();
 	//在学习阶段可以不输出
 	if (output)
 	{
@@ -459,7 +460,7 @@ void NeuralNet::createByLoad(const char* filename, bool haveConstNode /*= true*/
 		getLayer(v_int[k])->createNodes(v_int[k + 1], t);
 		for (auto node : getLayer(v_int[k])->nodes)
 		{
-			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
+			node->setFunctions(ActiveFunctions::linear, ActiveFunctions::dlinear);
 		}
 		k += 2;
 	}

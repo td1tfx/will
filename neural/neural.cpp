@@ -24,12 +24,13 @@ void run_neural(int option)
 
 	net->readData("ck.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 3, 7);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 50);
 	else
 		net->createByLoad("save2.txt");
 
-	net->setLearnSpeed(0.01);
+	net->setLearnSpeed(0.001);
 	net->setLearnMode(NeuralNetLearnMode::Batch);
+	net->setWorkMode(NeuralNetWorkMode::Classify);
 	net->selectTest();
 	net->train(int(1e6), 1e-4);
 	net->test();
