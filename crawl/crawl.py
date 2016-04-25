@@ -28,6 +28,7 @@ def filter_tags(text):
 def find_value(text, key):
     words = text.lower().split()
     value = []
+    credit = 0
     for onekey in key:
         keys = onekey.split()
         for i_word in range(len(words)):
@@ -37,19 +38,18 @@ def find_value(text, key):
                     finded = False
                     break
             if finded:
-                words_sub = words[i_word:i_word + 10]
                 # print words_sub
-                for word in words_sub:
-                    if re.match('[0-9,.~]+', word):
-                        word = re.sub(r'[,;~]', '', word)
-                        try:
-                            one_value = float(word)
-                            value.append(one_value)
-                            break
-                        except:
-                            one_value = 0
-    return value
-    
+                for i in range(0, 9):
+                    i1=i_word + len(keys)+i
+                    word = words[i1]
+                    if re.match('\d+.*', word):
+                        if words[i - 1] in {'is', 'be', 'was', 'are', 'were', 'as', 'of'}:
+                            credit += 1
+                        if i == 0:
+                            credit += 1
+                        word = re.sub(r'[,~]', '', word)
+                        value.append(word)
+    return value, credit
 
 
 # get text of one html page
@@ -69,6 +69,7 @@ def get_text(url):
         content = response.read()
         bs = BeautifulSoup(content, "html.parser")
         text = bs.get_text()
+    # print text
     text = filter_tags(text)
     return text
 
@@ -133,7 +134,7 @@ if __name__ == '__main__':
 
         for url in url_list:
             if url not in fineded_url:
-                fineded_url.add(url);
+                fineded_url.add(url)
                 # print url[len(url)-4:len(url)]
                 try:
                     text = get_text(url)

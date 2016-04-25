@@ -180,8 +180,10 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 			}
 		}
 	}
-	if (workMode==Classify)
+	if (workMode == Classify)
 		getLastLayer()->markMax();
+	if (workMode == Probability)
+		getLastLayer()->normalized();
 	//在学习阶段可以不输出
 	if (output)
 	{
@@ -411,7 +413,7 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 
 	for (auto& node : layer_output->getNodeVector())
 	{
-		node->setFunctions(ActiveFunctions::is, ActiveFunctions::dis);
+		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 	}
 
 	//layers[1]->createNodes(34, dataGroupAmount);

@@ -27,10 +27,9 @@ typedef enum
 //工作模式
 typedef enum
 {
-	Fit,
-	Classify,
-	//工作模式有拟合和分类
-	//分类模式会筛选最大值设为1，其他设为0
+	Fit,  //拟合
+	Classify,  //分类，会筛选最大值设为1，其他设为0
+	Probability,   //几率，结果会归一化	
 } NeuralNetWorkMode;
 
 

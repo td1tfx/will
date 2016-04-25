@@ -31,5 +31,6 @@ public:
 	void connetNextlayer(NeuralLayer* nextLayer);
 	//void connet(NueralLayer nextLayer);
 	void markMax();
+	void normalized();
 };
 

@@ -76,3 +76,20 @@ void NeuralLayer::markMax()
 		getNode(pos)->setOutput(1, i_data);
 	}
 }
+
+void NeuralLayer::normalized()
+{
+	for (int i = 0; i < NeuralNode::dataAmount; i++)
+	{
+		double sum = 0;
+		for (auto& node : nodes)
+		{
+			sum += node->outputValues[i];
+		}
+		if (sum==0) continue;
+		for (auto& node : nodes)
+		{
+			node->outputValues[i] /= sum;
+		}
+	}
+}
