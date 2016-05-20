@@ -413,7 +413,10 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 
 	for (auto& node : layer_output->getNodeVector())
 	{
-		node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
+		if (workMode == Fit)
+			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
+		if (workMode == Probability)
+			node->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
 	}
 
 	//layers[1]->createNodes(34, dataGroupAmount);

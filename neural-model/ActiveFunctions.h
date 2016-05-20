@@ -21,7 +21,7 @@ public:
 	static double dsigmoid(double x) { double a = 1 + exp(-x); return exp(-x) / (a*a); }
 	static double linear(double x) { return x; }
 	static double dlinear(double x) { return 1; }
-	static double exp1(double x) { return exp(x) - 1; }
+	static double exp1(double x) { return exp(x); }
 	static double dexp1(double x) { return exp(x); }
 	static double tanh1(double x) { return tanh(x); }
 	static double dtanh1(double x) { return 1 / cosh(x) / cosh(x); }
