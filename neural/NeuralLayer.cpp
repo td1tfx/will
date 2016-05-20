@@ -86,7 +86,7 @@ void NeuralLayer::normalized()
 		{
 			sum += node->outputValues[i];
 		}
-		if (sum==0) continue;
+		if (sum == 0) continue;
 		for (auto& node : nodes)
 		{
 			node->outputValues[i] /= sum;

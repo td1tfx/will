@@ -22,15 +22,15 @@ void run_neural(int option)
 {
 	auto net = new NeuralNet();
 
-	net->readData("ck.txt");
+	net->readData("test.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 3, 50);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 7);
 	else
 		net->createByLoad("save2.txt");
 
 	net->setLearnSpeed(0.001);
 	net->setLearnMode(NeuralNetLearnMode::Batch);
-	net->setWorkMode(NeuralNetWorkMode::Classify);
+	net->setWorkMode(NeuralNetWorkMode::Fit);
 	net->selectTest();
 	net->train(int(1e6), 1e-4);
 	net->test();
