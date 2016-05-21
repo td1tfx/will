@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include "ActiveFunctions.h"
+#include "MatrixFunctions.h"
 
 typedef enum 
 {
@@ -30,7 +31,7 @@ public:
 	int id;
 
 	int nodeAmount;
-	int groupAmount;
+	static int groupAmount;
 	double* data = nullptr;
 	double* weight = nullptr;
 
@@ -52,5 +53,8 @@ public:
 	std::function<double(double)> dactiveFunction = ActiveFunctions::dsigmoid;
 
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _dactive);
+
+	void activeOutputValue();
+
 };
 

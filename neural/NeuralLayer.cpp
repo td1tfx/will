@@ -1,6 +1,8 @@
 #include "NeuralLayer.h"
 
+using namespace MatrixFunctions;
 
+int NeuralLayer::groupAmount;
 
 NeuralLayer::NeuralLayer()
 {
@@ -67,17 +69,27 @@ void NeuralLayer::markMax(int groupid)
 
 void NeuralLayer::normalized()
 {
-// 	for (int i = 0; i < NeuralNode::dataAmount; i++)
-// 	{
-// 		double sum = 0;
-// 		for (auto& node : nodes)
-// 		{
-// 			sum += node->outputValues[i];
-// 		}
-// 		if (sum == 0) continue;
-// 		for (auto& node : nodes)
-// 		{
-// 			node->outputValues[i] /= sum;
-// 		}
-// 	}
+	for (int i_group = 0; i_group < this->groupAmount; i_group++)
+	{
+		double sum = 0;
+		for (int i_node = 0; i_node < nodeAmount; i_node++)
+		{
+			sum += getValue(i_node, i_group);
+		}
+		if (sum == 0) continue;
+		for (int i_node = 0; i_node < nodeAmount; i_node++)
+		{
+			setValue(getValue(i_node, i_group) / sum, i_node, i_group);
+		}
+	}
+}
+
+void NeuralLayer::activeOutputValue()
+{
+	d_matrixProduct(weight, prevLayer->data, this->data, prevLayer->nodeAmount, this->nodeAmount, groupAmount);
+
+	for (int i = 0; i < nodeAmount*groupAmount; i++)
+	{
+		data[i] = activeFunction(data[i]);
+	}
 }

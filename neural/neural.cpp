@@ -1,5 +1,7 @@
 #include "NeuralNet.h"
 
+using namespace MatrixFunctions;
+
 void run_neural(int option = 0);
 
 int main(int argc, char* argv[])
@@ -9,8 +11,20 @@ int main(int argc, char* argv[])
 	{
 		int option = atoi(argv[1]);
 	}
-	run_neural(option);
+	//run_neural(option);
 	printf("Run neural net end.\n");
+
+	double A[12], B[12], C[16];
+	for (int i = 0; i < 12; i++)
+	{
+		A[i] = i;
+		B[i] = i;
+	}
+	matrixOutput(A, 4, 3);
+	matrixOutput(A, 3, 4);
+	d_matrixProduct(A,A,C,4,3,4);
+	matrixOutput(C, 4, 4);
+
 	
 #ifdef _WIN32
 	getchar();

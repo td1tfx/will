@@ -5,13 +5,9 @@ extern "C"
 }
 #include <stdio.h>
 
-class MatrixFunctions
+namespace MatrixFunctions
 {
-public:
-	MatrixFunctions();
-	~MatrixFunctions();
-
-	static void d_matrixProduct(double* A,double* B,double* R, int m, int l, int n);
-	static void matrixOutput(double* A, int m, int n);
+	void d_matrixProduct(double* A,double* B,double* R, int m, int l, int n);
+	void matrixOutput(double* A, int m, int n);
+	void hadamardProduct(double* A, double* B, double* R, int m, int n);
 };
-
