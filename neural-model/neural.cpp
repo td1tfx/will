@@ -25,9 +25,9 @@ void run_neural(int option)
 	net->setLearnMode(NeuralNetLearnMode::Batch);
 	net->setWorkMode(NeuralNetWorkMode::Fit);
 
-	net->readData("p1.txt");
+	net->readData("p.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 3, 5);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 3);
 	else
 		net->createByLoad("save.txt");
 

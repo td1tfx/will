@@ -170,6 +170,7 @@ void NeuralNode::updateDelta()
 		{
 			deltas[i] = (expects[i] - outputValues[i]);
 			//deltas[i] *= dactiveFunction(inputValues[i]);
+			//这里如果去掉这个乘法，是使用交叉熵作为代价函数，但是在隐藏层的传播不可以去掉
 		}
 		else
 		{

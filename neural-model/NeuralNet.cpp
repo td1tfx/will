@@ -103,12 +103,12 @@ void NeuralNet::test()
 	//输出全部数据
 	setNodeDataAmount(realDataAmount);
 	activeOutputValue(inputData, output_train, realDataAmount);
-	fprintf(stdout, "\n%d groups train data comparing with expect (result --> expect):\n---------------------------------------\n", realDataAmount);
+	fprintf(stdout, "\n%d groups train data comparing with expect (result -> expect):\n---------------------------------------\n", realDataAmount);
 	for (int i = 0; i < realDataAmount; i++)
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_train[i*outputAmount + j], expectData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ->%8.4lf\t", output_train[i*outputAmount + j], expectData[i*outputAmount + j]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -117,12 +117,12 @@ void NeuralNet::test()
 	if (testDataAmount <= 0) return;
 	auto output_test = new double[outputAmount*testDataAmount];
 	activeOutputValue(inputTestData, output_test, testDataAmount);
-	fprintf(stdout, "\n%d groups test data (result --> expect):\n---------------------------------------\n", testDataAmount);
+	fprintf(stdout, "\n%d groups test data (result -> expect):\n---------------------------------------\n", testDataAmount);
 	for (int i = 0; i < testDataAmount; i++)
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_test[i*outputAmount + j], expectTestData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ->%8.4lf\t", output_test[i*outputAmount + j], expectTestData[i*outputAmount + j]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -374,14 +374,14 @@ void NeuralNet::outputBondWeight(const char* filename)
 	if (filename)
 		fout = fopen(filename, "w+t");
 
-	fprintf(fout,"\nNet information:\n", layers.size());
-	fprintf(fout,"%d\tlayers\n", layers.size());
+	fprintf(fout, "\nNet information:\n", layers.size());
+	fprintf(fout, "%d\tlayers\n", layers.size());
 	for (int i_layer = 0; i_layer < layers.size(); i_layer++)
 	{
-		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->getNodeAmount());
+		fprintf(fout, "layer %d has %d nodes\n", i_layer, layers[i_layer]->getNodeAmount());
 	}
 	//printf("start\tend\tweight\n");
-	fprintf(fout,"---------------------------------------\n");
+	fprintf(fout, "---------------------------------------\n");
 	for (int i_layer = 0; i_layer < layers.size() - 1; i_layer++)
 	{
 		auto& layer1 = layers[i_layer];
