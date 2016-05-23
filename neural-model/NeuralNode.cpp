@@ -168,7 +168,8 @@ void NeuralNode::updateDelta()
 		deltas[i] = 0;
 		if (this->type == Output)
 		{
-			deltas[i] = (expects[i] - outputValues[i])*dactiveFunction(inputValues[i]);
+			//deltas[i] = (expects[i] - outputValues[i])*dactiveFunction(inputValues[i]);
+			deltas[i] = (expects[i] - outputValues[i]);
 		}
 		else
 		{
@@ -178,7 +179,8 @@ void NeuralNode::updateDelta()
 				auto& node = bond->endNode;
 				deltas[i] += node->deltas[i] * bond->weight;
 			}
-			deltas[i] *= dactiveFunction(inputValues[i]);
+			//deltas[i] *= dactiveFunction(inputValues[i]);
+			//deltas[i] *= inputValues[i];
 		}
 	}
 }
@@ -213,8 +215,8 @@ void NeuralBond::updateWeight(double learnSpeed)
 	double delta_w = 0;
 	for (int i = 0; i < n; i++)
 	{
-		delta_w += learnSpeed*endNode->deltas[i] * startNode->outputValues[i];
+		delta_w += endNode->deltas[i] * startNode->outputValues[i];
 	}
 	delta_w /= n;
-	w += delta_w;
+	w += learnSpeed*delta_w;
 }

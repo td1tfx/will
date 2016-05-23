@@ -29,7 +29,7 @@ typedef enum
 {
 	Fit,  //拟合
 	Classify,  //分类，会筛选最大值设为1，其他设为0
-	Probability,   //几率，结果会归一化	
+	Softmax,   //几率，结果会归一化	
 } NeuralNetWorkMode;
 
 

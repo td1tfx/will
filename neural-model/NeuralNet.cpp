@@ -63,17 +63,25 @@ void NeuralNet::selectTest()
 	expectTestData = new double[outputAmount*realDataAmount];
 
 	isTest.resize(realDataAmount);
-	testDataAmount = 0;
+	int test = 0;
 	int p = 0, p_data = 0, p_test = 0;
 	int it = 0, id = 0;
 	for (int i = 0; i < realDataAmount; i++)
 	{
-		isTest[i] = (0.9 < 1.0*rand() / RAND_MAX);
+		//如果指定了测试数量，则最后几组用于测试，否则随机选10%测试
+		if (this->testDataAmount == 0)
+		{
+			isTest[i] = (0.9 < 1.0*rand() / RAND_MAX);
+		}
+		else
+		{
+			isTest[i] = i >= realDataAmount - this->testDataAmount;
+		}
 		if (isTest[i])
 		{
 			memcpy(inputTestData + inputAmount*it, input+inputAmount*i, sizeof(double)*inputAmount);
 			memcpy(expectTestData + outputAmount*it, output + outputAmount*i, sizeof(double)*outputAmount);
-			testDataAmount++;
+			test++;
 			it++;
 		}
 		else
@@ -83,7 +91,7 @@ void NeuralNet::selectTest()
 			id++;
 		}
 	}
-	realDataAmount -= testDataAmount;
+	realDataAmount -= test;
 }
 
 //输出拟合的结果和测试集的结果
@@ -95,7 +103,7 @@ void NeuralNet::test()
 	//输出全部数据
 	setNodeDataAmount(realDataAmount);
 	activeOutputValue(inputData, output_train, realDataAmount);
-	fprintf(stdout, "\n%d groups train data comparing with expection:\n---------------------------------------\n", realDataAmount);
+	fprintf(stdout, "\n%d groups train data comparing with expect (result --> expect):\n---------------------------------------\n", realDataAmount);
 	for (int i = 0; i < realDataAmount; i++)
 	{
 		for (int j = 0; j < outputAmount; j++)
@@ -109,7 +117,7 @@ void NeuralNet::test()
 	if (testDataAmount <= 0) return;
 	auto output_test = new double[outputAmount*testDataAmount];
 	activeOutputValue(inputTestData, output_test, testDataAmount);
-	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", testDataAmount);
+	fprintf(stdout, "\n%d groups test data (result --> expect):\n---------------------------------------\n", testDataAmount);
 	for (int i = 0; i < testDataAmount; i++)
 	{
 		for (int j = 0; j < outputAmount; j++)
@@ -182,7 +190,7 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 	}
 	if (workMode == Classify)
 		getLastLayer()->markMax();
-	if (workMode == Probability)
+	if (workMode == Softmax)
 		getLastLayer()->normalized();
 	//在学习阶段可以不输出
 	if (output)
@@ -325,11 +333,11 @@ void NeuralNet::readData(const char* filename, double* input /*= nullptr*/, doub
 	int n = findNumbers(str, v);
 	inputAmount = int(v[0]);
 	outputAmount = int(v[1]);
-	
+	testDataAmount = int(v[2]);
 	//三个默认参数的处理
 	if (amount == -1)
 	{
-		amount = (n - 2) / (inputAmount + outputAmount);
+		amount = (n - 3) / (inputAmount + outputAmount);
 		realDataAmount = amount;
 	}
 	if (input == nullptr)
@@ -343,7 +351,7 @@ void NeuralNet::readData(const char* filename, double* input /*= nullptr*/, doub
 		expectData = output;
 	}	
 
-	int k = 2, k1 = 0, k2 = 0;
+	int k = 3, k1 = 0, k2 = 0;
 	for (int i_data = 1; i_data <= amount; i_data++)
 	{
 		for (int i = 1; i <= inputAmount; i++)
@@ -415,7 +423,7 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 	{
 		if (workMode == Fit)
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
-		if (workMode == Probability)
+		if (workMode == Softmax)
 			node->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
 	}
 
@@ -465,7 +473,7 @@ void NeuralNet::createByLoad(const char* filename, bool haveConstNode /*= true*/
 		getLayer(v_int[k])->createNodes(v_int[k + 1], t);
 		for (auto node : getLayer(v_int[k])->nodes)
 		{
-			node->setFunctions(ActiveFunctions::linear, ActiveFunctions::dlinear);
+			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 		}
 		k += 2;
 	}

@@ -41,7 +41,10 @@ void NeuralLayer::connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 	{
 		for (auto& endNode : endLayer->nodes)
 		{
-			endNode->connectStart(startNode);
+			if (endNode->type != Const)
+			{
+				endNode->connectStart(startNode);
+			}
 		}
 	}
 }
