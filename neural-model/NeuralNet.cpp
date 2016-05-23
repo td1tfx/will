@@ -427,8 +427,6 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 			node->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
 	}
 
-	//layers[1]->createNodes(34, dataGroupAmount);
-	//layers[2]->createNodes(34, dataGroupAmount);
 	for (int i = 1; i <= layerAmount - 2; i++)
 	{
 		auto layer = layers[i];

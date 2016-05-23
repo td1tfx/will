@@ -27,13 +27,13 @@ void run_neural(int option)
 
 	net->readData("p1.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 3, 10);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 5);
 	else
 		net->createByLoad("save.txt");
 
 	net->setLearnSpeed(0.1);
 	net->selectTest();
-	net->train(int(1e5), 1e-6);
+	net->train(int(1e6), 1e-6);
 	net->test();
 	net->outputBondWeight("save.txt");
 

@@ -95,8 +95,8 @@ public:
 
 	void setNodeDataAmount(int amount);
 
-	NeuralNetCalMode activeMode = ByNode;
-	NeuralNetCalMode backPropageteMode = ByNode;
+	NeuralNetCalMode activeMode = ByLayer;
+	NeuralNetCalMode backPropageteMode = ByLayer;
 
 };
 

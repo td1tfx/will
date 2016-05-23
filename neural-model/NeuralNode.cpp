@@ -168,8 +168,8 @@ void NeuralNode::updateDelta()
 		deltas[i] = 0;
 		if (this->type == Output)
 		{
-			//deltas[i] = (expects[i] - outputValues[i])*dactiveFunction(inputValues[i]);
 			deltas[i] = (expects[i] - outputValues[i]);
+			//deltas[i] *= dactiveFunction(inputValues[i]);
 		}
 		else
 		{
@@ -179,8 +179,7 @@ void NeuralNode::updateDelta()
 				auto& node = bond->endNode;
 				deltas[i] += node->deltas[i] * bond->weight;
 			}
-			//deltas[i] *= dactiveFunction(inputValues[i]);
-			//deltas[i] *= inputValues[i];
+			deltas[i] *= dactiveFunction(inputValues[i]);
 		}
 	}
 }
