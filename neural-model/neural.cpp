@@ -27,7 +27,7 @@ void run_neural(int option)
 
 	net->readData("p.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 3, 3);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 6);
 	else
 		net->createByLoad("save.txt");
 

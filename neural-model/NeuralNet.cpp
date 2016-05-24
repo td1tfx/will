@@ -190,7 +190,7 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 	}
 	if (workMode == Classify)
 		getLastLayer()->markMax();
-	if (workMode == Softmax)
+	if (workMode == Probability)
 		getLastLayer()->normalized();
 	//在学习阶段可以不输出
 	if (output)
@@ -423,7 +423,7 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 	{
 		if (workMode == Fit)
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
-		if (workMode == Softmax)
+		if (workMode == Probability)
 			node->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
 	}
 
