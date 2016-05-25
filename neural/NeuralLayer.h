@@ -39,7 +39,7 @@ public:
 
 	void initData(int nodeAmount, int groupAmount);
 
-	double& getValue(int nodeid, int groupid) { return data[groupid*nodeAmount+nodeid]; }
+	double& getValue(int nodeid, int groupid) { return data[groupid*nodeAmount + nodeid]; }
 	void setValue(double value, int nodeid, int groupid) { data[groupid*nodeAmount + nodeid] = value; }
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);

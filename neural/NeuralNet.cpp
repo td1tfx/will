@@ -114,9 +114,20 @@ void NeuralNet::test()
 //这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序，待完善后修改
 void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 {	
-
+	if (input)
+	{
+		memcpy(layers[0]->data, input, sizeof(double)*inputAmount*amount);
+	}
+	
+	for (int i = 1; i < getLayerAmount(); i++)
+	{
+		layers[i]->activeOutputValue();
+	}
 	//在学习阶段可以不输出
-
+	if (output)
+	{
+		memcpy(output, layers.back()->data, sizeof(double)*outputAmount*amount);
+	}
 }
 
 //学习数据，amount大于1是批量学习，为1是在线学习，不要设置为其他值
@@ -127,8 +138,6 @@ void NeuralNet::learn(double* input, double* output, int amount)
 	if (amount > nodeDataAmount) amount = nodeDataAmount;
 
 	activeOutputValue(input, nullptr, amount);
-
-
 }
 
 //训练一批数据，输出步数和误差
@@ -255,7 +264,22 @@ void NeuralNet::outputBondWeight(const char* filename)
 void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int layerAmount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
 	this->createLayers(layerAmount);
-	auto layer_input = layers.at(0);
+
+	for (int i = 1; i < layerAmount - 1; i++)
+	{
+		layers[i]->initData(nodesPerLayer, realDataAmount);
+	}
+
+	if (layerMode == HaveConstNode)
+		layers[0]->initData(inputAmount + 1, realDataAmount);
+	else
+		layers[0]->initData(inputAmount, realDataAmount);
+	layers.back()->initData(outputAmount, realDataAmount);
+
+	for (int i = 1; i < layerAmount; i++)
+	{
+		layers[i]->connetPrevlayer(layers[i - 1]);
+	}
 
 	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
 }

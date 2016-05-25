@@ -53,6 +53,7 @@ public:
 
 	int inputAmount;
 	int outputAmount;
+	int trainDataAmount = 0;  //训练的数据量
 	int realDataAmount = 0;  //实际的数据量
 	int nodeDataAmount = 0;  //节点的数据量
 
