@@ -48,7 +48,7 @@ public:
 
 	NeuralLayer*& getLayer(int number) { return layers[number]; }
 	NeuralLayer*& getFirstLayer() { return layers[0]; }
-	NeuralLayer*& getLastLayer() { return layers[layers.size() - 1]; }
+	NeuralLayer*& getLastLayer() { return layers.back(); }
 	int getLayerAmount() { return layers.size(); };
 
 	int inputAmount;

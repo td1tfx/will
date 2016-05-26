@@ -18,7 +18,7 @@ typedef enum
 	Hidden,
 	Input,
 	Output,
-	Const,
+	//Const,
 } NeuralLayerType;
 
 //神经层
@@ -32,15 +32,25 @@ public:
 
 	int nodeAmount;
 	static int groupAmount;
+	
 	double* data = nullptr;
+	double* expect = nullptr;
+	double* delta = nullptr;
+	//data格式：行数是节点数，列数是数据组数
+	
 	double* weight = nullptr;
+	//weight格式：行数是本层的节点数，列数是上一层的节点数
 
 	NeuralLayer* prevLayer;
+	NeuralLayer* nextLayer;
 
 	void initData(int nodeAmount, int groupAmount);
+	double& getData(int nodeid, int groupid) { return data[groupid + nodeid*groupAmount]; }
+	
+	void initExpect();
+	double& getExpect(int nodeid, int groupid) { return expect[groupid + nodeid*groupAmount]; }
 
-	double& getValue(int nodeid, int groupid) { return data[groupid*nodeAmount + nodeid]; }
-	void setValue(double value, int nodeid, int groupid) { data[groupid*nodeAmount + nodeid] = value; }
+	void setData(double value, int nodeid, int groupid) { data[groupid + nodeid*groupAmount] = value; }
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);
@@ -55,6 +65,12 @@ public:
 	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _dactive);
 
 	void activeOutputValue();
+
+	void updateDelta();
+	void backPropagate(double learnSpeed = 0.5);
+
+	NeuralLayerMode mode = HaveConstNode;
+	NeuralLayerType type = Hidden;
 
 };
 

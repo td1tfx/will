@@ -11,10 +11,10 @@ NeuralLayer::NeuralLayer()
 
 NeuralLayer::~NeuralLayer()
 {
-	if (data)
-		delete []data;
-	if (weight)
-		delete []weight;
+	if (data) { delete[] data; }
+	if (weight) { delete[] weight; }
+	if (delta) { delete[] delta; }
+	if (expect) { delete[] expect; }
 }
 
 
@@ -23,6 +23,20 @@ void NeuralLayer::initData(int nodeAmount, int groupAmount)
 	this->nodeAmount = nodeAmount;
 	this->groupAmount = groupAmount;
 	data = new double[nodeAmount*groupAmount];
+	delta = new double[nodeAmount*groupAmount];
+	if (HaveConstNode)
+	{
+		for (int i = 0; i < groupAmount; i++)
+		{
+			getData(nodeAmount - 1, i) = -1;
+		}
+		//matrixOutput(data, 3, 3);
+	}
+}
+
+void NeuralLayer::initExpect()
+{
+	expect = new double[nodeAmount*groupAmount];
 }
 
 //´´½¨weight¾ØÕó
@@ -33,7 +47,11 @@ void NeuralLayer::connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 	for (int i = 0; i < n; i++)
 	{
 		endLayer->weight[i] = 1.0 * rand() / RAND_MAX - 0.5;
+		endLayer->weight[i] = 1.0 * i+1;
 	}
+	matrixOutput(endLayer->weight,  endLayer->nodeAmount, startLayer->nodeAmount);
+	endLayer->prevLayer = startLayer;
+	startLayer->nextLayer = endLayer;
 }
 
 void NeuralLayer::connetPrevlayer(NeuralLayer* prevLayer)
@@ -74,22 +92,39 @@ void NeuralLayer::normalized()
 		double sum = 0;
 		for (int i_node = 0; i_node < nodeAmount; i_node++)
 		{
-			sum += getValue(i_node, i_group);
+			sum += getData(i_node, i_group);
 		}
 		if (sum == 0) continue;
 		for (int i_node = 0; i_node < nodeAmount; i_node++)
 		{
-			setValue(getValue(i_node, i_group) / sum, i_node, i_group);
+			getData(i_node, i_group) /= sum;
 		}
 	}
 }
 
+void NeuralLayer::setFunctions(std::function<double(double)> _active, std::function<double(double)> _dactive)
+{
+	activeFunction = _active;
+	dactiveFunction = _dactive;
+}
+
 void NeuralLayer::activeOutputValue()
 {
-	d_matrixProduct(weight, prevLayer->data, this->data, prevLayer->nodeAmount, this->nodeAmount, groupAmount);
+	//matrixOutput(prevLayer->data, prevLayer->nodeAmount, groupAmount);
+	d_matrixProduct(weight, prevLayer->data, this->data, this->nodeAmount, prevLayer->nodeAmount, groupAmount);
 
 	for (int i = 0; i < nodeAmount*groupAmount; i++)
 	{
 		data[i] = activeFunction(data[i]);
 	}
+}
+
+void NeuralLayer::updateDelta()
+{
+
+}
+
+void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/)
+{
+
 }

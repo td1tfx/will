@@ -9,9 +9,9 @@ NeuralNet::NeuralNet()
 
 NeuralNet::~NeuralNet()
 {
-	for (auto& layer : this->layers)
+	for (auto& layer : getLayerVector())
 	{
-		delete layer;
+		//delete layer;
 	}
 	if (inputData) delete inputData;
 	if (expectData)	delete expectData;
@@ -89,11 +89,11 @@ void NeuralNet::test()
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_train[i*outputAmount + j], expectData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_train[i + j*realDataAmount], expectData[i + j*realDataAmount]);
 		}
 		fprintf(stdout, "\n");
 	}
-	delete output_train;
+	delete [] output_train;
 
 	if (testDataAmount <= 0) return;
 	auto output_test = new double[outputAmount*testDataAmount];
@@ -103,11 +103,11 @@ void NeuralNet::test()
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_test[i*outputAmount + j], expectTestData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_test[i + j*testDataAmount], expectTestData[i + j*testDataAmount]);
 		}
 		fprintf(stdout, "\n");
 	}
-	delete output_test;
+	delete [] output_test;
 }
 
 //计算输出
@@ -146,7 +146,9 @@ void NeuralNet::train(int times, double tol)
 	int a = realDataAmount;
 	//批量学习时，节点数据量等于实际数据量
 	if (learnMode == Online)
+	{
 		a = 1;
+	}
 	setNodeDataAmount(a);
 
 	auto output = new double[outputAmount*realDataAmount];
@@ -186,7 +188,7 @@ void NeuralNet::train(int times, double tol)
 			if (e < tol) break;
 		}		
 	}
-	delete output;
+	delete [] output;
 }
 
 //读取数据
@@ -219,16 +221,24 @@ void NeuralNet::readData(const char* filename, double* input /*= nullptr*/, doub
 		expectData = output;
 	}	
 
+	//这里的写法太难看了
 	int k = 2, k1 = 0, k2 = 0;
+
 	for (int i_data = 1; i_data <= amount; i_data++)
 	{
 		for (int i = 1; i <= inputAmount; i++)
 		{
-			input[k1++] = v[k++];
+			input[k1] = v[k++];
+			k1 += amount;
+			if (k1 >= inputAmount*amount)
+				k1 = k1 - inputAmount*amount + 1;
 		}
 		for (int i = 1; i <= outputAmount; i++)
 		{
-			output[k2++] = v[k++];
+			output[k2] = v[k++];
+			k2 += amount;
+			if (k2 >= outputAmount*amount)
+				k2 = k2 - outputAmount*amount + 1;
 		}
 	}
 	//测试用
@@ -265,16 +275,19 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 {
 	this->createLayers(layerAmount);
 
+	if (layerMode == HaveConstNode)
+		getFirstLayer()->initData(inputAmount + 1, realDataAmount);
+	else
+		getFirstLayer()->initData(inputAmount, realDataAmount);
+
 	for (int i = 1; i < layerAmount - 1; i++)
 	{
-		layers[i]->initData(nodesPerLayer, realDataAmount);
+		getLayer(i)->initData(nodesPerLayer, realDataAmount);
 	}
-
-	if (layerMode == HaveConstNode)
-		layers[0]->initData(inputAmount + 1, realDataAmount);
-	else
-		layers[0]->initData(inputAmount, realDataAmount);
-	layers.back()->initData(outputAmount, realDataAmount);
+	
+	getLastLayer()->initData(outputAmount, realDataAmount);
+	getLastLayer()->setFunctions(ActiveFunctions::linear, ActiveFunctions::dlinear);
+	getLastLayer()->initExpect();
 
 	for (int i = 1; i < layerAmount; i++)
 	{
