@@ -33,7 +33,8 @@ public:
 	int nodeAmount;
 	static int groupAmount;
 	
-	double* data = nullptr;
+	double* input = nullptr;
+	double* output = nullptr;
 	double* expect = nullptr;
 	double* delta = nullptr;
 	//data格式：行数是节点数，列数是数据组数
@@ -45,12 +46,11 @@ public:
 	NeuralLayer* nextLayer;
 
 	void initData(int nodeAmount, int groupAmount);
-	double& getData(int nodeid, int groupid) { return data[groupid + nodeid*groupAmount]; }
+	double& getOutput(int nodeid, int groupid) { return output[groupid*nodeAmount + nodeid]; }
 	
 	void initExpect();
-	double& getExpect(int nodeid, int groupid) { return expect[groupid + nodeid*groupAmount]; }
+	double& getExpect(int nodeid, int groupid) { return expect[groupid*nodeAmount + nodeid]; }
 
-	void setData(double value, int nodeid, int groupid) { data[groupid + nodeid*groupAmount] = value; }
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);

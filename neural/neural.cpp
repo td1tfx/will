@@ -34,25 +34,10 @@ void run_neural(int option)
 	net->setLearnMode(NeuralNetLearnMode::Batch);
 	net->setWorkMode(NeuralNetWorkMode::Fit);
 	//net->selectTest();
-	net->train(int(0), 1e-4);
+	net->train(int(500), 1e-4);
 	net->test();
 	//net->outputBondWeight("save.txt");
 
 	delete net;
 
-}
-
-int test_matrixProduct()
-{
-	double A[12], B[12], C[16];
-	for (int i = 0; i < 12; i++)
-	{
-		A[i] = i;
-		B[i] = i;
-	}
-	matrixOutput(A, 4, 3);
-	matrixOutput(A, 3, 4);
-	d_matrixProduct(A, A, C, 4, 3, 4);
-	matrixOutput(C, 4, 4);
-	return 0;
 }

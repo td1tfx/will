@@ -11,7 +11,8 @@ NeuralLayer::NeuralLayer()
 
 NeuralLayer::~NeuralLayer()
 {
-	if (data) { delete[] data; }
+	if (input) { delete[] input; }
+	if (output) { delete[] output; }
 	if (weight) { delete[] weight; }
 	if (delta) { delete[] delta; }
 	if (expect) { delete[] expect; }
@@ -22,13 +23,18 @@ void NeuralLayer::initData(int nodeAmount, int groupAmount)
 {
 	this->nodeAmount = nodeAmount;
 	this->groupAmount = groupAmount;
-	data = new double[nodeAmount*groupAmount];
-	delta = new double[nodeAmount*groupAmount];
-	if (HaveConstNode)
+	int n = nodeAmount*groupAmount;
+	if (type != Input)
+	{
+		input = new double[n];
+	}
+	output = new double[n];
+	delta = new double[n];
+	if (mode == HaveConstNode)
 	{
 		for (int i = 0; i < groupAmount; i++)
 		{
-			getData(nodeAmount - 1, i) = -1;
+			getOutput(nodeAmount - 1, i) = -1;
 		}
 		//matrixOutput(data, 3, 3);
 	}
@@ -49,7 +55,6 @@ void NeuralLayer::connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 		endLayer->weight[i] = 1.0 * rand() / RAND_MAX - 0.5;
 		endLayer->weight[i] = 1.0 * i+1;
 	}
-	matrixOutput(endLayer->weight,  endLayer->nodeAmount, startLayer->nodeAmount);
 	endLayer->prevLayer = startLayer;
 	startLayer->nextLayer = endLayer;
 }
@@ -92,12 +97,12 @@ void NeuralLayer::normalized()
 		double sum = 0;
 		for (int i_node = 0; i_node < nodeAmount; i_node++)
 		{
-			sum += getData(i_node, i_group);
+			sum += getOutput(i_node, i_group);
 		}
 		if (sum == 0) continue;
 		for (int i_node = 0; i_node < nodeAmount; i_node++)
 		{
-			getData(i_node, i_group) /= sum;
+			getOutput(i_node, i_group) /= sum;
 		}
 	}
 }
@@ -110,21 +115,39 @@ void NeuralLayer::setFunctions(std::function<double(double)> _active, std::funct
 
 void NeuralLayer::activeOutputValue()
 {
-	//matrixOutput(prevLayer->data, prevLayer->nodeAmount, groupAmount);
-	d_matrixProduct(weight, prevLayer->data, this->data, this->nodeAmount, prevLayer->nodeAmount, groupAmount);
-
+	//matrixOutput(prevLayer->output, groupAmount, prevLayer->nodeAmount);
+	d_matrixProduct(weight, prevLayer->output, this->input, this->nodeAmount, prevLayer->nodeAmount, groupAmount, 1, 0, CblasNoTrans, CblasTrans);
+	//int m = this->nodeAmount, k = prevLayer->nodeAmount, n = groupAmount;
+	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, 1, weight, k, prevLayer->output, k, 0, this->input, n);
 	for (int i = 0; i < nodeAmount*groupAmount; i++)
 	{
-		data[i] = activeFunction(data[i]);
+		output[i] = activeFunction(input[i]);
 	}
 }
 
 void NeuralLayer::updateDelta()
 {
-
+	if (this->type == Output)
+	{
+		d_matrixMinus(expect, output, delta, nodeAmount, groupAmount);
+		//matrixOutput(expect, groupAmount, nodeAmount);
+		//deltas[i] *= dactiveFunction(inputValues[i]);
+		//这里如果去掉这个乘法，是使用交叉熵作为代价函数，但是在隐藏层的传播不可以去掉
+	}
+	else
+	{
+		d_matrixProduct(nextLayer->weight, nextLayer->delta, this->delta, this->nodeAmount, nextLayer->nodeAmount, groupAmount);
+		
+		for (int i=0;i<nodeAmount*groupAmount;i++)
+			delta[i] *= dactiveFunction(input[i]);
+	}
 }
 
 void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/)
 {
-
+	updateDelta();
+	//第二个矩阵应该是要转置
+	d_matrixProduct(this->delta, prevLayer->output, this->weight, this->nodeAmount, groupAmount, prevLayer->nodeAmount,
+		-learnSpeed / groupAmount, 1, CblasTrans, CblasNoTrans);
+	matrixOutput(weight,  nodeAmount, prevLayer->nodeAmount);
 }
