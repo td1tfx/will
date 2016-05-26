@@ -53,7 +53,7 @@ void NeuralLayer::connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 	for (int i = 0; i < n; i++)
 	{
 		endLayer->weight[i] = 1.0 * rand() / RAND_MAX - 0.5;
-		endLayer->weight[i] = 1.0 * i+1;
+		//endLayer->weight[i] = 1.0 * i+1;
 	}
 	endLayer->prevLayer = startLayer;
 	startLayer->nextLayer = endLayer;
@@ -136,9 +136,10 @@ void NeuralLayer::updateDelta()
 	}
 	else
 	{
-		d_matrixProduct(nextLayer->weight, nextLayer->delta, this->delta, this->nodeAmount, nextLayer->nodeAmount, groupAmount);
-		
-		for (int i=0;i<nodeAmount*groupAmount;i++)
+		//这里好像是不对
+		d_matrixProduct(nextLayer->weight, nextLayer->delta, this->delta, this->nodeAmount, nextLayer->nodeAmount, groupAmount,
+			1, 0, CblasNoTrans, CblasTrans);
+		for (int i = 0; i < nodeAmount*groupAmount; i++)
 			delta[i] *= dactiveFunction(input[i]);
 	}
 }
@@ -147,7 +148,8 @@ void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/)
 {
 	updateDelta();
 	//第二个矩阵应该是要转置
-	d_matrixProduct(this->delta, prevLayer->output, this->weight, this->nodeAmount, groupAmount, prevLayer->nodeAmount,
-		-learnSpeed / groupAmount, 1, CblasTrans, CblasNoTrans);
-	matrixOutput(weight,  nodeAmount, prevLayer->nodeAmount);
+	d_matrixProduct(this->delta, prevLayer->output, this->weight,  this->nodeAmount, groupAmount, prevLayer->nodeAmount,
+		learnSpeed / groupAmount, 1, CblasNoTrans, CblasTrans);
+	//matrixOutput(weight, nodeAmount, prevLayer->nodeAmount);
+	//matrixOutput(delta, groupAmount, nodeAmount);
 }

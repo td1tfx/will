@@ -26,7 +26,7 @@ void run_neural(int option)
 
 	net->readData("test.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 2, 7);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 7);
 	else
 		net->createByLoad("save2.txt");
 
@@ -34,7 +34,7 @@ void run_neural(int option)
 	net->setLearnMode(NeuralNetLearnMode::Batch);
 	net->setWorkMode(NeuralNetWorkMode::Fit);
 	//net->selectTest();
-	net->train(int(500), 1e-4);
+	net->train(int(1e6), 1e-4);
 	net->test();
 	//net->outputBondWeight("save.txt");
 

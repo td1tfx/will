@@ -16,7 +16,15 @@ void MatrixFunctions::d_matrixProduct(double* A, double* B, double* R, int m, in
 //output a matrix
 void MatrixFunctions::matrixOutput(double* A, int m, int n)
 {
-
+	for (int i1 = 0; i1 < m; i1++)
+	{
+		for (int i2 = 0; i2 < n; i2++)
+		{
+			printf("%11.5lf ", A[i2 + i1*n]);
+		}
+		printf("\n");
+	}
+	printf("\n");
 }
 
 //hadamard element wise product
