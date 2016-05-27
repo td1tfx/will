@@ -8,7 +8,7 @@ void MatrixFunctions::d_matrixProduct(double* A, double* B, double* R, int m, in
 {
 	int lda = k;
 	int ldb = n;
-	if (ta == CblasTrans) lda = n;
+	if (ta == CblasTrans) lda = m;
 	if (tb == CblasTrans) ldb = k;
 	cblas_dgemm(CblasRowMajor, ta, tb, m, n, k, a, A, lda, B, ldb, c, R, n);
 }

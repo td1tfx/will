@@ -53,7 +53,7 @@ void NeuralLayer::connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 	for (int i = 0; i < n; i++)
 	{
 		endLayer->weight[i] = 1.0 * rand() / RAND_MAX - 0.5;
-		//endLayer->weight[i] = 1.0 * i+1;
+		endLayer->weight[i] = 1.0 * i+1;
 	}
 	endLayer->prevLayer = startLayer;
 	startLayer->nextLayer = endLayer;
@@ -116,7 +116,7 @@ void NeuralLayer::setFunctions(std::function<double(double)> _active, std::funct
 void NeuralLayer::activeOutputValue()
 {
 	//matrixOutput(prevLayer->output, groupAmount, prevLayer->nodeAmount);
-	d_matrixProduct(weight, prevLayer->output, this->input, this->nodeAmount, prevLayer->nodeAmount, groupAmount, 1, 0, CblasNoTrans, CblasTrans);
+	d_matrixProduct(prevLayer->output, weight, this->input, groupAmount, prevLayer->nodeAmount, this->nodeAmount, 1, 0, CblasNoTrans, CblasTrans);
 	//int m = this->nodeAmount, k = prevLayer->nodeAmount, n = groupAmount;
 	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, 1, weight, k, prevLayer->output, k, 0, this->input, n);
 	for (int i = 0; i < nodeAmount*groupAmount; i++)
@@ -137,8 +137,8 @@ void NeuralLayer::updateDelta()
 	else
 	{
 		//这里好像是不对
-		d_matrixProduct(nextLayer->weight, nextLayer->delta, this->delta, this->nodeAmount, nextLayer->nodeAmount, groupAmount,
-			1, 0, CblasNoTrans, CblasTrans);
+		d_matrixProduct(nextLayer->delta, nextLayer->weight, this->delta, groupAmount, nextLayer->nodeAmount, this->nodeAmount,
+			1, 0, CblasNoTrans, CblasNoTrans);
 		for (int i = 0; i < nodeAmount*groupAmount; i++)
 			delta[i] *= dactiveFunction(input[i]);
 	}
@@ -147,9 +147,9 @@ void NeuralLayer::updateDelta()
 void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/)
 {
 	updateDelta();
-	//第二个矩阵应该是要转置
-	d_matrixProduct(this->delta, prevLayer->output, this->weight,  this->nodeAmount, groupAmount, prevLayer->nodeAmount,
-		learnSpeed / groupAmount, 1, CblasNoTrans, CblasTrans);
+	//第1个矩阵应该是要转置
+	d_matrixProduct(this->delta, prevLayer->output, this->weight, this->nodeAmount, groupAmount, prevLayer->nodeAmount,
+		learnSpeed / groupAmount, 1, CblasTrans, CblasNoTrans);
 	//matrixOutput(weight, nodeAmount, prevLayer->nodeAmount);
 	//matrixOutput(delta, groupAmount, nodeAmount);
 }
