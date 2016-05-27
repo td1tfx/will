@@ -4,6 +4,7 @@ extern "C"
 #include "cblas.h"
 }
 #include <stdio.h>
+#include <algorithm>
 
 struct d_matrix
 {
@@ -11,12 +12,14 @@ private:
 	double* data = nullptr;
 	int m;
 	int n;
+	int max_script;
 public:
 	d_matrix(int x, int y)
 	{
 		m = x;
 		n = y;
-		data = new double[m*n+1];
+		data = new double[m*n + 1];
+		max_script = m*n;
 	}
 	~d_matrix()
 	{
@@ -24,11 +27,11 @@ public:
 	}
 	double& getData(int x, int y)
 	{
-		return data[x + y*m];
+		return data[std::min(x + y*m, max_script)];
 	}
 	double& getData(int i)
 	{
-		return data[i];
+		return data[std::min(i, max_script)];
 	}
 	double* getDataPointer(int x, int y)
 	{
@@ -46,6 +49,7 @@ public:
 	{
 		return data[i];
 	}
+	double ddot();
 
 	void print();
 

@@ -10,16 +10,22 @@ NeuralLayer::NeuralLayer()
 
 NeuralLayer::~NeuralLayer()
 {
+	deleteData();
+	if (weight) { delete weight; }
+}
+
+
+void NeuralLayer::deleteData()
+{
 	if (input) { delete input; }
 	if (output) { delete output; }
-	if (weight) { delete weight; }
 	if (delta) { delete delta; }
 	if (expect) { delete expect; }
 }
 
-
 void NeuralLayer::initData(int nodeAmount, int groupAmount)
 {
+	deleteData();
 	this->nodeAmount = nodeAmount;
 	this->groupAmount = groupAmount;
 	int n = nodeAmount*groupAmount;
@@ -118,8 +124,6 @@ void NeuralLayer::activeOutputValue()
 	//prevLayer->output->print();
 	d_matrix::product(this->weight, prevLayer->output, this->input);
 	//this->input->print();
-	//int m = this->nodeAmount, k = prevLayer->nodeAmount, n = groupAmount;
-	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, 1, weight, k, prevLayer->output, k, 0, this->input, n);
 	for (int i = 0; i < nodeAmount*groupAmount; i++)
 	{
 		output->getData(i) = activeFunction(input->getData(i));

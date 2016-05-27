@@ -43,7 +43,6 @@ public:
 	std::vector<NeuralLayer*> layers;
 	std::vector<NeuralLayer*>& getLayerVector() { return layers; }
 
-
 	int id;
 
 	NeuralLayer*& getLayer(int number) { return layers[number]; }
@@ -68,16 +67,20 @@ public:
 
 	void createLayers(int amount);  //包含输入和输出层
 
-	void learn(double* input, double* output, int amount);  //学习一组数据
+	void learn();  //学习一组数据
 
 	void train(int times = 1000000, double tol = 0.01);  //学习一批数据
 	
 	void activeOutputValue(double* input, double* output, int amount);  //计算一组输出
 
+	void setInputData(double* input, int nodeAmount, int groupAmount);
+	void getOutputData(double* output, int nodeAmount, int groupAmount);
+	void setExpectData(double* expect, int nodeAmount, int groupAmount);
+
 	//数据
 	double* inputData = nullptr;
 	double* expectData = nullptr;
-	void readData(const char* filename, double* input = nullptr, double* output = nullptr, int amount = -1);
+	void readData(const char* filename);
 
 	std::vector<bool> isTest;
 	double* inputTestData = nullptr;
@@ -88,10 +91,8 @@ public:
 
 	//具体设置
 	virtual void createByData(NeuralLayerMode layerMode = HaveConstNode, int layerAmount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
-	void outputBondWeight(const char* filename = nullptr); //具体的网络均改写这里
+	void outputBondWeight(const char* filename = nullptr); 
 	void createByLoad(const char* filename, bool haveConstNode = true);
-
-	void setNodeDataAmount(int amount);
 
 	NeuralNetCalMode activeMode = ByNode;
 	NeuralNetCalMode backPropageteMode = ByNode;

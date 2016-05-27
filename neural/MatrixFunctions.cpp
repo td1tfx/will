@@ -1,6 +1,11 @@
 #include "MatrixFunctions.h"
 
 
+double d_matrix::ddot()
+{
+	return cblas_ddot(m*n, data, 1, data, 1);
+}
+
 void d_matrix::print()
 {
 	for (int i1 = 0; i1 < m; i1++)

@@ -13,10 +13,10 @@ NeuralNet::~NeuralNet()
 	{
 		delete layer;
 	}
-	if (inputData) delete inputData;
-	if (expectData)	delete expectData;
-	if (inputTestData) delete inputTestData;
-	if (expectTestData) delete expectTestData;
+	if (inputData) delete[] inputData;
+	if (expectData)	delete[] expectData;
+	if (inputTestData) delete[] inputTestData;
+	if (expectTestData) delete[] expectTestData;
 }
 
 
@@ -115,42 +115,64 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 {	
 	if (input)
 	{
-		for (int i_node = 0; i_node < inputAmount; i_node++)
-		{
-			for (int i_group = 0; i_group < amount; i_group++)
-			{
-				getFirstLayer()->getOutput(i_node, i_group) = input[i_node + i_group*inputAmount];
-			}
-		}
-	}
-	
+		setInputData(input, inputAmount, amount);
+	}	
 	for (int i = 1; i < getLayerAmount(); i++)
 	{
 		layers[i]->activeOutputValue();
 	}
-	//在学习阶段可以不输出
 	if (output)
 	{
-		memcpy(output, layers.back()->output->getDataPointer(), sizeof(double)*outputAmount*amount);
+		getOutputData(output, outputAmount, amount);
 	}
 }
 
-//学习数据，amount大于1是批量学习，为1是在线学习，不要设置为其他值
-//若需要重复多次学习，为了提高效率，最好事先设置数据量
-void NeuralNet::learn(double* input, double* output, int amount)
+void NeuralNet::setInputData(double* input, int nodeAmount, int groupAmount)
 {
-	//if (amount <= 0) return;
-	//if (amount > nodeDataAmount) amount = nodeDataAmount;
+	for (int i_node = 0; i_node < nodeAmount; i_node++)
+	{
+		for (int i_group = 0; i_group < groupAmount; i_group++)
+		{
+			getFirstLayer()->getOutput(i_node, i_group) = input[i_node + i_group*nodeAmount];
+		}
+	}
+}
 
+void NeuralNet::getOutputData(double* output, int nodeAmount, int groupAmount)
+{
+	for (int i_node = 0; i_node < nodeAmount; i_node++)
+	{
+		for (int i_group = 0; i_group < groupAmount; i_group++)
+		{
+			output[i_node + i_group*nodeAmount] = getLastLayer()->getOutput(i_node, i_group);
+		}
+	}
+}
+
+void NeuralNet::setExpectData(double* expect, int nodeAmount, int groupAmount)
+{
+	for (int i_node = 0; i_node < nodeAmount; i_node++)
+	{
+		for (int i_group = 0; i_group < groupAmount; i_group++)
+		{
+			getLastLayer()->getExpect(i_node, i_group) = expect[i_node + i_group*nodeAmount];
+		}
+	}
+}
+
+//学习过程
+void NeuralNet::learn()
+{
+	//正向
 	for (int i = 1; i < getLayerAmount(); i++)
 	{
 		layers[i]->activeOutputValue();
 	}
+	//反向传播
 	for (int i = getLayerAmount() - 1; i > 0; i--)
 	{
 		layers[i]->backPropagate(learnSpeed);
 	}
-
 }
 
 //训练一批数据，输出步数和误差
@@ -162,15 +184,11 @@ void NeuralNet::train(int times, double tol)
 	{
 		a = 1;
 	}
-	setNodeDataAmount(a);
 
 	auto output = new double[outputAmount*realDataAmount];
 
-	//设置输入数据
-	for (int i = 0; i < realDataAmount; i++)
-		memcpy(&getFirstLayer()->getOutput(0, i), &inputData[i*inputAmount], sizeof(double)*inputAmount);
-
-	memcpy(getLastLayer()->expect->getDataPointer(), expectData, sizeof(double)*outputAmount*realDataAmount);
+	setInputData(inputData, inputAmount, realDataAmount);
+	setExpectData(expectData, outputAmount, realDataAmount);
 
 	for (int count = 0; count < times; count++)
 	{
@@ -178,32 +196,30 @@ void NeuralNet::train(int times, double tol)
  		{
  			for (int i = 0; i < realDataAmount; i++)
  			{
- 				learn(inputData + inputAmount*i, expectData + outputAmount*i, 1);
+ 				learn();
  			}
  		}
 		else
 		{
-			learn(inputData, expectData, a);
+			learn();
 		}
 
 		//计算误差
 		if (count % 1000 == 0)
 		{
-			double e = 0;
-			setNodeDataAmount(realDataAmount);
+			double e = getLastLayer()->delta->ddot() / (realDataAmount*outputAmount);
+			double e1 = 0;
 			activeOutputValue(inputData, output, realDataAmount);
-			setNodeDataAmount(a);
 			for (int i = 0; i < realDataAmount; i++)
 			{
 				for (int j = 0; j < outputAmount; j++)
 				{
-					//double e1 = 1 - output[i*outputAmount + j] / expectData[i*outputAmount + j];
-					double e1 = output[i*outputAmount + j] - expectData[i*outputAmount + j];
-					e += e1*e1;
+					double e2 = output[i*outputAmount + j] - expectData[i*outputAmount + j];
+					e1 += e2*e2;
 				}
 			}
-			e = e / (realDataAmount*outputAmount);
-			fprintf(stdout, "step = %d,\tmean square error = %f\n", count, e);
+			e1 = e1 / (realDataAmount*outputAmount);
+			fprintf(stdout, "step = %d,\tmean square error = %f, %f\n", count, e, e1);
 			if (e < tol) break;
 		}		
 	}
@@ -212,8 +228,9 @@ void NeuralNet::train(int times, double tol)
 
 //读取数据
 //这里的处理可能不是很好
-void NeuralNet::readData(const char* filename, double* input /*= nullptr*/, double* output /*= nullptr*/, int amount /*= -1*/)
+void NeuralNet::readData(const char* filename)
 {
+	int mark = 2;
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
 	std::string str = readStringFromFile(filename) + "\n";
 	if (str == "")
@@ -222,36 +239,23 @@ void NeuralNet::readData(const char* filename, double* input /*= nullptr*/, doub
 	int n = findNumbers(str, v);
 	inputAmount = int(v[0]);
 	outputAmount = int(v[1]);
-	
-	//三个默认参数的处理
-	if (amount == -1)
-	{
-		amount = (n - 2) / (inputAmount + outputAmount);
-		realDataAmount = amount;
-	}
-	if (input == nullptr)
-	{
-		input = new double[inputAmount * amount];
-		inputData = input;
-	}
-	if (output == nullptr)
-	{
-		output = new double[outputAmount * amount];
-		expectData = output;
-	}	
+
+	realDataAmount = (n - mark) / (inputAmount + outputAmount);
+	inputData = new double[inputAmount * realDataAmount];
+	expectData = new double[outputAmount * realDataAmount];
 
 	//这里的写法太难看了
-	int k = 2, k1 = 0, k2 = 0;
+	int k = mark, k1 = 0, k2 = 0;
 
-	for (int i_data = 1; i_data <= amount; i_data++)
+	for (int i_data = 1; i_data <= realDataAmount; i_data++)
 	{
 		for (int i = 1; i <= inputAmount; i++)
 		{
-			input[k1++] = v[k++];
+			inputData[k1++] = v[k++];
 		}
 		for (int i = 1; i <= outputAmount; i++)
 		{
-			output[k2++] = v[k++];
+			expectData[k2++] = v[k++];
 		}
 	}
 	//测试用
@@ -271,7 +275,7 @@ void NeuralNet::outputBondWeight(const char* filename)
 	{
 		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->nodeAmount);
 	}
-	//printf("start\tend\tweight\n");
+
 	fprintf(fout,"---------------------------------------\n");
 	for (int i_layer = 0; i_layer < layers.size() - 1; i_layer++)
 	{
@@ -330,13 +334,4 @@ void NeuralNet::createByLoad(const char* filename, bool haveConstNode /*= true*/
 	this->createLayers(v_int[k++]);
 }
 
-//设置数据量
-void NeuralNet::setNodeDataAmount(int amount)
-{
-	nodeDataAmount = amount;
-	for (auto& layer : this->getLayerVector())
-	{
-		
-	}
-}
 

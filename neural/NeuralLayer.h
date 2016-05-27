@@ -39,6 +39,8 @@ public:
 	d_matrix* output = nullptr;
 	d_matrix* expect = nullptr;
 	d_matrix* delta = nullptr;
+
+	void deleteData();
 	
 	//weight格式：行数是本层的节点数，列数是上一层的节点数
 	d_matrix* weight = nullptr;		

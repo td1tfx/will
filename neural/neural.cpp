@@ -32,7 +32,7 @@ void run_neural(int option)
 	net->setLearnMode(NeuralNetLearnMode::Batch);
 	net->setWorkMode(NeuralNetWorkMode::Fit);
 	//net->selectTest();
-	net->train(int(1e6), 1e-4);
+	net->train(int(1e5), 1e-4);
 	net->test();
 	//net->outputBondWeight("save.txt");
 
