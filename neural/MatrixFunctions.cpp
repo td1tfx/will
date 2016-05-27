@@ -1,50 +1,7 @@
 #include "MatrixFunctions.h"
 
 
-//matrix product, R(m*n) = a*A(m*k)*B(k*n) + c*R(m*n)
-//call blas
-void MatrixFunctions::d_matrixProduct(double* A, double* B, double* R, int m, int k, int n, 
-	double a /*= 1*/, double c /*= 0*/, CBLAS_TRANSPOSE ta /*= CblasNoTrans*/, CBLAS_TRANSPOSE tb /*= CblasNoTrans*/)
-{
-	int lda = k;
-	int ldb = n;
-	if (ta == CblasTrans) lda = m;
-	if (tb == CblasTrans) ldb = k;
-	cblas_dgemm(CblasRowMajor, ta, tb, m, n, k, a, A, lda, B, ldb, c, R, n);
-}
-
-//output a matrix
-void MatrixFunctions::matrixOutput(double* A, int m, int n)
-{
-	for (int i1 = 0; i1 < m; i1++)
-	{
-		for (int i2 = 0; i2 < n; i2++)
-		{
-			printf("%11.5lf ", A[i2 + i1*n]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
-
-//hadamard element wise product
-void MatrixFunctions::d_hadamardProduct(double* A, double* B, double* R, int m, int n)
-{
-	for (int i = 0; i < m*n; i++)
-	{
-		R[i] = A[i] * B[i];
-	}
-}
-
-void MatrixFunctions::d_matrixMinus(double* A, double* B, double* R, int m, int n)
-{
-	for (int i = 0; i < m*n; i++)
-	{
-		R[i] = A[i] - B[i];
-	}
-}
-
-void MatrixFunctions::d_matrix::output()
+void d_matrix::print()
 {
 	for (int i1 = 0; i1 < m; i1++)
 	{
@@ -54,5 +11,46 @@ void MatrixFunctions::d_matrix::output()
 		}
 		printf("\n");
 	}
-	printf("\n");
+// 	for (int i = 0; i < m*n; i++)
+// 	{
+// 			printf("%11.5lf ", getData(i));
+// 	}
+ 	printf("\n");
+}
+
+void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R, 
+	double a /*= 1*/, double c /*= 0*/, CBLAS_TRANSPOSE ta /*= CblasNoTrans*/, CBLAS_TRANSPOSE tb /*= CblasNoTrans*/)
+{
+	int m = R->m;
+	int n = R->n;
+	int lda = A->m;
+	int k = A->n;
+	int ldb = B->m;
+	
+	if (ta == CblasTrans) 
+	{
+		k = A->m;
+		//lda = k;		
+	}
+	if (tb == CblasTrans)
+	{
+		//ldb = n;
+	}
+	cblas_dgemm(CblasColMajor, ta, tb, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
+}
+
+void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
+{
+	for (int i = 0; i < R->m*R->n; i++)
+	{
+		R->data[i] = A->data[i] * B->data[i];
+	}
+}
+
+void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
+{
+	for (int i = 0; i < R->m*R->n; i++)
+	{
+		R->data[i] = A->data[i] - B->data[i];
+	}
 }

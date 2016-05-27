@@ -1,6 +1,5 @@
 #include "NeuralLayer.h"
 
-using namespace MatrixFunctions;
 
 int NeuralLayer::groupAmount;
 
@@ -11,11 +10,11 @@ NeuralLayer::NeuralLayer()
 
 NeuralLayer::~NeuralLayer()
 {
-	if (input) { delete[] input; }
-	if (output) { delete[] output; }
-	if (weight) { delete[] weight; }
-	if (delta) { delete[] delta; }
-	if (expect) { delete[] expect; }
+	if (input) { delete input; }
+	if (output) { delete output; }
+	if (weight) { delete weight; }
+	if (delta) { delete delta; }
+	if (expect) { delete expect; }
 }
 
 
@@ -26,15 +25,15 @@ void NeuralLayer::initData(int nodeAmount, int groupAmount)
 	int n = nodeAmount*groupAmount;
 	if (type != Input)
 	{
-		input = new double[n];
+		input = new d_matrix(nodeAmount,groupAmount);
 	}
-	output = new double[n];
-	delta = new double[n];
+	output = new d_matrix(nodeAmount, groupAmount);
+	delta = new d_matrix(nodeAmount, groupAmount);
 	if (mode == HaveConstNode)
 	{
 		for (int i = 0; i < groupAmount; i++)
 		{
-			getOutput(nodeAmount - 1, i) = -1;
+			output->getData(nodeAmount - 1, i) = -1;
 		}
 		//matrixOutput(data, 3, 3);
 	}
@@ -42,18 +41,18 @@ void NeuralLayer::initData(int nodeAmount, int groupAmount)
 
 void NeuralLayer::initExpect()
 {
-	expect = new double[nodeAmount*groupAmount];
+	expect = new d_matrix(nodeAmount, groupAmount);
 }
 
 //创建weight矩阵
 void NeuralLayer::connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 {
 	int n = startLayer->nodeAmount*endLayer->nodeAmount;
-	endLayer->weight = new double[n];
+	endLayer->weight = new d_matrix(endLayer->nodeAmount, startLayer->nodeAmount);
 	for (int i = 0; i < n; i++)
 	{
-		endLayer->weight[i] = 1.0 * rand() / RAND_MAX - 0.5;
-		endLayer->weight[i] = 1.0 * i+1;
+		endLayer->weight->getData(i) = 1.0 * rand() / RAND_MAX - 0.5;
+		//endLayer->weight->getData(i) = 1.0 * i+1;
 	}
 	endLayer->prevLayer = startLayer;
 	startLayer->nextLayer = endLayer;
@@ -115,13 +114,15 @@ void NeuralLayer::setFunctions(std::function<double(double)> _active, std::funct
 
 void NeuralLayer::activeOutputValue()
 {
-	//matrixOutput(prevLayer->output, groupAmount, prevLayer->nodeAmount);
-	d_matrixProduct(prevLayer->output, weight, this->input, groupAmount, prevLayer->nodeAmount, this->nodeAmount, 1, 0, CblasNoTrans, CblasTrans);
+	//this->weight->print();
+	//prevLayer->output->print();
+	d_matrix::product(this->weight, prevLayer->output, this->input);
+	//this->input->print();
 	//int m = this->nodeAmount, k = prevLayer->nodeAmount, n = groupAmount;
 	//cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasTrans, m, n, k, 1, weight, k, prevLayer->output, k, 0, this->input, n);
 	for (int i = 0; i < nodeAmount*groupAmount; i++)
 	{
-		output[i] = activeFunction(input[i]);
+		output->getData(i) = activeFunction(input->getData(i));
 	}
 }
 
@@ -129,27 +130,26 @@ void NeuralLayer::updateDelta()
 {
 	if (this->type == Output)
 	{
-		d_matrixMinus(expect, output, delta, nodeAmount, groupAmount);
-		//matrixOutput(expect, groupAmount, nodeAmount);
+		d_matrix::minus(expect, output, delta);
 		//deltas[i] *= dactiveFunction(inputValues[i]);
 		//这里如果去掉这个乘法，是使用交叉熵作为代价函数，但是在隐藏层的传播不可以去掉
 	}
 	else
 	{
-		//这里好像是不对
-		d_matrixProduct(nextLayer->delta, nextLayer->weight, this->delta, groupAmount, nextLayer->nodeAmount, this->nodeAmount,
-			1, 0, CblasNoTrans, CblasNoTrans);
+		//nextLayer->weight->print();
+		//nextLayer->delta->print();
+		d_matrix::product(nextLayer->weight, nextLayer->delta, delta, 1, 0, CblasTrans, CblasNoTrans);
+		//this->delta->print();
 		for (int i = 0; i < nodeAmount*groupAmount; i++)
-			delta[i] *= dactiveFunction(input[i]);
+			delta->getData(i) *= dactiveFunction(input->getData(i));
 	}
 }
 
 void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/)
 {
 	updateDelta();
-	//第1个矩阵应该是要转置
-	d_matrixProduct(this->delta, prevLayer->output, this->weight, this->nodeAmount, groupAmount, prevLayer->nodeAmount,
-		learnSpeed / groupAmount, 1, CblasTrans, CblasNoTrans);
-	//matrixOutput(weight, nodeAmount, prevLayer->nodeAmount);
-	//matrixOutput(delta, groupAmount, nodeAmount);
+	//delta->print();
+	//prevLayer->output->print();
+	d_matrix::product(this->delta, prevLayer->output, this->weight, learnSpeed / groupAmount, 1, CblasNoTrans, CblasTrans);
+	//weight->print();
 }

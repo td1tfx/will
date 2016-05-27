@@ -1,7 +1,5 @@
 #include "NeuralNet.h"
 
-using namespace MatrixFunctions;
-
 void run_neural(int option = 0);
 
 int main(int argc, char* argv[])
@@ -9,7 +7,7 @@ int main(int argc, char* argv[])
 	int option = 0;
 	if (argc > 1)
 	{
-		int option = atoi(argv[1]);
+		option = atoi(argv[1]);
 	}
 	run_neural(option);
 	printf("Run neural net end.\n");
@@ -26,7 +24,7 @@ void run_neural(int option)
 
 	net->readData("test.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 3, 5);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 7);
 	else
 		net->createByLoad("save2.txt");
 

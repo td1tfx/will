@@ -11,7 +11,7 @@ NeuralNet::~NeuralNet()
 {
 	for (auto& layer : getLayerVector())
 	{
-		//delete layer;
+		delete layer;
 	}
 	if (inputData) delete inputData;
 	if (expectData)	delete expectData;
@@ -82,7 +82,6 @@ void NeuralNet::test()
 	auto output_train = new double[outputAmount*realDataAmount];
 
 	//输出全部数据
-	setNodeDataAmount(realDataAmount);
 	activeOutputValue(inputData, output_train, realDataAmount);
 	fprintf(stdout, "\n%d groups train data comparing with expection:\n---------------------------------------\n", realDataAmount);
 	for (int i = 0; i < realDataAmount; i++)
@@ -116,8 +115,13 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 {	
 	if (input)
 	{
-		for (int i=0;i<amount;i++)
-			memcpy(&getFirstLayer()->getOutput(0,i), &input[i*inputAmount], sizeof(double)*inputAmount);
+		for (int i_node = 0; i_node < inputAmount; i_node++)
+		{
+			for (int i_group = 0; i_group < amount; i_group++)
+			{
+				getFirstLayer()->getOutput(i_node, i_group) = input[i_node + i_group*inputAmount];
+			}
+		}
 	}
 	
 	for (int i = 1; i < getLayerAmount(); i++)
@@ -127,7 +131,7 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 	//在学习阶段可以不输出
 	if (output)
 	{
-		memcpy(output, layers.back()->output, sizeof(double)*outputAmount*amount);
+		memcpy(output, layers.back()->output->getDataPointer(), sizeof(double)*outputAmount*amount);
 	}
 }
 
@@ -166,7 +170,7 @@ void NeuralNet::train(int times, double tol)
 	for (int i = 0; i < realDataAmount; i++)
 		memcpy(&getFirstLayer()->getOutput(0, i), &inputData[i*inputAmount], sizeof(double)*inputAmount);
 
-	memcpy(getLastLayer()->expect, expectData, sizeof(double)*outputAmount*realDataAmount);
+	memcpy(getLastLayer()->expect->getDataPointer(), expectData, sizeof(double)*outputAmount*realDataAmount);
 
 	for (int count = 0; count < times; count++)
 	{
@@ -322,12 +326,8 @@ void NeuralNet::createByLoad(const char* filename, bool haveConstNode /*= true*/
 	{
 		v_int[i] = int(v[i]);
 	}
-	int k = 0;
-	
+	int k = 0;	
 	this->createLayers(v_int[k++]);
-
-	//inputAmount = getLayer(0)->getNodeAmount();
-	//outputAmount = getLayer(get)
 }
 
 //设置数据量

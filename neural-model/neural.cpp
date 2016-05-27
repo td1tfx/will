@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 	int option = 0;
 	if (argc > 1)
 	{
-		int option = atoi(argv[1]);
+		option = atoi(argv[1]);
 	}
 	run_neural(option);
 	printf("Run neural net end.\n");

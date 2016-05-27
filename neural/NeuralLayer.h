@@ -5,6 +5,7 @@
 #include "ActiveFunctions.h"
 #include "MatrixFunctions.h"
 
+
 typedef enum 
 {
 	HaveNotConstNode = 0,
@@ -33,23 +34,24 @@ public:
 	int nodeAmount;
 	static int groupAmount;
 	
-	double* input = nullptr;
-	double* output = nullptr;
-	double* expect = nullptr;
-	double* delta = nullptr;
 	//data格式：行数是节点数，列数是数据组数
+	d_matrix* input = nullptr;
+	d_matrix* output = nullptr;
+	d_matrix* expect = nullptr;
+	d_matrix* delta = nullptr;
 	
-	double* weight = nullptr;
 	//weight格式：行数是本层的节点数，列数是上一层的节点数
+	d_matrix* weight = nullptr;		
+	
 
 	NeuralLayer* prevLayer;
 	NeuralLayer* nextLayer;
 
 	void initData(int nodeAmount, int groupAmount);
-	double& getOutput(int nodeid, int groupid) { return output[groupid*nodeAmount + nodeid]; }
+	double& getOutput(int nodeid, int groupid) { return output->getData(nodeid, groupid); }
 	
 	void initExpect();
-	double& getExpect(int nodeid, int groupid) { return expect[groupid*nodeAmount + nodeid]; }
+	double& getExpect(int nodeid, int groupid) { return expect->getData(nodeid, groupid); }
 
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
@@ -58,7 +60,7 @@ public:
 	void markMax(int groupid);
 	void normalized();
 
-	//feedback是active的导数
+	//dactive是active的导数
 	std::function<double(double)> activeFunction = ActiveFunctions::sigmoid;
 	std::function<double(double)> dactiveFunction = ActiveFunctions::dsigmoid;
 
