@@ -31,8 +31,11 @@ public:
 
 	int id;
 
-	int nodeAmount;
+	int inputNodeAmount;
+	int outputNodeAmount;
 	static int groupAmount;
+
+	double lambda = 0.1;
 	
 	//data格式：行数是节点数，列数是数据组数
 	d_matrix* input = nullptr;
@@ -43,13 +46,12 @@ public:
 	void deleteData();
 	
 	//weight格式：行数是本层的节点数，列数是上一层的节点数
-	d_matrix* weight = nullptr;		
-	
+	d_matrix* weight = nullptr;	
 
 	NeuralLayer* prevLayer;
 	NeuralLayer* nextLayer;
 
-	void initData(int nodeAmount, int groupAmount);
+	void initData(int nodeAmount, int groupAmount, NeuralLayerMode mode);
 	double& getOutput(int nodeid, int groupid) { return output->getData(nodeid, groupid); }
 	
 	void initExpect();
@@ -71,7 +73,7 @@ public:
 	void activeOutputValue();
 
 	void updateDelta();
-	void backPropagate(double learnSpeed = 0.5);
+	void backPropagate(double learnSpeed = 0.5, double lambda = 0.1);
 
 	NeuralLayerMode mode = HaveConstNode;
 	NeuralLayerType type = Hidden;

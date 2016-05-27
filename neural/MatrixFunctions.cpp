@@ -16,14 +16,19 @@ void d_matrix::print()
 		}
 		printf("\n");
 	}
-// 	for (int i = 0; i < m*n; i++)
-// 	{
-// 			printf("%11.5lf ", getData(i));
-// 	}
- 	printf("\n");
+	// 	for (int i = 0; i < m*n; i++)
+	// 	{
+	// 			printf("%11.5lf ", getData(i));
+	// 	}
+	printf("\n");
 }
 
-void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R, 
+void d_matrix::memcpyData(double* src, int size)
+{
+	memcpy(data, src, std::min(size, int(sizeof(double)*m*n)));
+}
+
+void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	double a /*= 1*/, double c /*= 0*/, CBLAS_TRANSPOSE ta /*= CblasNoTrans*/, CBLAS_TRANSPOSE tb /*= CblasNoTrans*/)
 {
 	int m = R->m;
@@ -31,16 +36,7 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	int lda = A->m;
 	int k = A->n;
 	int ldb = B->m;
-	
-	if (ta == CblasTrans) 
-	{
-		k = A->m;
-		//lda = k;		
-	}
-	if (tb == CblasTrans)
-	{
-		//ldb = n;
-	}
+	if (ta == CblasTrans) { k = A->m; }
 	cblas_dgemm(CblasColMajor, ta, tb, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
 }
 

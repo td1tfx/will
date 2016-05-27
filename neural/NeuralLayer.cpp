@@ -23,38 +23,41 @@ void NeuralLayer::deleteData()
 	if (expect) { delete expect; }
 }
 
-void NeuralLayer::initData(int nodeAmount, int groupAmount)
+void NeuralLayer::initData(int nodeAmount, int groupAmount, NeuralLayerMode mode)
 {
 	deleteData();
-	this->nodeAmount = nodeAmount;
+	this->mode = mode;
+	this->inputNodeAmount = nodeAmount;
+	this->outputNodeAmount = nodeAmount;
 	this->groupAmount = groupAmount;
-	int n = nodeAmount*groupAmount;
+	if (mode == HaveConstNode)
+		this->outputNodeAmount++;
 	if (type != Input)
 	{
-		input = new d_matrix(nodeAmount,groupAmount);
+		input = new d_matrix(this->inputNodeAmount,groupAmount);
 	}
-	output = new d_matrix(nodeAmount, groupAmount);
-	delta = new d_matrix(nodeAmount, groupAmount);
+	output = new d_matrix(this->outputNodeAmount, groupAmount);
+	delta = new d_matrix(this->outputNodeAmount, groupAmount);
 	if (mode == HaveConstNode)
 	{
 		for (int i = 0; i < groupAmount; i++)
 		{
-			output->getData(nodeAmount - 1, i) = -1;
+			output->getData(this->outputNodeAmount - 1, i) = -1;
 		}
-		//matrixOutput(data, 3, 3);
 	}
+	//output->print();
 }
 
 void NeuralLayer::initExpect()
 {
-	expect = new d_matrix(nodeAmount, groupAmount);
+	expect = new d_matrix(outputNodeAmount, groupAmount);
 }
 
 //创建weight矩阵
 void NeuralLayer::connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer)
 {
-	int n = startLayer->nodeAmount*endLayer->nodeAmount;
-	endLayer->weight = new d_matrix(endLayer->nodeAmount, startLayer->nodeAmount);
+	int n = endLayer->inputNodeAmount*startLayer->outputNodeAmount;
+	endLayer->weight = new d_matrix(endLayer->inputNodeAmount, startLayer->outputNodeAmount);
 	for (int i = 0; i < n; i++)
 	{
 		endLayer->weight->getData(i) = 1.0 * rand() / RAND_MAX - 0.5;
@@ -100,12 +103,12 @@ void NeuralLayer::normalized()
 	for (int i_group = 0; i_group < this->groupAmount; i_group++)
 	{
 		double sum = 0;
-		for (int i_node = 0; i_node < nodeAmount; i_node++)
+		for (int i_node = 0; i_node < inputNodeAmount; i_node++)
 		{
 			sum += getOutput(i_node, i_group);
 		}
 		if (sum == 0) continue;
-		for (int i_node = 0; i_node < nodeAmount; i_node++)
+		for (int i_node = 0; i_node < inputNodeAmount; i_node++)
 		{
 			getOutput(i_node, i_group) /= sum;
 		}
@@ -124,9 +127,12 @@ void NeuralLayer::activeOutputValue()
 	//prevLayer->output->print();
 	d_matrix::product(this->weight, prevLayer->output, this->input);
 	//this->input->print();
-	for (int i = 0; i < nodeAmount*groupAmount; i++)
+	for (int i = 0; i < inputNodeAmount; i++)
 	{
-		output->getData(i) = activeFunction(input->getData(i));
+		for (int j = 0; j < groupAmount; j++)
+		{
+			output->getData(i, j) = activeFunction(input->getData(i, j));
+		}
 	}
 }
 
@@ -144,16 +150,41 @@ void NeuralLayer::updateDelta()
 		//nextLayer->delta->print();
 		d_matrix::product(nextLayer->weight, nextLayer->delta, delta, 1, 0, CblasTrans, CblasNoTrans);
 		//this->delta->print();
-		for (int i = 0; i < nodeAmount*groupAmount; i++)
-			delta->getData(i) *= dactiveFunction(input->getData(i));
+		for (int i = 0; i < inputNodeAmount; i++)
+		{
+			for (int j = 0; j < groupAmount; j++)
+			{
+				delta->getData(i,j) *= dactiveFunction(input->getData(i,j));
+			}
+		}
 	}
 }
 
-void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/)
+void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/, double lambda /*= 0.1*/)
 {
 	updateDelta();
 	//delta->print();
 	//prevLayer->output->print();
-	d_matrix::product(this->delta, prevLayer->output, this->weight, learnSpeed / groupAmount, 1, CblasNoTrans, CblasTrans);
+
+	d_matrix::product(delta, prevLayer->output, weight,	learnSpeed / groupAmount, 1, CblasNoTrans, CblasTrans);
+	return;
+	//这个是加了正则化， 结果不正常
+	if (mode == HaveNotConstNode)
+	{
+		d_matrix::product(delta, prevLayer->output, weight,
+			learnSpeed / groupAmount, 1 - lambda*learnSpeed / groupAmount, CblasNoTrans, CblasTrans);
+	}
+	else
+	{
+		int m = weight->getRow();
+		int n = weight->getCol();
+		int k = delta->getCol();
+		cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans, m, n-1, k, 
+			learnSpeed / groupAmount, delta->getDataPointer(), m, prevLayer->output->getDataPointer(), n,
+			1 - lambda*learnSpeed / groupAmount, weight->getDataPointer(), m);
+		cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans, m, 1, k,
+			learnSpeed / groupAmount, delta->getDataPointer(), m, prevLayer->output->getDataPointer(n - 1, 0), n,
+			1, weight->getDataPointer(0, n - 1), m);
+	}
 	//weight->print();
 }

@@ -25,6 +25,14 @@ public:
 	{
 		delete[] data;
 	}
+	int getRow()
+	{
+		return m;
+	}
+	int getCol()
+	{
+		return n;
+	}
 	double& getData(int x, int y)
 	{
 		return data[std::min(x + y*m, max_script)];

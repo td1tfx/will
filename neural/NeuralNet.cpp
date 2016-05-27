@@ -163,7 +163,7 @@ void NeuralNet::setExpectData(double* expect, int nodeAmount, int groupAmount)
 //学习过程
 void NeuralNet::learn()
 {
-	//正向
+	//正向计算
 	for (int i = 1; i < getLayerAmount(); i++)
 	{
 		layers[i]->activeOutputValue();
@@ -171,7 +171,7 @@ void NeuralNet::learn()
 	//反向传播
 	for (int i = getLayerAmount() - 1; i > 0; i--)
 	{
-		layers[i]->backPropagate(learnSpeed);
+		layers[i]->backPropagate(learnSpeed, lambda);
 	}
 }
 
@@ -208,18 +208,7 @@ void NeuralNet::train(int times, double tol)
 		if (count % 1000 == 0)
 		{
 			double e = getLastLayer()->delta->ddot() / (realDataAmount*outputAmount);
-			double e1 = 0;
-			activeOutputValue(inputData, output, realDataAmount);
-			for (int i = 0; i < realDataAmount; i++)
-			{
-				for (int j = 0; j < outputAmount; j++)
-				{
-					double e2 = output[i*outputAmount + j] - expectData[i*outputAmount + j];
-					e1 += e2*e2;
-				}
-			}
-			e1 = e1 / (realDataAmount*outputAmount);
-			fprintf(stdout, "step = %d,\tmean square error = %f, %f\n", count, e, e1);
+			fprintf(stdout, "step = %d,\tmean square error = %f\n", count, e);
 			if (e < tol) break;
 		}		
 	}
@@ -244,7 +233,7 @@ void NeuralNet::readData(const char* filename)
 	inputData = new double[inputAmount * realDataAmount];
 	expectData = new double[outputAmount * realDataAmount];
 
-	//这里的写法太难看了
+	//写法太难看了
 	int k = mark, k1 = 0, k2 = 0;
 
 	for (int i_data = 1; i_data <= realDataAmount; i_data++)
@@ -273,7 +262,7 @@ void NeuralNet::outputBondWeight(const char* filename)
 	fprintf(fout,"%d\tlayers\n", layers.size());
 	for (int i_layer = 0; i_layer < layers.size(); i_layer++)
 	{
-		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->nodeAmount);
+		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->inputNodeAmount);
 	}
 
 	fprintf(fout,"---------------------------------------\n");
@@ -292,28 +281,25 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 {
 	this->createLayers(layerAmount);
 
-	if (layerMode == HaveConstNode)
-		getFirstLayer()->initData(inputAmount + 1, realDataAmount);
-	else
-		getFirstLayer()->initData(inputAmount, realDataAmount);
 	getFirstLayer()->type = Input;
+	getFirstLayer()->initData(inputAmount, realDataAmount, HaveConstNode);
+
 
 	for (int i = 1; i < layerAmount - 1; i++)
 	{
-		getLayer(i)->initData(nodesPerLayer, realDataAmount);
+		getLayer(i)->initData(nodesPerLayer, realDataAmount, HaveConstNode);
 	}
 	
-	getLastLayer()->initData(outputAmount, realDataAmount);
+	getLastLayer()->type = Output;
+	getLastLayer()->initData(outputAmount, realDataAmount, HaveNotConstNode);
 	//getLastLayer()->setFunctions(ActiveFunctions::linear, ActiveFunctions::dlinear);
 	getLastLayer()->initExpect();
-	getLastLayer()->type = Output;
+
 
 	for (int i = 1; i < layerAmount; i++)
 	{
 		layers[i]->connetPrevlayer(layers[i - 1]);
 	}
-
-	//printf("%d,%d,%d\n", layer->getNodeAmount(), layer->getNode(0)->bonds.size(), getLayer(1));
 }
 
 //依据键结值创建神经网

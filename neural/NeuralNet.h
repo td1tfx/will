@@ -16,12 +16,14 @@ typedef enum
 	//在线学习每次都更新所有键结值，批量学习每一批数据更新一次键结值
 } NeuralNetLearnMode;
 
-//计算模式
+//计算模式（no use）
+/*
 typedef enum 
 {
 	ByLayer,
 	ByNode,
 } NeuralNetCalMode;
+*/
 
 //工作模式
 typedef enum
@@ -59,6 +61,7 @@ public:
 	NeuralNetLearnMode learnMode = Batch;
 
 	double learnSpeed = 0.5;
+	double lambda = 0.1;
 	void setLearnSpeed(double s) { learnSpeed = s; }
 	void setLearnMode(NeuralNetLearnMode lm);
 
@@ -67,9 +70,9 @@ public:
 
 	void createLayers(int amount);  //包含输入和输出层
 
-	void learn();  //学习一组数据
+	void learn();
 
-	void train(int times = 1000000, double tol = 0.01);  //学习一批数据
+	void train(int times = 1000000, double tol = 0.01);  //训练过程
 	
 	void activeOutputValue(double* input, double* output, int amount);  //计算一组输出
 
@@ -94,8 +97,8 @@ public:
 	void outputBondWeight(const char* filename = nullptr); 
 	void createByLoad(const char* filename, bool haveConstNode = true);
 
-	NeuralNetCalMode activeMode = ByNode;
-	NeuralNetCalMode backPropageteMode = ByNode;
+	//NeuralNetCalMode activeMode = ByNode;
+	//NeuralNetCalMode backPropageteMode = ByNode;
 
 };
 
