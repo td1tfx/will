@@ -1,4 +1,5 @@
 #include "NeuralNet.h"
+#include <time.h>
 
 void run_neural(int option = 0);
 
@@ -9,8 +10,9 @@ int main(int argc, char* argv[])
 	{
 		option = atoi(argv[1]);
 	}
+	clock_t t0 = clock();
 	run_neural(option);
-	printf("Run neural net end.\n");
+	printf("Run neural net end. Time is %d ms.\n", clock() - t0);
 	
 #ifdef _WIN32
 	getchar();
@@ -27,13 +29,13 @@ void run_neural(int option)
 
 	net->readData("test.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 2, 6);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 30);
 	else
 		net->createByLoad("save.txt");
 
-	net->setLearnSpeed(0.5);
+	net->setLearnSpeed(0.1);
 	net->selectTest();
-	net->train(int(1e7), 1e-4);
+	net->train(int(1e6), 1e-4);
 	net->test();
 	net->outputBondWeight("save.txt");
 
