@@ -61,7 +61,7 @@ public:
 	NeuralNetLearnMode learnMode = Batch;
 
 	double learnSpeed = 0.5;
-	double lambda = 0.0005;
+	double lambda = 0.001;
 	void setLearnSpeed(double s) { learnSpeed = s; }
 	void setLearnMode(NeuralNetLearnMode lm);
 

@@ -35,7 +35,7 @@ void run_neural(int option)
 
 	net->setLearnSpeed(0.5);
 	//net->selectTest();
-	net->train(int(1e7), 1e-3);
+	net->train(int(1e5), 1e-3);
 	net->test();
 	net->outputBondWeight("save.txt");
 
