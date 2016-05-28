@@ -5,7 +5,7 @@ void run_neural(int option = 0);
 
 int main(int argc, char* argv[])
 {
-	int option = 0;
+	int option = 1;
 	if (argc > 1)
 	{
 		option = atoi(argv[1]);
@@ -25,19 +25,19 @@ void run_neural(int option)
 	auto net = new NeuralNet();
 	
 	net->setLearnMode(NeuralNetLearnMode::Batch);
-	net->setWorkMode(NeuralNetWorkMode::Fit);
+	net->setWorkMode(NeuralNetWorkMode::Probability);
 
-	net->readData("test.txt");
+	net->readData("p.txt");
 	if (option == 0)
-		net->createByData(NeuralLayerMode::HaveConstNode, 3, 30);
+		net->createByData(NeuralLayerMode::HaveConstNode, 3, 10);
 	else
-		net->createByLoad("save.txt");
+		net->createByLoad("savep.txt");
 
-	net->setLearnSpeed(0.1);
+	net->setLearnSpeed(0.5);
 	net->selectTest();
-	net->train(int(1e6), 1e-4);
+	net->train(int(1e7), 1e-3);
 	net->test();
-	net->outputBondWeight("save.txt");
+	//net->outputBondWeight("savep.txt");
 
 	delete net;
 

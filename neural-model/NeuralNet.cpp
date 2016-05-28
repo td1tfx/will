@@ -108,7 +108,12 @@ void NeuralNet::test()
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf ->%8.4lf\t", output_train[i*outputAmount + j], expectData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ", output_train[i*outputAmount + j]);
+		}
+		fprintf(stdout, " --> ");
+		for (int j = 0; j < outputAmount; j++)
+		{
+			fprintf(stdout, "%8.4lf ", expectData[i*outputAmount + j]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -122,7 +127,12 @@ void NeuralNet::test()
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf ->%8.4lf\t", output_test[i*outputAmount + j], expectTestData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ", output_test[i*outputAmount + j]);
+		}
+		fprintf(stdout, " --> ");
+		for (int j = 0; j < outputAmount; j++)
+		{
+			fprintf(stdout, "%8.4lf ", expectTestData[i*outputAmount + j]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -474,6 +484,13 @@ void NeuralNet::createByLoad(const char* filename, bool haveConstNode /*= true*/
 			node->setFunctions(ActiveFunctions::sigmoid, ActiveFunctions::dsigmoid);
 		}
 		k += 2;
+	}
+	if (workMode == Probability)
+	{
+		for (auto node : getLastLayer()->nodes)
+		{
+			node->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
+		}
 	}
 	for (; k < n; k += 5)
 	{
