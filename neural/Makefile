@@ -10,13 +10,13 @@ TARGET=neural
 all: .d $(SOURCES) $(TARGET)
 
 .d: $(SOURCES)
-        $(CXX) $(CPPFLAGS) -MM $(SOURCES) >.d
+	$(CXX) $(CPPFLAGS) -MM $(SOURCES) >.d
 -include .d
 $(TARGET): $(OBJECTS)
-        $(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
+	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
 clean:
-        rm $(OBJECTS)
+	rm $(OBJECTS)
 
 icpc: CXX=icpc
 icpc: all
