@@ -31,17 +31,19 @@ public:
 
 	int id;
 
-	int inputNodeAmount;
-	int outputNodeAmount;
+	int nodeAmount;
 	static int groupAmount;
 
 	double lambda = 0.1;
+	static int step;
 	
 	//data格式：行数是节点数，列数是数据组数
 	d_matrix* input = nullptr;
 	d_matrix* output = nullptr;
 	d_matrix* expect = nullptr;
 	d_matrix* delta = nullptr;
+	d_matrix* bias = nullptr;
+	d_matrix* bias_as = nullptr;
 
 	void deleteData();
 	
@@ -51,7 +53,7 @@ public:
 	NeuralLayer* prevLayer;
 	NeuralLayer* nextLayer;
 
-	void initData(int nodeAmount, int groupAmount, NeuralLayerMode mode);
+	void initData(int nodeAmount, int groupAmount);
 	double& getOutput(int nodeid, int groupid) { return output->getData(nodeid, groupid); }
 	
 	void initExpect();
@@ -61,7 +63,7 @@ public:
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void connetNextlayer(NeuralLayer* nextLayer);
 	//void connet(NueralLayer nextLayer);
-	void markMax(int groupid);
+	void markMax();
 	void normalized();
 
 	//dactive是active的导数

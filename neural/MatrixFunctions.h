@@ -5,13 +5,14 @@ extern "C"
 }
 #include <stdio.h>
 #include <algorithm>
+#include <cstring>
 
 struct d_matrix
 {
 private:
 	double* data = nullptr;
-	int m;
-	int n;
+	int m=0;
+	int n=0;
 	int max_script;
 public:
 	d_matrix(int x, int y)
@@ -60,11 +61,19 @@ public:
 	double ddot();
 
 	void print();
-
 	void memcpyData(double* src, int size);
+	void expand();
+
+	void initData(double v);
+	void initRandom();
+	void multiply(double v);
+
+	static void cpyData(d_matrix* dst, d_matrix* src);
 
 	static void product(d_matrix* A, d_matrix* B, d_matrix* R,
 		double a = 1, double c = 0, CBLAS_TRANSPOSE ta = CblasNoTrans, CBLAS_TRANSPOSE tb = CblasNoTrans);
+	static void productVector(d_matrix* A, d_matrix* B, d_matrix* R,
+		double a = 1, double c = 0, CBLAS_TRANSPOSE ta = CblasNoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
 };

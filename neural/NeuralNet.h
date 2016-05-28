@@ -61,12 +61,12 @@ public:
 	NeuralNetLearnMode learnMode = Batch;
 
 	double learnSpeed = 0.5;
-	double lambda = 0.1;
+	double lambda = 0.0005;
 	void setLearnSpeed(double s) { learnSpeed = s; }
 	void setLearnMode(NeuralNetLearnMode lm);
 
 	NeuralNetWorkMode workMode = Fit;
-	void setWorkMode(NeuralNetWorkMode wm) { workMode = wm; }
+	void setWorkMode(NeuralNetWorkMode wm);
 
 	void createLayers(int amount);  //包含输入和输出层
 
@@ -95,7 +95,7 @@ public:
 	//具体设置
 	virtual void createByData(NeuralLayerMode layerMode = HaveConstNode, int layerAmount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
 	void outputBondWeight(const char* filename = nullptr); 
-	void createByLoad(const char* filename, bool haveConstNode = true);
+	void createByLoad(const char* filename);
 
 	//NeuralNetCalMode activeMode = ByNode;
 	//NeuralNetCalMode backPropageteMode = ByNode;

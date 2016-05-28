@@ -26,6 +26,15 @@ void NeuralNet::setLearnMode(NeuralNetLearnMode lm)
 	learnMode = lm;
 }
 
+void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
+{
+	 workMode = wm; 
+	 if (wm == Probability)
+	 {
+		 getLastLayer()->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
+	 }
+}
+
 //创建神经层
 void NeuralNet::createLayers(int amount)
 {
@@ -88,7 +97,12 @@ void NeuralNet::test()
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_train[i*outputAmount + j], expectData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ", output_train[i*outputAmount + j]);
+		}
+		fprintf(stdout, " --> ");
+		for (int j = 0; j < outputAmount; j++)
+		{
+			fprintf(stdout, "%8.4lf ", expectData[i*outputAmount + j]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -102,7 +116,12 @@ void NeuralNet::test()
 	{
 		for (int j = 0; j < outputAmount; j++)
 		{
-			fprintf(stdout, "%8.4lf -->%8.4lf\t", output_test[i*outputAmount + j], expectTestData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ", output_test[i*outputAmount + j]);
+		}
+		fprintf(stdout, " --> ");
+		for (int j = 0; j < outputAmount; j++)
+		{
+			fprintf(stdout, "%8.4lf ", expectTestData[i*outputAmount + j]);
 		}
 		fprintf(stdout, "\n");
 	}
@@ -121,6 +140,16 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 	{
 		layers[i]->activeOutputValue();
 	}
+
+	if (workMode == Probability)
+	{
+		getLastLayer()->normalized();
+	}
+	else if (workMode == Classify)
+	{
+		getLastLayer()->markMax();
+	}
+
 	if (output)
 	{
 		getOutputData(output, outputAmount, amount);
@@ -164,10 +193,7 @@ void NeuralNet::setExpectData(double* expect, int nodeAmount, int groupAmount)
 void NeuralNet::learn()
 {
 	//正向计算
-	for (int i = 1; i < getLayerAmount(); i++)
-	{
-		layers[i]->activeOutputValue();
-	}
+	activeOutputValue(nullptr, nullptr, realDataAmount);
 	//反向传播
 	for (int i = getLayerAmount() - 1; i > 0; i--)
 	{
@@ -185,13 +211,19 @@ void NeuralNet::train(int times, double tol)
 		a = 1;
 	}
 
-	auto output = new double[outputAmount*realDataAmount];
-
 	setInputData(inputData, inputAmount, realDataAmount);
 	setExpectData(expectData, outputAmount, realDataAmount);
 
-	for (int count = 0; count < times; count++)
+	//这里计算初始的误差，如果足够小就不训练了
+	activeOutputValue(nullptr, nullptr, realDataAmount);
+	getLastLayer()->updateDelta();
+	double e = getLastLayer()->delta->ddot() / (realDataAmount*outputAmount);
+	fprintf(stdout, "step = %d,\tmean square error = %f\n", 0, e);
+	if (e < tol) return;
+	//训练过程
+	for (int count = 1; count <= times; count++)
 	{
+		getFirstLayer()->step = count;
  		if (learnMode == Online)
  		{
  			for (int i = 0; i < realDataAmount; i++)
@@ -212,14 +244,13 @@ void NeuralNet::train(int times, double tol)
 			if (e < tol) break;
 		}		
 	}
-	delete [] output;
 }
 
 //读取数据
 //这里的处理可能不是很好
 void NeuralNet::readData(const char* filename)
 {
-	int mark = 2;
+	int mark = 3;
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
 	std::string str = readStringFromFile(filename) + "\n";
 	if (str == "")
@@ -258,19 +289,35 @@ void NeuralNet::outputBondWeight(const char* filename)
 	if (filename)
 		fout = fopen(filename, "w+t");
 
-	fprintf(fout,"\nNet information:\n", layers.size());
+	fprintf(fout,"\nNet information:\n");
 	fprintf(fout,"%d\tlayers\n", layers.size());
-	for (int i_layer = 0; i_layer < layers.size(); i_layer++)
+	for (int i_layer = 0; i_layer < getLayerAmount(); i_layer++)
 	{
-		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->inputNodeAmount);
+		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->nodeAmount);
 	}
 
 	fprintf(fout,"---------------------------------------\n");
-	for (int i_layer = 0; i_layer < layers.size() - 1; i_layer++)
+	for (int i_layer = 0; i_layer < getLayerAmount() - 1; i_layer++)
 	{
 		auto& layer1 = layers[i_layer];
 		auto& layer2 = layers[i_layer + 1];
+		fprintf(fout, "weight for layer %d to %d\n", i_layer + 1, i_layer);
+		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		{
+			for (int i1 = 0; i1 < layer1->nodeAmount; i1++)
+			{
+				fprintf(fout, "%14.11lf ", layer2->weight->getData(i2, i1));
+			}
+			fprintf(fout, "\n");
+		}
+		fprintf(fout, "bias for layer %d\n", i_layer + 1);
+		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		{
+			fprintf(fout, "%14.11lf ", layer2->bias->getData(i2));
+		}
+		fprintf(fout, "\n");
 	}
+
 	if (filename)
 		fclose(fout);
 }
@@ -282,18 +329,17 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 	this->createLayers(layerAmount);
 
 	getFirstLayer()->type = Input;
-	getFirstLayer()->initData(inputAmount, realDataAmount, HaveConstNode);
+	getFirstLayer()->initData(inputAmount, realDataAmount);
 
 
 	for (int i = 1; i < layerAmount - 1; i++)
 	{
-		getLayer(i)->initData(nodesPerLayer, realDataAmount, HaveConstNode);
+		getLayer(i)->initData(nodesPerLayer, realDataAmount);
 	}
 	
 	getLastLayer()->type = Output;
-	getLastLayer()->initData(outputAmount, realDataAmount, HaveNotConstNode);
+	getLastLayer()->initData(outputAmount, realDataAmount);
 	//getLastLayer()->setFunctions(ActiveFunctions::linear, ActiveFunctions::dlinear);
-	getLastLayer()->initExpect();
 
 
 	for (int i = 1; i < layerAmount; i++)
@@ -303,21 +349,53 @@ void NeuralNet::createByData(NeuralLayerMode layerMode /*= HaveConstNode*/, int 
 }
 
 //依据键结值创建神经网
-void NeuralNet::createByLoad(const char* filename, bool haveConstNode /*= true*/)
+void NeuralNet::createByLoad(const char* filename)
 {
 	std::string str = readStringFromFile(filename) + "\n";
 	if (str == "")
 		return;
 	std::vector<double> v;
 	int n = findNumbers(str, v);
+	// 	for (int i = 0; i < n; i++)
+	// 		printf("%14.11lf\n",v[i]);
+	// 	printf("\n");
 	std::vector<int> v_int;
 	v_int.resize(n);
-	for (int i = 0; i < n; i++)
+	for (int i_layer = 0; i_layer < n; i_layer++)
 	{
-		v_int[i] = int(v[i]);
+		v_int[i_layer] = int(v[i_layer]);
 	}
-	int k = 0;	
-	this->createLayers(v_int[k++]);
+	int k = 0;
+	int layerAmount = v_int[k++];
+	this->createLayers(layerAmount);
+	getFirstLayer()->type = Input;
+	getLastLayer()->type = Output;
+	k++;
+	for (int i_layer = 0; i_layer < layerAmount; i_layer++)
+	{
+		getLayer(i_layer)->initData(v_int[k], realDataAmount);
+		k += 2;
+	}
+	k = 1 + layerAmount * 2;
+	for (int i_layer = 0; i_layer < layerAmount - 1; i_layer++)
+	{
+		auto& layer1 = layers[i_layer];
+		auto& layer2 = layers[i_layer + 1];
+		layer2->connetPrevlayer(layer1);
+		k += 2;
+		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		{
+			for (int i1 = 0; i1 < layer1->nodeAmount; i1++)
+			{
+				layer2->weight->getData(i2, i1) = v[k++];
+			}
+		}
+		k += 1;
+		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		{
+			layer2->bias->getData(i2) = v[k++];
+		}
+	}
 }
 
 

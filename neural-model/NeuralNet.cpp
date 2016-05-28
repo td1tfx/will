@@ -291,7 +291,10 @@ void NeuralNet::train(int times, double tol)
 		a = 1;
 	setNodeDataAmount(a);
 
-	auto output = new double[outputAmount*realDataAmount];
+	double e = calTol();
+
+	fprintf(stdout, "step = %d,\tmean square error = %f\n", 0, e);
+	if (e < tol) return;
 
 	for (int count = 0; count < times; count++)
 	{
@@ -310,25 +313,34 @@ void NeuralNet::train(int times, double tol)
 		//计算误差
 		if (count % 1000 == 0)
 		{
-			double e = 0;
-			setNodeDataAmount(realDataAmount);
-			activeOutputValue(inputData, output, realDataAmount);
-			setNodeDataAmount(a);
-			for (int i = 0; i < realDataAmount; i++)
-			{
-				for (int j = 0; j < outputAmount; j++)
-				{
-					//double e1 = 1 - output[i*outputAmount + j] / expectData[i*outputAmount + j];
-					double e1 = output[i*outputAmount + j] - expectData[i*outputAmount + j];
-					e += e1*e1;
-				}
-			}
-			e = e / (realDataAmount*outputAmount);
+			double e = calTol();			
 			fprintf(stdout, "step = %d,\tmean square error = %f\n", count, e);
 			if (e < tol) break;
 		}		
 	}
-	delete output;
+
+}
+
+double NeuralNet::calTol()
+{
+	double e = 0;
+	auto output = new double[outputAmount*realDataAmount];
+	setNodeDataAmount(realDataAmount);
+	activeOutputValue(inputData, output, realDataAmount);
+	if (learnMode == Online)
+		setNodeDataAmount(1);
+	for (int i = 0; i < realDataAmount; i++)
+	{
+		for (int j = 0; j < outputAmount; j++)
+		{
+			//double e1 = 1 - output[i*outputAmount + j] / expectData[i*outputAmount + j];
+			double e1 = output[i*outputAmount + j] - expectData[i*outputAmount + j];
+			e += e1*e1;
+		}
+	}
+	e = e / (realDataAmount*outputAmount);
+	delete[] output;
+	return e;
 }
 
 //读取数据

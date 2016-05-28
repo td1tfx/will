@@ -74,6 +74,8 @@ public:
 
 	void train(int times = 1000000, double tol = 0.01);  //学习一批数据
 	
+	double calTol();
+
 	void activeOutputValue(double* input, double* output, int amount);  //计算一组输出
 
 	//数据

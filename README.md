@@ -10,5 +10,5 @@
 Windows下面需要链接libgfortran.dll.a。
 
 CBLAS的代码需少量修改才能在VS中使用。
-##neural-model
+###neural-model
 神经网络，是按照教科书中的讲解以面向对象方法构造，计算部分未经优化。
