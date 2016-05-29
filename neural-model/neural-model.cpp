@@ -5,7 +5,7 @@ void run_neural(int option = 0);
 
 int main(int argc, char* argv[])
 {
-	int option = 1;
+	int option = 0;
 	if (argc > 1)
 	{
 		option = atoi(argv[1]);

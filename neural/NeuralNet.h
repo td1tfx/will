@@ -4,6 +4,7 @@
 #include <string.h>
 #include "NeuralLayer.h"
 #include "lib/libconvert.h"
+#include "MNISTFunctions.h"
 
 
 //学习模式
@@ -28,9 +29,9 @@ typedef enum
 //工作模式
 typedef enum
 {
-	Fit,  //拟合
-	Classify,  //分类，会筛选最大值设为1，其他设为0
-	Probability,   //几率，结果会归一化	
+	Fit,            //拟合
+	Classify,       //分类，会筛选最大值设为1，其他设为0
+	Probability,    //几率，结果会归一化	
 } NeuralNetWorkMode;
 
 
@@ -55,14 +56,17 @@ public:
 	int inputAmount;
 	int outputAmount;
 	int trainDataAmount = 0;  //训练的数据量
-	int realDataAmount = 0;  //实际的数据量
-	int nodeDataAmount = 0;  //节点的数据量
+	int realDataAmount = 0;   //实际的数据量
+	int nodeDataAmount = 0;   //节点的数据量
 
 	NeuralNetLearnMode learnMode = Batch;
 
-	double learnSpeed = 0.5;
-	double lambda = 0.001;
+	double learnSpeed = 0.5;  //学习速度
 	void setLearnSpeed(double s) { learnSpeed = s; }
+
+	double lambda = 0.0;      //正则化参数，防止过拟合
+	void setRegular(double l) { lambda = l; }
+
 	void setLearnMode(NeuralNetLearnMode lm);
 
 	NeuralNetWorkMode workMode = Fit;
@@ -72,7 +76,7 @@ public:
 
 	void learn();
 
-	void train(int times = 1000000, double tol = 0.01);  //训练过程
+	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 1e-9);  //训练过程
 	
 	void activeOutputValue(double* input, double* output, int amount);  //计算一组输出
 
@@ -93,12 +97,14 @@ public:
 	void test();
 
 	//具体设置
-	virtual void createByData(NeuralLayerMode layerMode = HaveConstNode, int layerAmount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
+	virtual void createByData(int layerAmount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
 	void outputBondWeight(const char* filename = nullptr); 
 	void createByLoad(const char* filename);
 
 	//NeuralNetCalMode activeMode = ByNode;
 	//NeuralNetCalMode backPropageteMode = ByNode;
+
+	void readMNIST();
 
 };
 

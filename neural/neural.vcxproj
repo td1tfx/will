@@ -149,6 +149,7 @@
     <ClCompile Include="ActiveFunctions.cpp" />
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="MatrixFunctions.cpp" />
+    <ClCompile Include="MNISTFunctions.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralLayer.cpp" />
     <ClCompile Include="NeuralNet.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="lib\cblas.h" />
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="MatrixFunctions.h" />
+    <ClInclude Include="MNISTFunctions.h" />
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralLayer.h" />
   </ItemGroup>

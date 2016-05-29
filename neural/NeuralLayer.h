@@ -6,13 +6,6 @@
 #include "MatrixFunctions.h"
 
 
-typedef enum 
-{
-	HaveNotConstNode = 0,
-	HaveConstNode = 1,
-
-}NeuralLayerMode;
-
 //神经元的类型，包含隐藏，输入，输出
 typedef enum
 {
@@ -34,8 +27,9 @@ public:
 	int nodeAmount;
 	static int groupAmount;
 
-	double lambda = 0.1;
 	static int step;
+
+	static int miniBatch;
 	
 	//data格式：行数是节点数，列数是数据组数
 	d_matrix* input = nullptr;
@@ -53,10 +47,9 @@ public:
 	NeuralLayer* prevLayer;
 	NeuralLayer* nextLayer;
 
-	void initData(int nodeAmount, int groupAmount);
+	void initData(int nodeAmount, int groupAmount, int miniBatch = -1);
 	double& getOutput(int nodeid, int groupid) { return output->getData(nodeid, groupid); }
 	
-	void initExpect();
 	double& getExpect(int nodeid, int groupid) { return expect->getData(nodeid, groupid); }
 
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
@@ -77,7 +70,6 @@ public:
 	void updateDelta();
 	void backPropagate(double learnSpeed = 0.5, double lambda = 0.1);
 
-	NeuralLayerMode mode = HaveConstNode;
 	NeuralLayerType type = Hidden;
 
 };

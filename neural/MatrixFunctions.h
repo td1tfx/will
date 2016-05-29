@@ -61,7 +61,8 @@ public:
 	double ddot();
 
 	void print();
-	void memcpyData(double* src, int size);
+	void memcpyDataIn(double* src, int size);
+	void memcpyDataOut(double* dst, int size);
 	void expand();
 
 	void initData(double v);

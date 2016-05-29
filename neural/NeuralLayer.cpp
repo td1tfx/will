@@ -3,6 +3,7 @@
 
 int NeuralLayer::groupAmount;
 int NeuralLayer::step;
+int NeuralLayer::miniBatch = -1;
 
 NeuralLayer::NeuralLayer()
 {
@@ -26,12 +27,16 @@ void NeuralLayer::deleteData()
 	if (bias_as) { delete bias_as; }
 }
 
-void NeuralLayer::initData(int nodeAmount, int groupAmount)
+void NeuralLayer::initData(int nodeAmount, int groupAmount, int miniBatch /*= -1*/)
 {
 	deleteData();
-	this->mode = mode;
 	this->nodeAmount = nodeAmount;
 	this->groupAmount = groupAmount;
+	//内部可以进行分批处理
+	if (miniBatch < 0)
+		this->miniBatch = groupAmount;
+	else
+		this->miniBatch = miniBatch;
 
 	if (type != Input)
 	{
@@ -48,11 +53,6 @@ void NeuralLayer::initData(int nodeAmount, int groupAmount)
 	bias->initRandom();
 	bias_as->initData(1);
 	//output->print();
-}
-
-void NeuralLayer::initExpect()
-{
-	
 }
 
 //创建weight矩阵
@@ -168,7 +168,16 @@ void NeuralLayer::backPropagate(double learnSpeed /*= 0.5*/, double lambda /*= 0
 {
 	updateDelta();
 	//lambda = 0.0;
-	d_matrix::product(delta, prevLayer->output, weight,	
-		learnSpeed / groupAmount, 1 - lambda * learnSpeed / groupAmount, CblasNoTrans, CblasTrans);
-	d_matrix::productVector(delta, bias_as, bias, learnSpeed / groupAmount, 1, CblasNoTrans);
+	if (miniBatch == groupAmount)
+	{
+		d_matrix::product(delta, prevLayer->output, weight,
+			learnSpeed / groupAmount, 1 - lambda * learnSpeed / groupAmount, CblasNoTrans, CblasTrans);
+		d_matrix::productVector(delta, bias_as, bias, learnSpeed / groupAmount, 1, CblasNoTrans);
+	}
+	else
+	{
+		for (int i = 0; i < groupAmount / miniBatch; i++)
+		{
+		}
+	}
 }

@@ -13,21 +13,26 @@ void d_matrix::print()
 	{
 		for (int i2 = 0; i2 < n; i2++)
 		{
-			printf("%11.5lf ", getData(i1, i2));
+			fprintf(stderr, "%11.5lf ", getData(i1, i2));
 		}
-		printf("\n");
+		fprintf(stderr, "\n");
 	}
 	// 	for (int i = 0; i < m*n; i++)
 	// 	{
 	// 			printf("%11.5lf ", getData(i));
 	// 	}
-	printf("\n");
+	fprintf(stderr, "\n");
 #endif
 }
 
-void d_matrix::memcpyData(double* src, int size)
+void d_matrix::memcpyDataIn(double* src, int size)
 {
 	memcpy(data, src, std::min(size, int(sizeof(double)*m*n)));
+}
+
+void d_matrix::memcpyDataOut(double* dst, int size)
+{
+	memcpy(dst, data, std::min(size, int(sizeof(double)*m*n)));
 }
 
 //这两个的操作没有数学道理
