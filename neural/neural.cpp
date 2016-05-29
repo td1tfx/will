@@ -1,11 +1,11 @@
 #include "NeuralNet.h"
 #include <time.h>
 
-void run_neural(int option = 0);
+void run_neural(int option);
 
 int main(int argc, char* argv[])
 {
-	int option = 0;
+	int option = 1;
 	if (argc > 1)
 	{
 		option = atoi(argv[1]);
@@ -30,15 +30,15 @@ void run_neural(int option)
 	if (option == 0)
 		net->createByData(3, 100);
 	else
-		net->createByLoad("save0.txt");
+		net->createByLoad("save.txt");
 
-	net->setLearnMode(NeuralNetLearnMode::MiniBatch, 10);
-	net->setWorkMode(NeuralNetWorkMode::Probability);
+	net->setLearnMode(NeuralNetLearnMode::MiniBatch, 100);
+	net->setWorkMode(NeuralNetWorkMode::Fit);
 
 	net->setLearnSpeed(0.5);
 	net->setRegular(0.01);
 	//net->selectTest();
-	net->train(int(500), 10, 1e-6, 0);
+	net->train(int(300), 10, 1e-3, 0);
 	net->test();
 	net->outputBondWeight("save.txt");
 

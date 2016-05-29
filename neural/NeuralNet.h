@@ -78,9 +78,10 @@ public:
 	
 	void activeOutputValue(double* input, double* output, int groupCount);  //计算一组输出
 
-	void setInputData(double* input, int nodeCount, int group);
-	void getOutputData(double* output, int nodeCount, int groupCount);
-	void setExpectData(double* expect, int nodeCount, int group);
+	void setInputData(double* input, int nodeCount, int groupid);
+	void setExpectData(double* expect, int nodeCount, int groupid);
+
+	void getOutputData(int nodeCount, int groupCount, double* output);
 
 	//数据
 	double* _train_inputData = nullptr;

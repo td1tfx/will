@@ -11,5 +11,4 @@
 */.vscode/*
 *.txt
 *.db
-neural/train-images.idx3-ubyte
-neural/train-labels.idx1-ubyte
+*ubyte

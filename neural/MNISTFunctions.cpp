@@ -1,5 +1,5 @@
 #include "MNISTFunctions.h"
-
+#include <algorithm>
 
 
 MNISTFunctions::MNISTFunctions()

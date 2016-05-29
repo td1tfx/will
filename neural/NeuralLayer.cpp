@@ -84,21 +84,21 @@ void NeuralLayer::connetNextlayer(NeuralLayer* nextLayer)
 void NeuralLayer::markMax()
 {
 	if (NodeCount <= 0) return;
-	for (int i_data = 0; i_data < NodeCount; i_data++)
+	for (int i_group = 0; i_group < GroupCount; i_group++)
 	{
-		double now_max = getOutputValue(0, i_data);
-		getOutputValue(0, i_data) = 0;
+		double now_max = getOutputValue(0, i_group);
+		getOutputValue(0, i_group) = 0;
 		int pos = 0;
 		for (int i_node = 1; i_node < NodeCount; i_node++)
 		{
-			if (now_max <= getOutputValue(i_node, i_data))
+			if (now_max <= getOutputValue(i_node, i_group))
 			{
-				now_max = getOutputValue(i_node, i_data);
+				now_max = getOutputValue(i_node, i_group);
 				pos = i_node;
 			}
-			getOutputValue(i_node, i_data) = 0;
+			getOutputValue(i_node, i_group) = 0;
 		}
-		getOutputValue(pos, i_data) = 1;
+		getOutputValue(pos, i_group) = 1;
 	}
 }
 
