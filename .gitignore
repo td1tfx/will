@@ -4,7 +4,6 @@
 *.idb
 *.opendb
 *.sdf
-*.filters
 *.enc
 *.iobj
 *.ipdb

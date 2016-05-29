@@ -2,13 +2,6 @@
 #include <math.h>
 //#include "NeuralNode.h"
 
-class ActiveFunctionPair 
-{
-public:
-	virtual double active(double input);
-	virtual double _active(double output);
-};
-
 class ActiveFunctions
 {
 public:
