@@ -12,6 +12,7 @@ typedef enum
 {
 	Online,
 	Batch,
+	MiniBatch,
 	//输入向量如果0的项较多，在线学习会比较快
 	//通常情况下批量学习会考虑全局优先，应为首选
 	//在线学习每次都更新所有键结值，批量学习每一批数据更新一次键结值
@@ -43,62 +44,60 @@ public:
 	virtual ~NeuralNet();
 
 	//神经层
-	std::vector<NeuralLayer*> layers;
-	std::vector<NeuralLayer*>& getLayerVector() { return layers; }
+	std::vector<NeuralLayer*> Layers;
+	std::vector<NeuralLayer*>& getLayerVector() { return Layers; }
 
-	int id;
+	int Id;
 
-	NeuralLayer*& getLayer(int number) { return layers[number]; }
-	NeuralLayer*& getFirstLayer() { return layers[0]; }
-	NeuralLayer*& getLastLayer() { return layers.back(); }
-	int getLayerAmount() { return layers.size(); };
+	NeuralLayer*& getLayer(int number) { return Layers[number]; }
+	NeuralLayer*& getFirstLayer() { return Layers[0]; }
+	NeuralLayer*& getLastLayer() { return Layers.back(); }
+	int getLayerCount() { return Layers.size(); };
 
-	int inputAmount;
-	int outputAmount;
-	int trainDataAmount = 0;  //训练的数据量
-	int realDataAmount = 0;   //实际的数据量
-	int nodeDataAmount = 0;   //节点的数据量
+	int InputNodeCount;
+	int OutputNodeCount;
 
-	NeuralNetLearnMode learnMode = Batch;
+	NeuralNetLearnMode LearnMode = Batch;
+	int MiniBatchCount = -1;
+	void setLearnMode(NeuralNetLearnMode lm, int lb = -1);
 
-	double learnSpeed = 0.5;  //学习速度
-	void setLearnSpeed(double s) { learnSpeed = s; }
+	double LearnSpeed = 0.5;  //学习速度
+	void setLearnSpeed(double s) { LearnSpeed = s; }
 
-	double lambda = 0.0;      //正则化参数，防止过拟合
-	void setRegular(double l) { lambda = l; }
+	double Lambda = 0.0;      //正则化参数，防止过拟合
+	void setRegular(double l) { Lambda = l; }
 
-	void setLearnMode(NeuralNetLearnMode lm);
-
-	NeuralNetWorkMode workMode = Fit;
+	NeuralNetWorkMode WorkMode = Fit;
 	void setWorkMode(NeuralNetWorkMode wm);
 
-	void createLayers(int amount);  //包含输入和输出层
+	void createLayers(int layerCount);  //包含输入和输出层
 
 	void learn();
 
 	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 1e-9);  //训练过程
 	
-	void activeOutputValue(double* input, double* output, int amount);  //计算一组输出
+	void activeOutputValue(double* input, double* output, int groupCount);  //计算一组输出
 
-	void setInputData(double* input, int nodeAmount, int groupAmount);
-	void getOutputData(double* output, int nodeAmount, int groupAmount);
-	void setExpectData(double* expect, int nodeAmount, int groupAmount);
+	void setInputData(double* input, int nodeCount, int group);
+	void getOutputData(double* output, int nodeCount, int groupCount);
+	void setExpectData(double* expect, int nodeCount, int group);
 
 	//数据
-	double* inputData = nullptr;
-	double* expectData = nullptr;
+	double* _train_inputData = nullptr;
+	double* _train_expectData = nullptr;
+	int _train_groupCount = 0;   //实际的数据量
 	void readData(const char* filename);
-	void resetLayerGroupAmount(int amount);
+	void resetGroupCount(int n);
 
-	std::vector<bool> isTest;
-	double* inputTestData = nullptr;
-	double* expectTestData = nullptr;
-	int testDataAmount = 0;
+	double* _test_inputData = nullptr;
+	double* _test_expectData = nullptr;
+	int _test_groupCount = 0;
 	void selectTest();
 	void test();
+	void printResult(int nodeCount, int groupCount, double* output, double* expect);
 
 	//具体设置
-	virtual void createByData(int layerAmount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
+	virtual void createByData(int layerCount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
 	void outputBondWeight(const char* filename = nullptr); 
 	void createByLoad(const char* filename);
 

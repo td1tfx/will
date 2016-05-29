@@ -22,35 +22,35 @@ public:
 	NeuralLayer();
 	virtual ~NeuralLayer();
 
-	int id;
+	int Id;
 
-	int nodeAmount;
-	static int groupAmount;
-	static int step;
+	int NodeCount;
+	static int GroupCount;
+	static int Step;
 
-	NeuralLayerType type = Hidden;
+	NeuralLayerType Type = Hidden;
 	
-	//data格式：行数是节点数，列数是数据组数
-	d_matrix* input = nullptr;
-	d_matrix* output = nullptr;
-	d_matrix* expect = nullptr;
-	d_matrix* delta = nullptr;
-	d_matrix* bias = nullptr;
-	d_matrix* bias_as = nullptr;
+	//这几个矩阵形式相同，行数是节点数，列数是数据组数
+	d_matrix *InputMatrix = nullptr, *OutputMatrix = nullptr, *ExpectMatrix = nullptr, *DeltaMatrix = nullptr;
 
 	void deleteData();
 	
-	//weight格式：行数是本层的节点数，列数是上一层的节点数
-	d_matrix* weight = nullptr;	
+	//weight矩阵，行数是本层的节点数，列数是上一层的节点数
+	d_matrix* WeightMatrix = nullptr;
+	//偏移向量，维度为本层节点数
+	d_matrix* BiasVector = nullptr;
+	//更新偏移向量的辅助向量，所有值为1，维度为数据组数
+	d_matrix* _asBiasVector = nullptr;
 
-	NeuralLayer* prevLayer;
-	NeuralLayer* nextLayer;
+	NeuralLayer *PrevLayer, *NextLayer;
 
-	void initData(int nodeAmount, int groupAmount, NeuralLayerType type = Hidden);
-	void resetData(int groupAmount);
-	double& getOutput(int nodeid, int groupid) { return output->getData(nodeid, groupid); }
-	
-	double& getExpect(int nodeid, int groupid) { return expect->getData(nodeid, groupid); }
+	void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden);
+	void resetData(int groupCount);
+	d_matrix*& getOutputMatrix() { return OutputMatrix; }	
+	d_matrix*& getExpectMatrix() { return ExpectMatrix; }
+	d_matrix*& getDeltaMatrix() { return DeltaMatrix; }
+
+	double& getOutputValue(int x, int y) { return OutputMatrix->getData(x, y); }
 
 	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
 	void connetPrevlayer(NeuralLayer* prevLayer);
@@ -60,10 +60,10 @@ public:
 	void normalized();
 
 	//dactive是active的导数
-	std::function<double(double)> activeFunction = ActiveFunctions::sigmoid;
-	std::function<double(double)> dactiveFunction = ActiveFunctions::dsigmoid;
+	std::function<double(double)> _activeFunction = ActiveFunctions::sigmoid;
+	std::function<double(double)> _dactiveFunction = ActiveFunctions::dsigmoid;
 
-	void setFunctions(std::function<double(double)> _active, std::function<double(double)> _dactive);
+	void setFunctions(std::function<double(double)> active, std::function<double(double)> dactive);
 
 	void activeOutputValue();
 

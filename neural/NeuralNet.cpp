@@ -13,22 +13,36 @@ NeuralNet::~NeuralNet()
 	{
 		delete layer;
 	}
-	if (inputData) delete[] inputData;
-	if (expectData)	delete[] expectData;
-	if (inputTestData) delete[] inputTestData;
-	if (expectTestData) delete[] expectTestData;
+	if (_train_inputData) 
+		delete[] _train_inputData;
+	if (_train_expectData)	
+		delete[] _train_expectData;
+	if (_test_inputData) 
+		delete[] _test_inputData;
+	if (_test_expectData) 
+		delete[] _test_expectData;
 }
 
 
 //设置学习模式
-void NeuralNet::setLearnMode(NeuralNetLearnMode lm)
+void NeuralNet::setLearnMode(NeuralNetLearnMode lm, int lb /*= -1*/)
 {
-	learnMode = lm;
+	LearnMode = lm;
+	//批量学习时，节点数据量等于实际数据量
+	if (LearnMode == Online)
+	{
+		MiniBatchCount = 1;
+	}
+	//这里最好是能整除的
+	if (LearnMode == MiniBatch)
+	{
+		MiniBatchCount = lb;
+	}
 }
 
 void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
 {
-	 workMode = wm; 
+	 WorkMode = wm; 
 	 if (wm == Probability)
 	 {
 		 getLastLayer()->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
@@ -36,14 +50,14 @@ void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
 }
 
 //创建神经层
-void NeuralNet::createLayers(int amount)
+void NeuralNet::createLayers(int layerCount)
 {
-	layers.resize(amount);
-	for (int i = 0; i < amount; i++)
+	Layers.resize(layerCount);
+	for (int i = 0; i < layerCount; i++)
 	{
 		auto layer = new NeuralLayer();
-		layer->id = i;
-		layers[i] = layer;
+		layer->Id = i;
+		Layers[i] = layer;
 	}
 }
 
@@ -52,183 +66,195 @@ void NeuralNet::createLayers(int amount)
 void NeuralNet::selectTest()
 {
 	//备份原来的数据
-	auto input = new double[inputAmount*realDataAmount];
-	auto output = new double[outputAmount*realDataAmount];
-	memcpy(input, inputData, sizeof(double)*inputAmount*realDataAmount);
-	memcpy(output, expectData, sizeof(double)*outputAmount*realDataAmount);
+	auto input = new double[InputNodeCount*_train_groupCount];
+	auto output = new double[OutputNodeCount*_train_groupCount];
+	memcpy(input, _train_inputData, sizeof(double)*InputNodeCount*_train_groupCount);
+	memcpy(output, _train_expectData, sizeof(double)*OutputNodeCount*_train_groupCount);
 
-	inputTestData = new double[inputAmount*realDataAmount];
-	expectTestData = new double[outputAmount*realDataAmount];
-
-	isTest.resize(realDataAmount);
-	testDataAmount = 0;
+	_test_inputData = new double[InputNodeCount*_train_groupCount];
+	_test_expectData = new double[OutputNodeCount*_train_groupCount];
+	
+	std::vector<bool> isTest;
+	isTest.resize(_train_groupCount);
+	
+	_test_groupCount = 0;
 	int p = 0, p_data = 0, p_test = 0;
 	int it = 0, id = 0;
-	for (int i = 0; i < realDataAmount; i++)
+	for (int i = 0; i < _train_groupCount; i++)
 	{
 		isTest[i] = (0.9 < 1.0*rand() / RAND_MAX);
 		if (isTest[i])
 		{
-			memcpy(inputTestData + inputAmount*it, input+inputAmount*i, sizeof(double)*inputAmount);
-			memcpy(expectTestData + outputAmount*it, output + outputAmount*i, sizeof(double)*outputAmount);
-			testDataAmount++;
+			memcpy(_test_inputData + InputNodeCount*it, input+InputNodeCount*i, sizeof(double)*InputNodeCount);
+			memcpy(_test_expectData + OutputNodeCount*it, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
+			_test_groupCount++;
 			it++;
 		}
 		else
 		{
-			memcpy(inputData + inputAmount*id, input + inputAmount*i, sizeof(double)*inputAmount);
-			memcpy(expectData + outputAmount*id, output + outputAmount*i, sizeof(double)*outputAmount);
+			memcpy(_train_inputData + InputNodeCount*id, input + InputNodeCount*i, sizeof(double)*InputNodeCount);
+			memcpy(_train_expectData + OutputNodeCount*id, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
 			id++;
 		}
 	}
-	realDataAmount -= testDataAmount;
+	_train_groupCount -= _test_groupCount;
+	resetGroupCount(_train_groupCount);
 }
 
 //输出拟合的结果和测试集的结果
 void NeuralNet::test()
 {
+	resetGroupCount(_train_groupCount);
+	auto train_output = new double[OutputNodeCount*_train_groupCount];
+	activeOutputValue(_train_inputData, train_output, _train_groupCount);
+	fprintf(stdout, "\n%d groups train data comparing with expection:\n---------------------------------------\n", _train_groupCount);
+	printResult(OutputNodeCount, _train_groupCount, train_output, _train_expectData);
+	delete [] train_output;
 
-	auto output_train = new double[outputAmount*realDataAmount];
+	if (_test_groupCount <= 0) 
+		return;
+	auto test_output = new double[OutputNodeCount*_test_groupCount];
+	activeOutputValue(_test_inputData, test_output, _test_groupCount);
+	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", _test_groupCount);
+	printResult(OutputNodeCount, _test_groupCount, test_output, _test_expectData);
+	delete [] test_output;
+}
 
-	//输出全部数据
-	activeOutputValue(inputData, output_train, realDataAmount);
-	fprintf(stdout, "\n%d groups train data comparing with expection:\n---------------------------------------\n", realDataAmount);
-	for (int i = 0; i < realDataAmount; i++)
+void NeuralNet::printResult(int nodeCount, int groupCount, double* output, double* expect)
+{
+	for (int i = 0; i < groupCount; i++)
 	{
-		for (int j = 0; j < outputAmount; j++)
+		for (int j = 0; j < nodeCount; j++)
 		{
-			fprintf(stdout, "%8.4lf ", output_train[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ", output[i*nodeCount + j]);
 		}
 		fprintf(stdout, " --> ");
-		for (int j = 0; j < outputAmount; j++)
+		for (int j = 0; j < nodeCount; j++)
 		{
-			fprintf(stdout, "%8.4lf ", expectData[i*outputAmount + j]);
+			fprintf(stdout, "%8.4lf ", expect[i*nodeCount + j]);
 		}
 		fprintf(stdout, "\n");
 	}
-	delete [] output_train;
-
-	if (testDataAmount <= 0) return;
-	auto output_test = new double[outputAmount*testDataAmount];
-	activeOutputValue(inputTestData, output_test, testDataAmount);
-	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", testDataAmount);
-	for (int i = 0; i < testDataAmount; i++)
-	{
-		for (int j = 0; j < outputAmount; j++)
-		{
-			fprintf(stdout, "%8.4lf ", output_test[i*outputAmount + j]);
-		}
-		fprintf(stdout, " --> ");
-		for (int j = 0; j < outputAmount; j++)
-		{
-			fprintf(stdout, "%8.4lf ", expectTestData[i*outputAmount + j]);
-		}
-		fprintf(stdout, "\n");
-	}
-	delete [] output_test;
 }
 
 //计算输出
 //这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序，待完善后修改
-void NeuralNet::activeOutputValue(double* input, double* output, int amount)
+void NeuralNet::activeOutputValue(double* input, double* output, int groupCount)
 {	
 	if (input)
 	{
-		setInputData(input, inputAmount, amount);
+		setInputData(input, InputNodeCount, 0);
 	}	
-	for (int i = 1; i < getLayerAmount(); i++)
+	for (int i = 1; i < getLayerCount(); i++)
 	{
-		layers[i]->activeOutputValue();
+		Layers[i]->activeOutputValue();
 	}
 
-	if (workMode == Probability)
+	if (WorkMode == Probability)
 	{
 		getLastLayer()->normalized();
 	}
-	else if (workMode == Classify)
+	else if (WorkMode == Classify)
 	{
 		getLastLayer()->markMax();
 	}
 
 	if (output)
 	{
-		getOutputData(output, outputAmount, amount);
+		getOutputData(output, OutputNodeCount, groupCount);
 	}
 }
 
-void NeuralNet::setInputData(double* input, int nodeAmount, int groupAmount)
+void NeuralNet::setInputData(double* input, int nodeCount, int group)
 {
-	getFirstLayer()->output->resetDataPointer(input);
-	//getFirstLayer()->output->memcpyDataIn(input, sizeof(double)*nodeAmount*groupAmount);
+	getFirstLayer()->getOutputMatrix()->resetDataPointer(input + sizeof(double)*nodeCount*group);
 }
 
-void NeuralNet::getOutputData(double* output, int nodeAmount, int groupAmount)
+void NeuralNet::getOutputData(double* output, int nodeCount, int groupCount)
 {
-	getLastLayer()->output->memcpyDataOut(output, sizeof(double)*nodeAmount*groupAmount);
+	getLastLayer()->getOutputMatrix()->memcpyDataOut(output, sizeof(double)*nodeCount*groupCount);
 }
 
-void NeuralNet::setExpectData(double* expect, int nodeAmount, int groupAmount)
+void NeuralNet::setExpectData(double* expect, int nodeCount, int group)
 {
-	getLastLayer()->expect->resetDataPointer(expect);
-	//getLastLayer()->expect->memcpyDataIn(expect, sizeof(double)*nodeAmount*groupAmount);
+	getLastLayer()->getExpectMatrix()->resetDataPointer(expect + sizeof(double)*nodeCount*group);
 }
 
 //学习过程
 void NeuralNet::learn()
 {
 	//正向计算
-	activeOutputValue(nullptr, nullptr, realDataAmount);
+	activeOutputValue(nullptr, nullptr, _train_groupCount);
 	//反向传播
-	for (int i = getLayerAmount() - 1; i > 0; i--)
+	for (int i = getLayerCount() - 1; i > 0; i--)
 	{
-		layers[i]->backPropagate(learnSpeed, lambda);
+		Layers[i]->backPropagate(LearnSpeed, Lambda);
 	}
 }
 
 //训练一批数据，输出步数和误差
 void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double tol /*= 1e-3*/, double dtol /*= 1e-9*/)
 {
-	int a = realDataAmount;
-	//批量学习时，节点数据量等于实际数据量
-	if (learnMode == Online)
-	{
-		a = 1;
-	}
-
-	setInputData(inputData, inputAmount, realDataAmount);
-	setExpectData(expectData, outputAmount, realDataAmount);
-
 	//这里计算初始的误差，如果足够小就不训练了
-	activeOutputValue(nullptr, nullptr, realDataAmount);
+	setInputData(_train_inputData, InputNodeCount, 0);
+	setExpectData(_train_expectData, OutputNodeCount, 0);
+	activeOutputValue(nullptr, nullptr, _train_groupCount);
 	getLastLayer()->updateDelta();
-	double e = getLastLayer()->delta->ddot() / (realDataAmount*outputAmount);
+	double e = getLastLayer()->getDeltaMatrix()->ddot() / (_train_groupCount*OutputNodeCount);
 	fprintf(stdout, "step = %e, mse = %e\n", 0.0, e);
 	double e0 = e;
 	if (e < tol) return;
+	
+	if (LearnMode == Online)
+	{
+		resetGroupCount(1);
+		MiniBatchCount = 1;
+	}
+	else if (LearnMode == Batch)
+	{
+		//resetGroupCount(_train_groupCount);
+		MiniBatchCount = _train_groupCount;
+	}
+	else if (LearnMode == MiniBatch)
+	{
+		if (MiniBatchCount > 0)
+			resetGroupCount(MiniBatchCount);
+	}
 
 	//训练过程
 	for (int count = 1; count <= times; count++)
 	{
 		//getFirstLayer()->step = count;
- 		if (learnMode == Online)
- 		{
- 			for (int i = 0; i < realDataAmount; i++)
- 			{
- 				learn();
- 			}
- 		}
-		else
+		if (LearnMode == Batch)
 		{
 			learn();
+			//计算误差
+			if (count % interval == 0)
+			{
+				e = getLastLayer()->getDeltaMatrix()->ddot();
+			}
 		}
-
-		//计算误差
+		else
+		{
+			for (int i = 0; i < _train_groupCount; i += MiniBatchCount)
+			{
+				setInputData(_train_inputData, InputNodeCount, i);
+				setExpectData(_train_expectData, OutputNodeCount, i);
+				learn();
+				//计算误差
+				if (count % interval == 0)
+				{
+					e += getLastLayer()->getDeltaMatrix()->ddot();
+				}
+			}
+		}
 		if (count % interval == 0)
 		{
-			e = getLastLayer()->delta->ddot() / (realDataAmount*outputAmount);
+			e /= (_train_groupCount*OutputNodeCount);
 			fprintf(stdout, "step = %e, mse = %e, diff(e) = %e\n", double(count), e, e0 - e);
 			if (e < tol || abs(e - e0) < dtol) break;
 			e0 = e;
+			e = 0;
 		}
 	}
 }
@@ -244,36 +270,36 @@ void NeuralNet::readData(const char* filename)
 		return;
 	std::vector<double> v;
 	int n = findNumbers(str, v);
-	inputAmount = int(v[0]);
-	outputAmount = int(v[1]);
+	InputNodeCount = int(v[0]);
+	OutputNodeCount = int(v[1]);
 
-	realDataAmount = (n - mark) / (inputAmount + outputAmount);
-	inputData = new double[inputAmount * realDataAmount];
-	expectData = new double[outputAmount * realDataAmount];
+	_train_groupCount = (n - mark) / (InputNodeCount + OutputNodeCount);
+	_train_inputData = new double[InputNodeCount * _train_groupCount];
+	_train_expectData = new double[OutputNodeCount * _train_groupCount];
 
 	//写法太难看了
 	int k = mark, k1 = 0, k2 = 0;
 
-	for (int i_data = 1; i_data <= realDataAmount; i_data++)
+	for (int i_data = 1; i_data <= _train_groupCount; i_data++)
 	{
-		for (int i = 1; i <= inputAmount; i++)
+		for (int i = 1; i <= InputNodeCount; i++)
 		{
-			inputData[k1++] = v[k++];
+			_train_inputData[k1++] = v[k++];
 		}
-		for (int i = 1; i <= outputAmount; i++)
+		for (int i = 1; i <= OutputNodeCount; i++)
 		{
-			expectData[k2++] = v[k++];
+			_train_expectData[k2++] = v[k++];
 		}
 	}
 	//测试用
-	//realDataAmount = 10;
+
 }
 
-void NeuralNet::resetLayerGroupAmount(int amount)
+void NeuralNet::resetGroupCount(int n)
 {
-	for (auto l : layers)
+	for (auto l : Layers)
 	{
-		l->resetData(amount);
+		l->resetData(n);
 	}
 }
 
@@ -285,30 +311,30 @@ void NeuralNet::outputBondWeight(const char* filename)
 		fout = fopen(filename, "w+t");
 
 	fprintf(fout,"\nNet information:\n");
-	fprintf(fout,"%d\tlayers\n", layers.size());
-	for (int i_layer = 0; i_layer < getLayerAmount(); i_layer++)
+	fprintf(fout,"%d\tlayers\n", Layers.size());
+	for (int i_layer = 0; i_layer < getLayerCount(); i_layer++)
 	{
-		fprintf(fout,"layer %d has %d nodes\n", i_layer, layers[i_layer]->nodeAmount);
+		fprintf(fout,"layer %d has %d nodes\n", i_layer, Layers[i_layer]->NodeCount);
 	}
 
 	fprintf(fout,"---------------------------------------\n");
-	for (int i_layer = 0; i_layer < getLayerAmount() - 1; i_layer++)
+	for (int i_layer = 0; i_layer < getLayerCount() - 1; i_layer++)
 	{
-		auto& layer1 = layers[i_layer];
-		auto& layer2 = layers[i_layer + 1];
+		auto& layer1 = Layers[i_layer];
+		auto& layer2 = Layers[i_layer + 1];
 		fprintf(fout, "weight for layer %d to %d\n", i_layer + 1, i_layer);
-		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
 		{
-			for (int i1 = 0; i1 < layer1->nodeAmount; i1++)
+			for (int i1 = 0; i1 < layer1->NodeCount; i1++)
 			{
-				fprintf(fout, "%14.11lf ", layer2->weight->getData(i2, i1));
+				fprintf(fout, "%14.11lf ", layer2->WeightMatrix->getData(i2, i1));
 			}
 			fprintf(fout, "\n");
 		}
 		fprintf(fout, "bias for layer %d\n", i_layer + 1);
-		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
 		{
-			fprintf(fout, "%14.11lf ", layer2->bias->getData(i2));
+			fprintf(fout, "%14.11lf ", layer2->BiasVector->getData(i2));
 		}
 		fprintf(fout, "\n");
 	}
@@ -319,23 +345,23 @@ void NeuralNet::outputBondWeight(const char* filename)
 
 //依据输入数据创建神经网
 //此处是具体的网络结构
-void NeuralNet::createByData(int layerAmount /*= 3*/, int nodesPerLayer /*= 7*/)
+void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
-	this->createLayers(layerAmount);
+	this->createLayers(layerCount);
 
-	getFirstLayer()->initData(inputAmount, realDataAmount, Input);
+	getFirstLayer()->initData(InputNodeCount, _train_groupCount, Input);
 
 
-	for (int i = 1; i < layerAmount - 1; i++)
+	for (int i = 1; i < layerCount - 1; i++)
 	{
-		getLayer(i)->initData(nodesPerLayer, realDataAmount);
+		getLayer(i)->initData(nodesPerLayer, _train_groupCount);
 	}
 	
-	getLastLayer()->initData(outputAmount, realDataAmount, Output);
+	getLastLayer()->initData(OutputNodeCount, _train_groupCount, Output);
 
-	for (int i = 1; i < layerAmount; i++)
+	for (int i = 1; i < layerCount; i++)
 	{
-		layers[i]->connetPrevlayer(layers[i - 1]);
+		Layers[i]->connetPrevlayer(Layers[i - 1]);
 	}
 }
 
@@ -357,42 +383,44 @@ void NeuralNet::createByLoad(const char* filename)
 		v_int[i_layer] = int(v[i_layer]);
 	}
 	int k = 0;
-	int layerAmount = v_int[k++];
-	this->createLayers(layerAmount);
-	getFirstLayer()->type = Input;
-	getLastLayer()->type = Output;
+	int layerCount = v_int[k++];
+	this->createLayers(layerCount);
+	getFirstLayer()->Type = Input;
+	getLastLayer()->Type = Output;
 	k++;
-	for (int i_layer = 0; i_layer < layerAmount; i_layer++)
+	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{
-		getLayer(i_layer)->initData(v_int[k], realDataAmount);
+		getLayer(i_layer)->initData(v_int[k], _train_groupCount);
 		k += 2;
 	}
-	k = 1 + layerAmount * 2;
-	for (int i_layer = 0; i_layer < layerAmount - 1; i_layer++)
+	k = 1 + layerCount * 2;
+	for (int i_layer = 0; i_layer < layerCount - 1; i_layer++)
 	{
-		auto& layer1 = layers[i_layer];
-		auto& layer2 = layers[i_layer + 1];
+		auto& layer1 = Layers[i_layer];
+		auto& layer2 = Layers[i_layer + 1];
 		layer2->connetPrevlayer(layer1);
 		k += 2;
-		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
 		{
-			for (int i1 = 0; i1 < layer1->nodeAmount; i1++)
+			for (int i1 = 0; i1 < layer1->NodeCount; i1++)
 			{
-				layer2->weight->getData(i2, i1) = v[k++];
+				layer2->WeightMatrix->getData(i2, i1) = v[k++];
 			}
 		}
 		k += 1;
-		for (int i2 = 0; i2 < layer2->nodeAmount; i2++)
+		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
 		{
-			layer2->bias->getData(i2) = v[k++];
+			layer2->BiasVector->getData(i2) = v[k++];
 		}
 	}
 }
 
 void NeuralNet::readMNIST()
 {
-	inputAmount = MNISTFunctions::readImageFile("train-images.idx3-ubyte", inputData);
-	outputAmount = MNISTFunctions::readLabelFile("train-labels.idx1-ubyte", expectData);
-	realDataAmount = 1000;
+	InputNodeCount = MNISTFunctions::readImageFile("train-images.idx3-ubyte", _train_inputData);
+	OutputNodeCount = MNISTFunctions::readLabelFile("train-labels.idx1-ubyte", _train_expectData);
+	MNISTFunctions::readImageFile("train-images.idx3-ubyte", _test_inputData);
+	MNISTFunctions::readLabelFile("train-labels.idx1-ubyte", _test_expectData);
+	_train_groupCount = 1000;
 }
 

@@ -32,13 +32,13 @@ void run_neural(int option)
 	else
 		net->createByLoad("save0.txt");
 
-	net->setLearnMode(NeuralNetLearnMode::Batch);
+	net->setLearnMode(NeuralNetLearnMode::MiniBatch, 10);
 	net->setWorkMode(NeuralNetWorkMode::Probability);
 
 	net->setLearnSpeed(0.5);
 	net->setRegular(0.01);
 	//net->selectTest();
-	net->train(int(1e3), 10, 1e-6, 0);
+	net->train(int(500), 10, 1e-6, 0);
 	net->test();
 	net->outputBondWeight("save.txt");
 
