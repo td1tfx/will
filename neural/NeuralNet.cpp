@@ -158,7 +158,8 @@ void NeuralNet::activeOutputValue(double* input, double* output, int amount)
 
 void NeuralNet::setInputData(double* input, int nodeAmount, int groupAmount)
 {
-	getFirstLayer()->output->memcpyDataIn(input, sizeof(double)*nodeAmount*groupAmount);
+	getFirstLayer()->output->resetDataPointer(input);
+	//getFirstLayer()->output->memcpyDataIn(input, sizeof(double)*nodeAmount*groupAmount);
 }
 
 void NeuralNet::getOutputData(double* output, int nodeAmount, int groupAmount)
@@ -168,7 +169,8 @@ void NeuralNet::getOutputData(double* output, int nodeAmount, int groupAmount)
 
 void NeuralNet::setExpectData(double* expect, int nodeAmount, int groupAmount)
 {
-	getLastLayer()->expect->memcpyDataIn(expect, sizeof(double)*nodeAmount*groupAmount);
+	getLastLayer()->expect->resetDataPointer(expect);
+	//getLastLayer()->expect->memcpyDataIn(expect, sizeof(double)*nodeAmount*groupAmount);
 }
 
 //学习过程
@@ -267,6 +269,14 @@ void NeuralNet::readData(const char* filename)
 	//realDataAmount = 10;
 }
 
+void NeuralNet::resetLayerGroupAmount(int amount)
+{
+	for (auto l : layers)
+	{
+		l->resetData(amount);
+	}
+}
+
 //输出键结值
 void NeuralNet::outputBondWeight(const char* filename)
 {
@@ -313,8 +323,7 @@ void NeuralNet::createByData(int layerAmount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
 	this->createLayers(layerAmount);
 
-	getFirstLayer()->type = Input;
-	getFirstLayer()->initData(inputAmount, realDataAmount);
+	getFirstLayer()->initData(inputAmount, realDataAmount, Input);
 
 
 	for (int i = 1; i < layerAmount - 1; i++)
@@ -322,10 +331,7 @@ void NeuralNet::createByData(int layerAmount /*= 3*/, int nodesPerLayer /*= 7*/)
 		getLayer(i)->initData(nodesPerLayer, realDataAmount);
 	}
 	
-	getLastLayer()->type = Output;
-	getLastLayer()->initData(outputAmount, realDataAmount);
-	//getLastLayer()->setFunctions(ActiveFunctions::linear, ActiveFunctions::dlinear);
-
+	getLastLayer()->initData(outputAmount, realDataAmount, Output);
 
 	for (int i = 1; i < layerAmount; i++)
 	{

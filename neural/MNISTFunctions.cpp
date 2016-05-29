@@ -34,7 +34,7 @@ int MNISTFunctions::readImageFile(const char* filename, double*& input)
 	int count = *(int*)(content + 4);
 	int w = *(int*)(content + 8);
 	int h = *(int*)(content + 12);
-	fprintf(stderr, "%d %d %d\n", count, w, h);
+	//fprintf(stderr, "%d %d %d\n", count, w, h);
 	int size = count*w*h;
 	input = new double[size];
 	memset(input, 0, sizeof(double)*size);
@@ -60,7 +60,7 @@ int MNISTFunctions::readLabelFile(const char* filename, double*& expect)
 {
 	auto content = readFile(filename);
 	int count = *(int*)(content + 4);
-	fprintf(stderr, "%d\n", count);
+	//fprintf(stderr, "%d\n", count);
 	expect = new double[count*10];
 	memset(expect, 0, sizeof(double)*count*10);
 	for (int i = 0; i < count; i++)

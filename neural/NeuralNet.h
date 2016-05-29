@@ -88,6 +88,7 @@ public:
 	double* inputData = nullptr;
 	double* expectData = nullptr;
 	void readData(const char* filename);
+	void resetLayerGroupAmount(int amount);
 
 	std::vector<bool> isTest;
 	double* inputTestData = nullptr;

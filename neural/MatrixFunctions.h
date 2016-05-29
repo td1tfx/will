@@ -14,17 +14,20 @@ private:
 	int m=0;
 	int n=0;
 	int max_script;
+	bool insideData = true;
 public:
-	d_matrix(int x, int y)
+	d_matrix(int x, int y, bool insideData = true)
 	{
 		m = x;
 		n = y;
-		data = new double[m*n + 1];
+		this->insideData = insideData;
+		if (insideData)
+			data = new double[m*n + 1];
 		max_script = m*n;
 	}
 	~d_matrix()
 	{
-		delete[] data;
+		if(insideData) delete[] data;
 	}
 	int getRow()
 	{
@@ -53,6 +56,11 @@ public:
 	double* getDataPointer()
 	{
 		return data;
+	}
+	//这个函数可能不安全，慎用！！
+	void resetDataPointer(double* d)
+	{
+		data = d;
 	}
 	double& operator [] (int i)
 	{

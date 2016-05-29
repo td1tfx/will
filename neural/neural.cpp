@@ -24,11 +24,11 @@ void run_neural(int option)
 {
 	auto net = new NeuralNet();
 
-	net->readData("p.txt");
-	//net->readMNIST();
+	//net->readData("p.txt");
+	net->readMNIST();
 
 	if (option == 0)
-		net->createByData(3, 10);
+		net->createByData(3, 100);
 	else
 		net->createByLoad("save0.txt");
 
@@ -38,7 +38,7 @@ void run_neural(int option)
 	net->setLearnSpeed(0.5);
 	net->setRegular(0.01);
 	//net->selectTest();
-	net->train(int(1e5), 1000, 1e-6,0);
+	net->train(int(1e3), 10, 1e-6, 0);
 	net->test();
 	net->outputBondWeight("save.txt");
 

@@ -26,10 +26,9 @@ public:
 
 	int nodeAmount;
 	static int groupAmount;
-
 	static int step;
 
-	static int miniBatch;
+	NeuralLayerType type = Hidden;
 	
 	//data格式：行数是节点数，列数是数据组数
 	d_matrix* input = nullptr;
@@ -47,7 +46,8 @@ public:
 	NeuralLayer* prevLayer;
 	NeuralLayer* nextLayer;
 
-	void initData(int nodeAmount, int groupAmount, int miniBatch = -1);
+	void initData(int nodeAmount, int groupAmount, NeuralLayerType type = Hidden);
+	void resetData(int groupAmount);
 	double& getOutput(int nodeid, int groupid) { return output->getData(nodeid, groupid); }
 	
 	double& getExpect(int nodeid, int groupid) { return expect->getData(nodeid, groupid); }
@@ -69,8 +69,6 @@ public:
 
 	void updateDelta();
 	void backPropagate(double learnSpeed = 0.5, double lambda = 0.1);
-
-	NeuralLayerType type = Hidden;
 
 };
 
