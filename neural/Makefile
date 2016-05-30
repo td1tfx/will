@@ -1,6 +1,6 @@
 CXX=g++
 CPPFLAGS=-I. -I./lib -O2  -std=c++11
-LFDFLAGS=-L. -lcblas -lrefblas -lgfortran
+LDFLAGS=-L. -lcblas -lrefblas -lgfortran
 SOURCES=$(wildcard *.cpp) $(wildcard lib/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=neural

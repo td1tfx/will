@@ -168,6 +168,9 @@
     <Library Include="lib\libblas.a" />
     <Library Include="lib\libgfortran.dll.a" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
