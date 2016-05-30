@@ -27,12 +27,12 @@ void d_matrix::print()
 
 void d_matrix::memcpyDataIn(double* src, int size)
 {
-	memcpy(data, src, MyMath::min(size, int(sizeof(double)*m*n)));
+	memcpy(data, src, std::min(size, int(sizeof(double)*m*n)));
 }
 
 void d_matrix::memcpyDataOut(double* dst, int size)
 {
-	memcpy(dst, data, MyMath::min(size, int(sizeof(double)*m*n)));
+	memcpy(dst, data, std::min(size, int(sizeof(double)*m*n)));
 }
 
 //这两个的操作没有数学道理
@@ -72,7 +72,7 @@ void d_matrix::multiply(double v)
 //复制数据，只处理较少的
 void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 {
-	memcpy(dst->data, src->data, sizeof(double)*MyMath::min(dst->m*dst->n, src->m*src->n));
+	memcpy(dst->data, src->data, sizeof(double)*std::min(dst->m*dst->n, src->m*src->n));
 }
 
 void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
@@ -90,7 +90,7 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, CBLAS_TRANSPOSE ta /*= CblasNoTrans*/)
 {
 	int m = A->m, n = A->n;
-	if (ta == CblasTrans) { MyMath::swap(m, n); };
+	if (ta == CblasTrans) { std::swap(m, n); };
 	cblas_dgemv(CblasColMajor, ta, m, n, a, A->data, A->m, B->data, 1, c, R->data, 1);
 }
 

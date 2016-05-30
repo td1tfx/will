@@ -21,8 +21,8 @@ namespace MyMath
 	static double is(double x) { return x > 0.5 ? 1 : 0; }
 	static double dis(double x) { return 1; }
 
-	static int min(int a, int b) { return (a < b) ? a : b; }
-	static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
+	//static int min(int a, int b) { return (a < b) ? a : b; }
+	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 
 };
 

@@ -2,9 +2,11 @@
 #include <stdio.h>
 #include <vector>
 #include <string.h>
+#include <cmath>
 #include "NeuralLayer.h"
 #include "lib/libconvert.h"
 #include "MNISTFunctions.h"
+
 
 
 //ѧϰģʽ

@@ -179,7 +179,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 		{
 			e /= (_train_groupCount*OutputNodeCount);
 			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
-			if (e < tol || abs(e - e0) < dtol) break;
+			if (e < tol || std::abs(e - e0) < dtol) break;
 			e0 = e;
 			e = 0;
 		}
@@ -433,6 +433,6 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 	for (int i = 0; i < nodeCount*groupCount; i++)
 		n += abs(output[i] - expect[i]);
 	n /= 2;
-	fprintf(stdout, "%d, %5.2lf%% error\n", int(n), n / groupCount * 100);
+	fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
 }
 
