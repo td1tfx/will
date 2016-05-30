@@ -431,7 +431,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 	getOutputData(nodeCount, groupCount, output);
 	double n = 0;
 	for (int i = 0; i < nodeCount*groupCount; i++)
-		n += abs(output[i] - expect[i]);
+		n += std::abs(output[i] - expect[i]);
 	n /= 2;
 	fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
 }

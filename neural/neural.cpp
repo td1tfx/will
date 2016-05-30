@@ -12,7 +12,8 @@ int main(int argc, char* argv[])
 	}
 	clock_t t0 = clock();
 	run_neural(option);
-	fprintf(stderr, "Run neural net end. Time is %d ms.\n", clock() - t0);
+	clock_t t = clock() - t0;
+	fprintf(stderr, "Run neural net end. Time is %lf s.\n", double(t) / CLOCKS_PER_SEC);
 	
 #ifdef _WIN32
 	getchar();
