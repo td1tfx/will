@@ -4,8 +4,9 @@ extern "C"
 #include "cblas.h"
 }
 #include <stdio.h>
-#include <algorithm>
 #include <cstring>
+#include <cstdlib>
+#include "MyMath.h"
 
 struct d_matrix
 {
@@ -39,11 +40,11 @@ public:
 	}
 	double& getData(int x, int y)
 	{
-		return data[std::min(x + y*m, max_script)];
+		return data[MyMath::min(x + y*m, max_script)];
 	}
 	double& getData(int i)
 	{
-		return data[std::min(i, max_script)];
+		return data[MyMath::min(i, max_script)];
 	}
 	double* getDataPointer(int x, int y)
 	{

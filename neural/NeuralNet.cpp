@@ -45,7 +45,7 @@ void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
 	 WorkMode = wm; 
 	 if (wm == Probability)
 	 {
-		 getLastLayer()->setFunctions(ActiveFunctions::exp1, ActiveFunctions::dexp1);
+		 getLastLayer()->setFunctions(MyMath::exp1, MyMath::dexp1);
 	 }
 }
 
@@ -62,91 +62,6 @@ void NeuralNet::createLayers(int layerCount)
 }
 
 
-//这里拆一部分数据为测试数据，写法有hack性质
-void NeuralNet::selectTest()
-{
-	//备份原来的数据
-	auto input = new double[InputNodeCount*_train_groupCount];
-	auto output = new double[OutputNodeCount*_train_groupCount];
-	memcpy(input, _train_inputData, sizeof(double)*InputNodeCount*_train_groupCount);
-	memcpy(output, _train_expectData, sizeof(double)*OutputNodeCount*_train_groupCount);
-
-	_test_inputData = new double[InputNodeCount*_train_groupCount];
-	_test_expectData = new double[OutputNodeCount*_train_groupCount];
-	
-	std::vector<bool> isTest;
-	isTest.resize(_train_groupCount);
-	
-	_test_groupCount = 0;
-	int p = 0, p_data = 0, p_test = 0;
-	int it = 0, id = 0;
-	for (int i = 0; i < _train_groupCount; i++)
-	{
-		isTest[i] = (0.9 < 1.0*rand() / RAND_MAX);
-		if (isTest[i])
-		{
-			memcpy(_test_inputData + InputNodeCount*it, input+InputNodeCount*i, sizeof(double)*InputNodeCount);
-			memcpy(_test_expectData + OutputNodeCount*it, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
-			_test_groupCount++;
-			it++;
-		}
-		else
-		{
-			memcpy(_train_inputData + InputNodeCount*id, input + InputNodeCount*i, sizeof(double)*InputNodeCount);
-			memcpy(_train_expectData + OutputNodeCount*id, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
-			id++;
-		}
-	}
-	_train_groupCount -= _test_groupCount;
-	resetGroupCount(_train_groupCount);
-}
-
-//输出拟合的结果和测试集的结果
-void NeuralNet::test()
-{
-	resetGroupCount(_train_groupCount);
-	auto train_output = new double[OutputNodeCount*_train_groupCount];
-	activeOutputValue(_train_inputData, train_output, _train_groupCount);
-	fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", _train_groupCount);
-	printResult(OutputNodeCount, _train_groupCount, train_output, _train_expectData);
-	delete [] train_output;
-
-	if (_test_groupCount <= 0) 
-		return;
-	resetGroupCount(_test_groupCount);
-	auto test_output = new double[OutputNodeCount*_test_groupCount];
-	activeOutputValue(_test_inputData, test_output, _test_groupCount);
-	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", _test_groupCount);
-	printResult(OutputNodeCount, _test_groupCount, test_output, _test_expectData);
-	delete [] test_output;
-}
-
-void NeuralNet::printResult(int nodeCount, int groupCount, double* output, double* expect)
-{
-	if (groupCount < 100)
-	{
-		for (int i = 0; i < groupCount; i++)
-		{
-			for (int j = 0; j < nodeCount; j++)
-			{
-				fprintf(stdout, "%8.4lf ", output[i*nodeCount + j]);
-			}
-			fprintf(stdout, " --> ");
-			for (int j = 0; j < nodeCount; j++)
-			{
-				fprintf(stdout, "%8.4lf ", expect[i*nodeCount + j]);
-			}
-			fprintf(stdout, "\n");
-		}
-	}
-	getLastLayer()->markMax();
-	getOutputData(nodeCount, groupCount, output);
-	double n = 0;
-	for (int i = 0; i < nodeCount*groupCount; i++)
-		n += abs(output[i] - expect[i]);
-	n /= 2;
-	fprintf(stdout, "%d, %5.2lf%% error\n", int(n), n / groupCount * 100);
-}
 
 //计算输出
 //这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序，待完善后修改
@@ -433,5 +348,91 @@ void NeuralNet::readMNIST()
 	MNISTFunctions::readImageFile("t10k-images.idx3-ubyte", _test_inputData);
 	MNISTFunctions::readLabelFile("t10k-labels.idx1-ubyte", _test_expectData);
 	_test_groupCount = 10000;
+}
+
+//这里拆一部分数据为测试数据，写法有hack性质
+void NeuralNet::selectTest()
+{
+	//备份原来的数据
+	auto input = new double[InputNodeCount*_train_groupCount];
+	auto output = new double[OutputNodeCount*_train_groupCount];
+	memcpy(input, _train_inputData, sizeof(double)*InputNodeCount*_train_groupCount);
+	memcpy(output, _train_expectData, sizeof(double)*OutputNodeCount*_train_groupCount);
+
+	_test_inputData = new double[InputNodeCount*_train_groupCount];
+	_test_expectData = new double[OutputNodeCount*_train_groupCount];
+
+	std::vector<bool> isTest;
+	isTest.resize(_train_groupCount);
+
+	_test_groupCount = 0;
+	int p = 0, p_data = 0, p_test = 0;
+	int it = 0, id = 0;
+	for (int i = 0; i < _train_groupCount; i++)
+	{
+		isTest[i] = (0.9 < 1.0*rand() / RAND_MAX);
+		if (isTest[i])
+		{
+			memcpy(_test_inputData + InputNodeCount*it, input + InputNodeCount*i, sizeof(double)*InputNodeCount);
+			memcpy(_test_expectData + OutputNodeCount*it, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
+			_test_groupCount++;
+			it++;
+		}
+		else
+		{
+			memcpy(_train_inputData + InputNodeCount*id, input + InputNodeCount*i, sizeof(double)*InputNodeCount);
+			memcpy(_train_expectData + OutputNodeCount*id, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
+			id++;
+		}
+	}
+	_train_groupCount -= _test_groupCount;
+	resetGroupCount(_train_groupCount);
+}
+
+//输出拟合的结果和测试集的结果
+void NeuralNet::test()
+{
+	resetGroupCount(_train_groupCount);
+	auto train_output = new double[OutputNodeCount*_train_groupCount];
+	activeOutputValue(_train_inputData, train_output, _train_groupCount);
+	fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", _train_groupCount);
+	printResult(OutputNodeCount, _train_groupCount, train_output, _train_expectData);
+	delete[] train_output;
+
+	if (_test_groupCount <= 0)
+		return;
+	resetGroupCount(_test_groupCount);
+	auto test_output = new double[OutputNodeCount*_test_groupCount];
+	activeOutputValue(_test_inputData, test_output, _test_groupCount);
+	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", _test_groupCount);
+	printResult(OutputNodeCount, _test_groupCount, test_output, _test_expectData);
+	delete[] test_output;
+}
+
+void NeuralNet::printResult(int nodeCount, int groupCount, double* output, double* expect)
+{
+	if (groupCount < 100)
+	{
+		for (int i = 0; i < groupCount; i++)
+		{
+			for (int j = 0; j < nodeCount; j++)
+			{
+				fprintf(stdout, "%8.4lf ", output[i*nodeCount + j]);
+			}
+			fprintf(stdout, " --> ");
+			for (int j = 0; j < nodeCount; j++)
+			{
+				fprintf(stdout, "%8.4lf ", expect[i*nodeCount + j]);
+			}
+			fprintf(stdout, "\n");
+		}
+	}
+	getLastLayer()->markMax();
+	getOutputData(nodeCount, groupCount, output);
+	double n = 0;
+	for (int i = 0; i < nodeCount*groupCount; i++)
+		n += abs(output[i] - expect[i]);
+	n /= 2;
+	fprintf(stdout, "%d, %5.2lf%% error\n", int(n), n / groupCount * 100);
 }
 

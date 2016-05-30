@@ -93,9 +93,6 @@ public:
 	double* _test_inputData = nullptr;
 	double* _test_expectData = nullptr;
 	int _test_groupCount = 0;
-	void selectTest();
-	void test();
-	void printResult(int nodeCount, int groupCount, double* output, double* expect);
 
 	//具体设置
 	virtual void createByData(int layerCount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
@@ -107,5 +104,8 @@ public:
 
 	void readMNIST();
 
+	void selectTest();
+	void test();
+	void printResult(int nodeCount, int groupCount, double* output, double* expect);
 };
 

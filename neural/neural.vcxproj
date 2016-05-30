@@ -146,7 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ActiveFunctions.cpp" />
+    <ClCompile Include="MyMath.cpp" />
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="MatrixFunctions.cpp" />
     <ClCompile Include="MNISTFunctions.cpp" />
@@ -155,7 +155,7 @@
     <ClCompile Include="NeuralNet.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ActiveFunctions.h" />
+    <ClInclude Include="MyMath.h" />
     <ClInclude Include="lib\cblas.h" />
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="MatrixFunctions.h" />

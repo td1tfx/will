@@ -2,7 +2,7 @@
 #include <vector>
 #include <functional>
 #include <string>
-#include "ActiveFunctions.h"
+#include "MyMath.h"
 #include "MatrixFunctions.h"
 
 
@@ -68,8 +68,8 @@ public:
 	void normalized();
 
 	//dactive是active的导数
-	std::function<double(double)> _activeFunction = ActiveFunctions::sigmoid;
-	std::function<double(double)> _dactiveFunction = ActiveFunctions::dsigmoid;
+	std::function<double(double)> _activeFunction = MyMath::sigmoid;
+	std::function<double(double)> _dactiveFunction = MyMath::dsigmoid;
 
 	void setFunctions(std::function<double(double)> active, std::function<double(double)> dactive);
 

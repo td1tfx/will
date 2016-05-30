@@ -2,14 +2,10 @@
 #include <math.h>
 //#include "NeuralNode.h"
 
-class ActiveFunctions
+namespace MyMath
 {
-public:
-	ActiveFunctions();
-	virtual ~ActiveFunctions();
 	//static xoid setFunctions(class NeuralNode* node, std::function<double(double)> activeFunction, std::function<double(double)> feedbackFunction);
 
-	double c = 0, f = 0;
 	static double sigmoid(double x) { return 1.0 / (1 + exp(-x)); }
 	static double dsigmoid(double x) { double a = 1 + exp(-x); return exp(-x) / (a*a); }
 	static double linear(double x) { return x; }
@@ -24,6 +20,9 @@ public:
 
 	static double is(double x) { return x > 0.5 ? 1 : 0; }
 	static double dis(double x) { return 1; }
+
+	static int min(int a, int b) { return (a < b) ? a : b; }
+	static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 
 };
 
