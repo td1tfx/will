@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\libblas.a" />
-    <Library Include="lib\cblas.a" />
     <Library Include="lib\libgfortran.dll.a" />
+    <Library Include="lib\libcblas.a" />
   </ItemGroup>
 </Project>

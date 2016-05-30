@@ -6,14 +6,20 @@
 #include "MatrixFunctions.h"
 
 
-//神经元的类型，包含隐藏，输入，输出
+//隐藏，输入，输出
 typedef enum
 {
 	Hidden,
 	Input,
 	Output,
-	//Const,
 } NeuralLayerType;
+
+typedef enum
+{
+	FullConnection,
+	Convolution,
+	Pooling,
+} NeuralLayerWorkMode;
 
 //神经层
 class NeuralLayer
@@ -29,6 +35,8 @@ public:
 	static int Step;
 
 	NeuralLayerType Type = Hidden;
+
+	NeuralLayerWorkMode WorkMode = FullConnection;
 	
 	//这几个矩阵形式相同，行数是节点数，列数是数据组数
 	d_matrix *InputMatrix = nullptr, *OutputMatrix = nullptr, *ExpectMatrix = nullptr, *DeltaMatrix = nullptr;

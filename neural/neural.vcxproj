@@ -164,7 +164,7 @@
     <ClInclude Include="NeuralLayer.h" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\cblas.a" />
+    <Library Include="lib\libcblas.a" />
     <Library Include="lib\libblas.a" />
     <Library Include="lib\libgfortran.dll.a" />
   </ItemGroup>
