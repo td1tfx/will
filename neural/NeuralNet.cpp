@@ -430,6 +430,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 	}
 	getLastLayer()->markMax();
 	getOutputData(nodeCount, groupCount, output);
+	
 	double n = 0;
 	for (int i = 0; i < nodeCount*groupCount; i++)
 		n += std::abs(output[i] - expect[i]);

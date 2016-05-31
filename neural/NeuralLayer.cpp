@@ -86,19 +86,12 @@ void NeuralLayer::markMax()
 	if (NodeCount <= 0) return;
 	for (int i_group = 0; i_group < GroupCount; i_group++)
 	{
-		double now_max = getOutputValue(0, i_group);
-		getOutputValue(0, i_group) = 0;
-		int pos = 0;
-		for (int i_node = 1; i_node < NodeCount; i_node++)
+		int index = OutputMatrix->indexColMaxAbs(i_group);
+		for (int i_node = 0; i_node < NodeCount; i_node++)
 		{
-			if (now_max <= getOutputValue(i_node, i_group))
-			{
-				now_max = getOutputValue(i_node, i_group);
-				pos = i_node;
-			}
-			getOutputValue(i_node, i_group) = 0;
+			OutputMatrix->getData(i_node, i_group) = 0;
 		}
-		getOutputValue(pos, i_group) = 1;
+		OutputMatrix->getData(index, i_group) = 1;
 	}
 }
 

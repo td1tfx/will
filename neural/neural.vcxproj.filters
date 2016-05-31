@@ -61,12 +61,14 @@
     <ClInclude Include="resource.h">
       <Filter>头文件</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\libgfortran.dll.a" />
-    <Library Include="lib\libopenblas.dll.a" />
+    <ClInclude Include="config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\libopenblas.dll.a" />
   </ItemGroup>
 </Project>

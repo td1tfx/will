@@ -163,13 +163,13 @@
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralLayer.h" />
     <ClInclude Include="resource.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\libgfortran.dll.a" />
-    <Library Include="lib\libopenblas.dll.a" />
+    <ClInclude Include="config.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\libopenblas.dll.a" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

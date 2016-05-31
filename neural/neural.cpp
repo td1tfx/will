@@ -25,21 +25,21 @@ void run_neural(int option)
 {
 	auto net = new NeuralNet();
 
-	net->readData("p.txt");
-	//net->readMNIST();
+	//net->readData("p.txt");
+	net->readMNIST();
 
 	if (option == 0)
-		net->createByData(3, 50);
+		net->createByData(3, 100);
 	else
 		net->createByLoad("save.txt");
 
-	net->setLearnMode(NeuralNetLearnMode::Batch);
-	net->setWorkMode(NeuralNetWorkMode::Probability);
+	net->setLearnMode(NeuralNetLearnMode::MiniBatch, 100);
+	net->setWorkMode(NeuralNetWorkMode::Fit);
 
-	net->setLearnSpeed(0.1);
-	net->setRegular(0.0);
+	net->setLearnSpeed(0.5);
+	net->setRegular(0.01);
 	//net->selectTest();
-	net->train(int(1e5), 1000, 1e-3, 1e-9);
+	net->train(int(100), 1, 1e-3, 1e-9);
 	net->test();
 	net->outputBondWeight("save.txt");
 
