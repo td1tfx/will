@@ -128,13 +128,8 @@ void NeuralLayer::activeOutputValue()
 	//input->print();
 	d_matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
 	//this->input->print();
-	for (int i = 0; i < NodeCount; i++)
-	{
-		for (int j = 0; j < GroupCount; j++)
-		{
-			OutputMatrix->getData(i, j) = _activeFunction(InputMatrix->getData(i, j));
-		}
-	}
+	d_matrix::applyFunction(InputMatrix, OutputMatrix, _activeFunction);
+	
 }
 
 void NeuralLayer::updateDelta()
@@ -151,14 +146,8 @@ void NeuralLayer::updateDelta()
 		//nextLayer->delta->print();
 		d_matrix::product(NextLayer->WeightMatrix, NextLayer->DeltaMatrix, DeltaMatrix, 1, 0, CblasTrans, CblasNoTrans);
 		//this->delta->print();
-		//这里看起来不对，常数节点没参与运算
-		for (int i = 0; i < NodeCount; i++)
-		{
-			for (int j = 0; j < GroupCount; j++)
-			{
-				DeltaMatrix->getData(i, j) *= _dactiveFunction(InputMatrix->getData(i, j));
-			}
-		}
+		InputMatrix->applyFunction(_dactiveFunction);
+		d_matrix::hadamardProduct(DeltaMatrix, InputMatrix, DeltaMatrix);
 	}
 }
 

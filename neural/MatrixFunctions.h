@@ -7,6 +7,8 @@ extern "C"
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
+#include <functional>
+
 
 struct d_matrix
 {
@@ -78,6 +80,7 @@ public:
 	void initData(double v);
 	void initRandom();
 	void multiply(double v);
+	void applyFunction(std::function<double(double)> f);
 
 	static void cpyData(d_matrix* dst, d_matrix* src);
 
@@ -87,6 +90,7 @@ public:
 		double a = 1, double c = 0, CBLAS_TRANSPOSE ta = CblasNoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
+	static void applyFunction(d_matrix* A, d_matrix* R, std::function<double(double)> f);
 };
 
 

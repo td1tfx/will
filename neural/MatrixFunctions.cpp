@@ -3,7 +3,7 @@
 
 double d_matrix::ddot()
 {
-	return cblas_ddot(m*n, data, 1, data, 1);
+	return cblas_ddot(max_script, data, 1, data, 1);
 }
 
 void d_matrix::print()
@@ -27,12 +27,12 @@ void d_matrix::print()
 
 void d_matrix::memcpyDataIn(double* src, int size)
 {
-	memcpy(data, src, std::min(size, int(sizeof(double)*m*n)));
+	memcpy(data, src, std::min(size, int(sizeof(double)*max_script)));
 }
 
 void d_matrix::memcpyDataOut(double* dst, int size)
 {
-	memcpy(dst, data, std::min(size, int(sizeof(double)*m*n)));
+	memcpy(dst, data, std::min(size, int(sizeof(double)*max_script)));
 }
 
 //这两个的操作没有数学道理
@@ -53,7 +53,8 @@ int d_matrix::indexColMaxAbs(int c)
 
 void d_matrix::initData(double v)
 {
-	for (int i = 0; i < m*n; i++)
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < max_script; i++)
 	{
 		data[i] = v;
 	}
@@ -61,7 +62,8 @@ void d_matrix::initData(double v)
 
 void d_matrix::initRandom()
 {
-	for (int i = 0; i < m*n; i++)
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < max_script; i++)
 	{
 		data[i] = 2.0 * rand() / RAND_MAX - 1;
 	}
@@ -69,11 +71,22 @@ void d_matrix::initRandom()
 
 void d_matrix::multiply(double v)
 {
-	for (int i = 0; i < m*n; i++)
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < max_script; i++)
 	{
 		data[i] *= v;
 	}
 }
+
+void d_matrix::applyFunction(std::function<double(double)> f)
+{
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < max_script; i++)
+	{
+		data[i] = f(data[i]);
+	}
+}
+
 
 //复制数据，只处理较少的
 void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
@@ -102,7 +115,8 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 
 void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
 {
-	for (int i = 0; i < R->m*R->n; i++)
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < R->max_script; i++)
 	{
 		R->data[i] = A->data[i] * B->data[i];
 	}
@@ -110,8 +124,18 @@ void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
 
 void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 {
-	for (int i = 0; i < R->m*R->n; i++)
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < R->max_script; i++)
 	{
 		R->data[i] = A->data[i] - B->data[i];
+	}
+}
+
+void d_matrix::applyFunction(d_matrix* A, d_matrix* R, std::function<double(double)> f)
+{
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < std::min(A->max_script, R->max_script); i++)
+	{
+		R->data[i] = f(A->data[i]);
 	}
 }

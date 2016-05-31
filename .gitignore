@@ -12,3 +12,5 @@
 *.db
 *ubyte
 *.res
+*.xml
+*.lastcodeanalysissucceeded

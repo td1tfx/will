@@ -15,6 +15,7 @@ unsigned char* MNISTFunctions::readFile(const char* filename)
 	if (!fp)
 	{
 		fprintf(stderr, "Can not open file %s\n", filename);
+		return nullptr;
 	}
 	fseek(fp, 0, SEEK_END);
 	int length = ftell(fp);
