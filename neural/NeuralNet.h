@@ -76,7 +76,7 @@ public:
 
 	void learn();
 
-	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 1e-9);  //训练过程
+	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 0);  //训练过程
 	
 	void activeOutputValue(double* input, double* output, int groupCount);  //计算一组输出
 

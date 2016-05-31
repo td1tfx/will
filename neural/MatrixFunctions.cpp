@@ -45,6 +45,12 @@ void d_matrix::expand()
 	}
 }
 
+int d_matrix::indexRowMaxAbs(int r)
+{
+	int i = cblas_idamax(n, &getData(r, 0), 1);
+	return i - 1;
+}
+
 void d_matrix::initData(double v)
 {
 	for (int i = 0; i < m*n; i++)

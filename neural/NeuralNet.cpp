@@ -129,8 +129,8 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	getLastLayer()->updateDelta();
 	double e = getLastLayer()->getDeltaMatrix()->ddot() / (_train_groupCount*OutputNodeCount);
 	fprintf(stdout, "step = %e, mse = %e\n", 0.0, e);
-	double e0 = e;
 	if (e < tol) return;
+	double e0 = e;
 	
 	if (LearnMode == Online)
 	{
@@ -141,6 +141,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	{
 		//resetGroupCount(_train_groupCount);
 		MiniBatchCount = _train_groupCount;
+		e0 = 0;  //如果是使用所有数据训练，初始误差设置一个值，避免判断错误
 	}
 	else if (LearnMode == MiniBatch)
 	{
@@ -178,7 +179,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 		if (count % interval == 0)
 		{
 			e /= (_train_groupCount*OutputNodeCount);
-			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
+			fprintf(stderr, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
 			if (e < tol || std::abs(e - e0) < dtol) break;
 			e0 = e;
 			e = 0;

@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="资源文件">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="lib">
       <UniqueIdentifier>{858ff5f1-e19f-4412-a57e-20e9aaa09a83}</UniqueIdentifier>
     </Filter>
@@ -62,11 +58,13 @@
     <ClInclude Include="MyMath.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Library Include="lib\libblas.a" />
     <Library Include="lib\libgfortran.dll.a" />
-    <Library Include="lib\libcblas.a" />
+    <Library Include="lib\libopenblas.dll.a" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />

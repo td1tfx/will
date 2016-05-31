@@ -29,15 +29,15 @@ void run_neural(int option)
 	//net->readMNIST();
 
 	if (option == 0)
-		net->createByData(3, 7);
+		net->createByData(3, 50);
 	else
 		net->createByLoad("save.txt");
 
 	net->setLearnMode(NeuralNetLearnMode::Batch);
 	net->setWorkMode(NeuralNetWorkMode::Probability);
 
-	net->setLearnSpeed(0.5);
-	net->setRegular(0.01);
+	net->setLearnSpeed(0.1);
+	net->setRegular(0.0);
 	//net->selectTest();
 	net->train(int(1e5), 1000, 1e-3, 1e-9);
 	net->test();

@@ -73,6 +73,7 @@ public:
 	void memcpyDataIn(double* src, int size);
 	void memcpyDataOut(double* dst, int size);
 	void expand();
+	int indexRowMaxAbs(int r);
 
 	void initData(double v);
 	void initRandom();
