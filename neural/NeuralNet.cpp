@@ -22,6 +22,50 @@ NeuralNet::~NeuralNet()
 		delete[] _test_expectData;
 }
 
+//运行，注意容错保护较弱
+void NeuralNet::run()
+{
+	LearnMode = NeuralNetLearnMode(_option.LearnMode);
+	MiniBatchCount = _option.MiniBatch;
+	WorkMode = NeuralNetWorkMode(_option.WorkMode);
+
+	LearnSpeed = _option.LearnSpeed;
+	Lambda = _option.Regular;
+	TestMax = _option.TestMax;
+
+	if (_option.UseMNIST == 0)
+	{
+		if (_option.TrainDataFile != "")
+		{
+			readData(_option.TrainDataFile.c_str(), Train);
+		}
+	}
+	else
+	{
+		readMNIST();
+	}
+
+	//读不到文件强制重新创建网络，不太正常
+	//if (readStringFromFile(_option.LoadFile) == "")
+	//	_option.LoadNet == 0;
+
+	if (_option.LoadNet == 0)
+		createByData(_option.Layer, _option.NodePerLayer);
+	else
+		createByLoad(_option.LoadFile.c_str());
+
+	//net->selectTest();
+	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
+	test();
+
+	if (_option.SaveFile != "")
+		outputBondWeight(_option.SaveFile.c_str());
+	if (_option.TestDataFile != "")
+	{
+		readData(_option.TestDataFile.c_str(), Test);
+		test();
+	}
+}
 
 //设置学习模式
 void NeuralNet::setLearnMode(NeuralNetLearnMode lm, int lb /*= -1*/)
@@ -118,7 +162,7 @@ void NeuralNet::learn()
 	}
 }
 
-//训练一批数据，输出步数和误差
+//训练一批数据，输出步数和误差，若训练次数为0可以理解为纯测试模式
 void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double tol /*= 1e-3*/, double dtol /*= 1e-9*/)
 {
 	if (times <= 0) return;
@@ -233,6 +277,18 @@ void NeuralNet::readData(const char* filename, DateMode dm/*= Train*/)
 			(*expectData)[k2++] = v[k++];
 		}
 	}
+// 	for (int i = 0; i < 784 * 22; i++)
+// 	{
+// 		if ((*inputData)[i] > 0.5)
+// 			printf("%2.1f ", (*inputData)[i]);
+// 		else
+// 		{
+// 			printf("    ");
+// 			(*inputData)[i] = 0;
+// 		}
+// 		if (i % 28 == 27)
+// 			printf("\n");
+// 	}
 }
 
 void NeuralNet::resetGroupCount(int n)
@@ -250,7 +306,7 @@ void NeuralNet::outputBondWeight(const char* filename)
 	if (filename)
 		fout = fopen(filename, "w+t");
 
-	fprintf(fout,"\nNet information:\n");
+	fprintf(fout,"Net information:\n");
 	fprintf(fout,"%d\tlayers\n", Layers.size());
 	for (int i_layer = 0; i_layer < getLayerCount(); i_layer++)
 	{
@@ -283,7 +339,7 @@ void NeuralNet::outputBondWeight(const char* filename)
 		fclose(fout);
 }
 
-//依据输入数据创建神经网
+//依据输入数据创建神经网，网络的节点数只对隐藏层有用
 //此处是具体的网络结构
 void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
@@ -360,7 +416,7 @@ void NeuralNet::readMNIST()
 
 	MNISTFunctions::readImageFile("t10k-images.idx3-ubyte", _test_inputData);
 	MNISTFunctions::readLabelFile("t10k-labels.idx1-ubyte", _test_expectData);
-	_test_groupCount = 10;
+	_test_groupCount = 10000;
 }
 
 void NeuralNet::loadOptoin(const char* filename)
@@ -368,46 +424,6 @@ void NeuralNet::loadOptoin(const char* filename)
 	_option.loadIni(filename);
 }
 
-void NeuralNet::run()
-{
-	if (_option.UseMINST == 0)
-	{
-		if (_option.TrainDataFile != "")
-		{
-			readData(_option.TrainDataFile.c_str(), Train);
-		}
-	}
-	else
-	{
-		readMNIST();
-	}
-	//读不到文件强制重新创建网络
-	if (readStringFromFile(_option.LoadFile) == "") 
-		_option.LoadNet == 0;
-
-	if (_option.LoadNet == 0)
-		createByData(_option.Layer, _option.NodePerLayer);
-	else
-		createByLoad(_option.LoadFile.c_str());
-
-	LearnMode = NeuralNetLearnMode(_option.LearnMode);
-	MiniBatchCount = _option.MiniBatch;
-	WorkMode = NeuralNetWorkMode(_option.WorkMode);
-
-	LearnSpeed = _option.LearnSpeed;
-	Lambda = _option.Regular;
-	TestMax = _option.TestMax;
-	//net->selectTest();
-	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
-	test();
-	if (_option.SaveFile != "")
-		outputBondWeight(_option.SaveFile.c_str());
-	if (_option.TestDataFile != "")
-	{
-		readData(_option.TestDataFile.c_str(), Test);
-		test();
-	}
-}
 
 //这里拆一部分数据为测试数据，写法有hack性质
 void NeuralNet::selectTest()

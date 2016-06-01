@@ -45,13 +45,16 @@ class NeuralNet
 public:
 	NeuralNet();
 	virtual ~NeuralNet();
+	int Id;
+
+	Option _option;
+	void loadOptoin(const char* filename);
+
+	void run();
 
 	//Éñ¾­²ã
 	std::vector<NeuralLayer*> Layers;
 	std::vector<NeuralLayer*>& getLayerVector() { return Layers; }
-
-	int Id;
-
 	NeuralLayer*& getLayer(int number) { return Layers[number]; }
 	NeuralLayer*& getFirstLayer() { return Layers[0]; }
 	NeuralLayer*& getLastLayer() { return Layers.back(); }
@@ -108,11 +111,6 @@ public:
 	//NeuralNetCalMode backPropageteMode = ByNode;
 
 	void readMNIST();
-
-	Option _option;
-	void loadOptoin(const char* filename);
-
-	void run();
 
 	bool TestMax = false;
 	void selectTest();

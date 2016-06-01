@@ -10,7 +10,7 @@ OPTION_STRING(LoadFile, "");\
 OPTION_STRING(SaveFile, "");\
 OPTION_STRING(TestDataFile, "");\
 \
-OPTION_INT(UseMINST, 0);\
+OPTION_INT(UseMNIST, 0);\
 OPTION_INT(LoadNet, 0);\
 OPTION_INT(TestMax, 0);\
 \
