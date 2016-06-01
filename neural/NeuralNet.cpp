@@ -178,7 +178,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 		if (count % interval == 0)
 		{
 			e /= (_train_groupCount*OutputNodeCount);
-			fprintf(stderr, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
+			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
 			if (e < tol || std::abs(e - e0) < dtol) break;
 			e0 = e;
 			e = 0;
@@ -361,6 +361,10 @@ void NeuralNet::run()
 		readData(_option.DataFile.c_str());
 	else
 		readMNIST();
+
+	//读不到文件强制重新创建网络
+	if (readStringFromFile(_option.LoadFile) == "") 
+		_option.LoadNet == 0;
 
 	if (_option.LoadNet == 0)
 		createByData(_option.Layer, _option.NodePerLayer);

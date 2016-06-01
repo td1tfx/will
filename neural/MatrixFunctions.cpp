@@ -67,7 +67,7 @@ void d_matrix::initData(double v)
 
 void d_matrix::initRandom()
 {
-#pragma loop(hint_parallel(8))
+	//#pragma loop(hint_parallel(8))
 	for (int i = 0; i < max_script; i++)
 	{
 		data[i] = 2.0 * rand() / RAND_MAX - 1;

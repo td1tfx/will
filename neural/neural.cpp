@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 	net.run();
 	t.stop();
 	
-	fprintf(stderr, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
+	fprintf(stdout, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
 
 #ifdef _WIN32
 	getchar();

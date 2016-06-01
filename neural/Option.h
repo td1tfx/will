@@ -38,9 +38,9 @@ OPTION_PARAMETERS
 	void loadIni(const char* filename)
 	{
 		INIReader ini(filename);
-#define OPTION_STRING(a, b) a = ini.Get("option", #a, (b))
-#define OPTION_INT(a, b) a = ini.GetInteger("option", #a, (b))
-#define OPTION_DOUBLE(a, b) a = ini.GetReal("option", #a, (b))
+#define OPTION_STRING(a, b) a = ini.Get("will", #a, (b))
+#define OPTION_INT(a, b) a = ini.GetInteger("will", #a, (b))
+#define OPTION_DOUBLE(a, b) a = ini.GetReal("will", #a, (b))
 OPTION_PARAMETERS
 #undef OPTION_STRING
 #undef OPTION_INT
