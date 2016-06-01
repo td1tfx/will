@@ -1,7 +1,7 @@
 #pragma once
 extern "C"
 {
-#include "cblas.h"
+#include "lib/cblas.h"
 }
 #include <stdio.h>
 #include <cstring>
@@ -76,10 +76,12 @@ public:
 	void memcpyDataOut(double* dst, int size);
 	void expand();
 	int indexColMaxAbs(int c);
+	double sumColAbs(int c);
 
 	void initData(double v);
 	void initRandom();
 	void multiply(double v);
+	void colMultiply(double v, int c);
 	void applyFunction(std::function<double(double)> f);
 
 	static void cpyData(d_matrix* dst, d_matrix* src);

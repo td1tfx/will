@@ -1,6 +1,6 @@
 CXX=g++
-CPPFLAGS=-I. -I./lib -O2  -std=c++11
-LDFLAGS=-L. -lopenblas -lgfortran -lpthread
+CPPFLAGS=-I. -I./lib -O3 -std=c++11 -floop-parallelize-all -ftree-vectorize -flto
+LDFLAGS=-L. -lopenblas -lgfortran -lpthread -flto -fwhole-program
 SOURCES=$(wildcard *.cpp) $(wildcard lib/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=neural

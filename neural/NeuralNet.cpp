@@ -1,7 +1,6 @@
 #include "NeuralNet.h"
 
 
-
 NeuralNet::NeuralNet()
 {
 }
@@ -351,6 +350,34 @@ void NeuralNet::readMNIST()
 	_test_groupCount = 10000;
 }
 
+void NeuralNet::loadOptoin(const char* filename)
+{
+	_option.loadIni(filename);
+}
+
+void NeuralNet::run()
+{
+	if (_option.UseMINST == 0)
+		readData(_option.DataFile.c_str());
+	else
+		readMNIST();
+
+	if (_option.LoadNet == 0)
+		createByData(_option.Layer, _option.NodePerLayer);
+	else
+		createByLoad(_option.LoadFile.c_str());
+
+	setLearnMode(NeuralNetLearnMode(_option.LearnMode), _option.MiniBatch);
+	setWorkMode(NeuralNetWorkMode(_option.WorkMode));
+
+	setLearnSpeed(_option.LearnSpeed);
+	setRegular(_option.Regular);
+	//net->selectTest();
+	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
+	test();
+	outputBondWeight(_option.SaveFile.c_str());
+}
+
 //这里拆一部分数据为测试数据，写法有hack性质
 void NeuralNet::selectTest()
 {
@@ -437,4 +464,5 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 	n /= 2;
 	fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
 }
+
 

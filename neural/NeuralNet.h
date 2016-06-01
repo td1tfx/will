@@ -6,15 +6,16 @@
 #include "NeuralLayer.h"
 #include "lib/libconvert.h"
 #include "MNISTFunctions.h"
+#include "Option.h"
 
 
 
 //学习模式
 typedef enum 
 {
-	Online,
-	Batch,
-	MiniBatch,
+	Batch = 0,
+	Online = 1,
+	MiniBatch = 2,
 	//输入向量如果0的项较多，在线学习会比较快
 	//通常情况下批量学习会考虑全局优先，应为首选
 	//在线学习每次都更新所有键结值，批量学习每一批数据更新一次键结值
@@ -32,9 +33,9 @@ typedef enum
 //工作模式
 typedef enum
 {
-	Fit,            //拟合
-	Classify,       //分类，会筛选最大值设为1，其他设为0
-	Probability,    //几率，结果会归一化	
+	Fit = 0,            //拟合
+	Classify = 1,       //分类，会筛选最大值设为1，其他设为0
+	Probability = 2,    //几率，结果会归一化	
 } NeuralNetWorkMode;
 
 
@@ -105,6 +106,11 @@ public:
 	//NeuralNetCalMode backPropageteMode = ByNode;
 
 	void readMNIST();
+
+	Option _option;
+	void loadOptoin(const char* filename);
+
+	void run();
 
 	void selectTest();
 	void test();

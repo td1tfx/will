@@ -91,6 +91,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>./lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,6 +152,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="lib\INIReader.cpp" />
+    <ClCompile Include="lib\Timer.cpp" />
     <ClCompile Include="MyMath.cpp" />
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="MatrixFunctions.cpp" />
@@ -160,6 +163,8 @@
     <ClCompile Include="NeuralNet.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\INIReader.h" />
+    <ClInclude Include="lib\Timer.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="lib\cblas.h" />
     <ClInclude Include="lib\libconvert.h" />
@@ -167,6 +172,7 @@
     <ClInclude Include="MNISTFunctions.h" />
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralLayer.h" />
+    <ClInclude Include="Option.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="config.h" />
   </ItemGroup>

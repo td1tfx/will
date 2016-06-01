@@ -35,6 +35,12 @@
     <ClCompile Include="MyMath.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="lib\Timer.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\INIReader.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNet.h">
@@ -62,6 +68,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\Timer.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\INIReader.h">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="Option.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

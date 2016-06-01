@@ -95,21 +95,14 @@ void NeuralLayer::markMax()
 	}
 }
 
-//归一化，暂时无用，不考虑
+//归一化，计算概率使用，输出层激活函数为exp
 void NeuralLayer::normalized()
 {
 	for (int i_group = 0; i_group < GroupCount; i_group++)
 	{
-		double sum = 0;
-		for (int i_node = 0; i_node < NodeCount; i_node++)
-		{
-			sum += getOutputValue(i_node, i_group);
-		}
+		double sum = OutputMatrix->sumColAbs(i_group);
 		if (sum == 0) continue;
-		for (int i_node = 0; i_node < NodeCount; i_node++)
-		{
-			getOutputValue(i_node, i_group) /= sum;
-		}
+		OutputMatrix->colMultiply(1 / sum, i_group);
 	}
 }
 

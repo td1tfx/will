@@ -39,6 +39,7 @@ void d_matrix::memcpyDataOut(double* dst, int size)
 //将第一列复制到整个矩阵
 void d_matrix::expand()
 {
+#pragma loop(hint_parallel(8))
 	for (int i = 1; i < n; i++)
 	{
 		memcpy(getDataPointer(0,i), getDataPointer(0,0), sizeof(double)*m);
@@ -47,8 +48,12 @@ void d_matrix::expand()
 
 int d_matrix::indexColMaxAbs(int c)
 {
-	int i = cblas_idamax(m, getDataPointer(0, c), 1);
-	return i;
+	return cblas_idamax(m, getDataPointer(0, c), 1);
+}
+
+double d_matrix::sumColAbs(int c)
+{
+	return cblas_dasum(m, getDataPointer(0, c), 1);
 }
 
 void d_matrix::initData(double v)
@@ -75,6 +80,15 @@ void d_matrix::multiply(double v)
 	for (int i = 0; i < max_script; i++)
 	{
 		data[i] *= v;
+	}
+}
+
+void d_matrix::colMultiply(double v, int c)
+{
+#pragma loop(hint_parallel(8))
+	for (int i = 0; i < n; i++)
+	{
+		getData(i, c) *= v;
 	}
 }
 
