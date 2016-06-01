@@ -121,6 +121,7 @@ void NeuralNet::learn()
 //训练一批数据，输出步数和误差
 void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double tol /*= 1e-3*/, double dtol /*= 1e-9*/)
 {
+	if (times <= 0) return;
 	//这里计算初始的误差，如果足够小就不训练了
 	setInputData(_train_inputData, InputNodeCount, 0);
 	setExpectData(_train_expectData, OutputNodeCount, 0);
@@ -188,8 +189,11 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 
 //读取数据
 //这里的处理可能不是很好
-void NeuralNet::readData(const char* filename)
+void NeuralNet::readData(const char* filename, DateMode dm/*= Train*/)
 {
+	_train_groupCount = 0;
+	_test_groupCount = 0;
+
 	int mark = 3;
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
 	std::string str = readStringFromFile(filename) + "\n";
@@ -197,29 +201,38 @@ void NeuralNet::readData(const char* filename)
 		return;
 	std::vector<double> v;
 	int n = findNumbers(str, v);
+	if (n <= 0) return;
 	InputNodeCount = int(v[0]);
 	OutputNodeCount = int(v[1]);
 
-	_train_groupCount = (n - mark) / (InputNodeCount + OutputNodeCount);
-	_train_inputData = new double[InputNodeCount * _train_groupCount];
-	_train_expectData = new double[OutputNodeCount * _train_groupCount];
+	auto groupCount = &_train_groupCount;
+	auto inputData = &_train_inputData;
+	auto expectData = &_train_expectData;
+	if (dm == Test)
+	{
+		groupCount = &_test_groupCount;
+		inputData = &_test_inputData;
+		expectData = &_test_expectData;
+	}
+
+	*groupCount = (n - mark) / (InputNodeCount + OutputNodeCount);
+	*inputData = new double[InputNodeCount * (*groupCount)];
+	*expectData = new double[OutputNodeCount * (*groupCount)];
 
 	//写法太难看了
 	int k = mark, k1 = 0, k2 = 0;
 
-	for (int i_data = 1; i_data <= _train_groupCount; i_data++)
+	for (int i_data = 1; i_data <= (*groupCount); i_data++)
 	{
 		for (int i = 1; i <= InputNodeCount; i++)
 		{
-			_train_inputData[k1++] = v[k++];
+			(*inputData)[k1++] = v[k++];
 		}
 		for (int i = 1; i <= OutputNodeCount; i++)
 		{
-			_train_expectData[k2++] = v[k++];
+			(*expectData)[k2++] = v[k++];
 		}
 	}
-	//测试用
-
 }
 
 void NeuralNet::resetGroupCount(int n)
@@ -347,7 +360,7 @@ void NeuralNet::readMNIST()
 
 	MNISTFunctions::readImageFile("t10k-images.idx3-ubyte", _test_inputData);
 	MNISTFunctions::readLabelFile("t10k-labels.idx1-ubyte", _test_expectData);
-	_test_groupCount = 10000;
+	_test_groupCount = 10;
 }
 
 void NeuralNet::loadOptoin(const char* filename)
@@ -358,10 +371,16 @@ void NeuralNet::loadOptoin(const char* filename)
 void NeuralNet::run()
 {
 	if (_option.UseMINST == 0)
-		readData(_option.DataFile.c_str());
+	{
+		if (_option.TrainDataFile != "")
+		{
+			readData(_option.TrainDataFile.c_str(), Train);
+		}
+	}
 	else
+	{
 		readMNIST();
-
+	}
 	//读不到文件强制重新创建网络
 	if (readStringFromFile(_option.LoadFile) == "") 
 		_option.LoadNet == 0;
@@ -371,15 +390,23 @@ void NeuralNet::run()
 	else
 		createByLoad(_option.LoadFile.c_str());
 
-	setLearnMode(NeuralNetLearnMode(_option.LearnMode), _option.MiniBatch);
-	setWorkMode(NeuralNetWorkMode(_option.WorkMode));
+	LearnMode = NeuralNetLearnMode(_option.LearnMode);
+	MiniBatchCount = _option.MiniBatch;
+	WorkMode = NeuralNetWorkMode(_option.WorkMode);
 
-	setLearnSpeed(_option.LearnSpeed);
-	setRegular(_option.Regular);
+	LearnSpeed = _option.LearnSpeed;
+	Lambda = _option.Regular;
+	TestMax = _option.TestMax;
 	//net->selectTest();
 	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
 	test();
-	outputBondWeight(_option.SaveFile.c_str());
+	if (_option.SaveFile != "")
+		outputBondWeight(_option.SaveFile.c_str());
+	if (_option.TestDataFile != "")
+	{
+		readData(_option.TestDataFile.c_str(), Test);
+		test();
+	}
 }
 
 //这里拆一部分数据为测试数据，写法有hack性质
@@ -424,21 +451,24 @@ void NeuralNet::selectTest()
 //输出拟合的结果和测试集的结果
 void NeuralNet::test()
 {
-	resetGroupCount(_train_groupCount);
-	auto train_output = new double[OutputNodeCount*_train_groupCount];
-	activeOutputValue(_train_inputData, train_output, _train_groupCount);
-	fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", _train_groupCount);
-	printResult(OutputNodeCount, _train_groupCount, train_output, _train_expectData);
-	delete[] train_output;
-
-	if (_test_groupCount <= 0)
-		return;
-	resetGroupCount(_test_groupCount);
-	auto test_output = new double[OutputNodeCount*_test_groupCount];
-	activeOutputValue(_test_inputData, test_output, _test_groupCount);
-	fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", _test_groupCount);
-	printResult(OutputNodeCount, _test_groupCount, test_output, _test_expectData);
-	delete[] test_output;
+	if (_train_groupCount > 0)
+	{
+		resetGroupCount(_train_groupCount);
+		auto train_output = new double[OutputNodeCount*_train_groupCount];
+		activeOutputValue(_train_inputData, train_output, _train_groupCount);
+		fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", _train_groupCount);
+		printResult(OutputNodeCount, _train_groupCount, train_output, _train_expectData);
+		delete[] train_output;
+	}
+	if (_test_groupCount > 0)
+	{
+		resetGroupCount(_test_groupCount);
+		auto test_output = new double[OutputNodeCount*_test_groupCount];
+		activeOutputValue(_test_inputData, test_output, _test_groupCount);
+		fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", _test_groupCount);
+		printResult(OutputNodeCount, _test_groupCount, test_output, _test_expectData);
+		delete[] test_output;
+	}
 }
 
 void NeuralNet::printResult(int nodeCount, int groupCount, double* output, double* expect)
@@ -459,14 +489,39 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 			fprintf(stdout, "\n");
 		}
 	}
-	getLastLayer()->markMax();
-	getOutputData(nodeCount, groupCount, output);
-	
-	double n = 0;
-	for (int i = 0; i < nodeCount*groupCount; i++)
-		n += std::abs(output[i] - expect[i]);
-	n /= 2;
-	fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
+
+	if (TestMax)
+	{
+		getLastLayer()->markMax();
+		auto outputMax = new double[nodeCount*groupCount];
+		getOutputData(nodeCount, groupCount, outputMax);
+
+		if (groupCount < 100)
+		{
+			for (int i = 0; i < groupCount; i++)
+			{
+				for (int j = 0; j < nodeCount; j++)
+				{
+					if (outputMax[i*nodeCount + j] == 1)
+						fprintf(stdout, "%3d (%6.4lf) ", j, output[i*nodeCount + j]);
+				}
+				fprintf(stdout, " --> ");
+				for (int j = 0; j < nodeCount; j++)
+				{
+					if (expect[i*nodeCount + j] == 1)
+						fprintf(stdout, "%3d ", j);
+				}
+				fprintf(stdout, "\n");
+			}
+		}
+
+		double n = 0;
+		for (int i = 0; i < nodeCount*groupCount; i++)
+			n += std::abs(outputMax[i] - expect[i]);
+		n /= 2;
+		delete[] outputMax;
+		fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
+	}
 }
 
 

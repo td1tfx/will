@@ -90,7 +90,9 @@ public:
 	double* _train_inputData = nullptr;
 	double* _train_expectData = nullptr;
 	int _train_groupCount = 0;   //实际的数据量
-	void readData(const char* filename);
+	
+	typedef enum { Train, Test } DateMode;
+	void readData(const char* filename, DateMode dm = Train);
 	void resetGroupCount(int n);
 
 	double* _test_inputData = nullptr;
@@ -112,6 +114,7 @@ public:
 
 	void run();
 
+	bool TestMax = false;
 	void selectTest();
 	void test();
 	void printResult(int nodeCount, int groupCount, double* output, double* expect);

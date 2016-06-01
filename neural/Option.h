@@ -5,12 +5,14 @@
 struct Option
 {
 #define OPTION_PARAMETERS \
-OPTION_STRING(DataFile, "p.txt");\
-OPTION_STRING(LoadFile, "save.txt");\
-OPTION_STRING(SaveFile, "save.txt");\
+OPTION_STRING(TrainDataFile, "");\
+OPTION_STRING(LoadFile, "");\
+OPTION_STRING(SaveFile, "");\
+OPTION_STRING(TestDataFile, "");\
 \
 OPTION_INT(UseMINST, 0);\
 OPTION_INT(LoadNet, 0);\
+OPTION_INT(TestMax, 0);\
 \
 OPTION_INT(Layer, 3);\
 OPTION_INT(NodePerLayer, 7);\

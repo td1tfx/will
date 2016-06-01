@@ -45,17 +45,17 @@ int MNISTFunctions::readImageFile(const char* filename, double*& input)
 		auto v = *(content + 16 + i);
 		input[i] = v/255.0;
 	}
-/*
- 	for (int i = 0; i < 784*10; i++)
-	{
-		if (input[i] != 0)
-			printf("%2.1f ", input[i]);
-		else
-			printf("      ");
-		if (i % 28 == 27)
-			printf("\n");
-	}
-*/
+
+//  	for (int i = 0; i < 784*10; i++)
+// 	{
+// 		if (input[i] != 0)
+// 			printf("%2.1f ", input[i]);
+// 		else
+// 			printf("    ");
+// 		if (i % 28 == 27)
+// 			printf("\n");
+// 	}
+
 	delete[] content;
 	return w*h;
 }
