@@ -15,7 +15,7 @@
 #ifndef TIMER_H_DEF
 #define TIMER_H_DEF
 
-#ifdef WIN32   // Windows system specific
+#ifdef _MSC_VER   // Windows system specific
 #include <windows.h>
 #else          // Unix based system specific
 #include <sys/time.h>
@@ -43,7 +43,7 @@ private:
     double startTimeInMicroSec;                 // starting time in micro-second
     double endTimeInMicroSec;                   // ending time in micro-second
     int    stopped;                             // stop flag 
-#ifdef WIN32
+#ifdef _MSC_VER
     LARGE_INTEGER frequency;                    // ticks per second
     LARGE_INTEGER startCount;                   //
     LARGE_INTEGER endCount;                     //

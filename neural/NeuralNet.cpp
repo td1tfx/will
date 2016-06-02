@@ -489,7 +489,7 @@ void NeuralNet::test()
 
 void NeuralNet::printResult(int nodeCount, int groupCount, double* output, double* expect)
 {
-	if (groupCount < 100)
+	if (groupCount <= 100)
 	{
 		for (int i = 0; i < groupCount; i++)
 		{
@@ -512,7 +512,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 		auto outputMax = new double[nodeCount*groupCount];
 		getOutputData(nodeCount, groupCount, outputMax);
 
-		if (groupCount < 100)
+		if (groupCount <= 100)
 		{
 			for (int i = 0; i < groupCount; i++)
 			{
