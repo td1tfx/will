@@ -86,7 +86,4 @@
   <ItemGroup>
     <None Include="Makefile" />
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="lib\libopenblas.dll.a" />
-  </ItemGroup>
 </Project>

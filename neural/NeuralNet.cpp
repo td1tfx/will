@@ -346,11 +346,14 @@ void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 	this->createLayers(layerCount);
 
 	getFirstLayer()->initData(InputNodeCount, _train_groupCount, Input);
+	fprintf(stdout, "Layer %d has %d nodes.\n", 0, InputNodeCount);
 	for (int i = 1; i < layerCount - 1; i++)
 	{
 		getLayer(i)->initData(nodesPerLayer, _train_groupCount, Hidden);
+		fprintf(stdout, "Layer %d has %d nodes.\n", i, nodesPerLayer);
 	}	
 	getLastLayer()->initData(OutputNodeCount, _train_groupCount, Output);
+	fprintf(stdout, "Layer %d has %d nodes.\n", layerCount - 1, OutputNodeCount);
 
 	for (int i = 1; i < layerCount; i++)
 	{
@@ -384,6 +387,7 @@ void NeuralNet::createByLoad(const char* filename)
 	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{
 		getLayer(i_layer)->initData(v_int[k], _train_groupCount, getLayer(i_layer)->Type);
+		fprintf(stdout, "Layer %d has %d nodes.\n", i_layer, v_int[k]);
 		k += 2;
 	}
 	k = 1 + layerCount * 2;

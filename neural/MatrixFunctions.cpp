@@ -76,20 +76,12 @@ void d_matrix::initRandom()
 
 void d_matrix::multiply(double v)
 {
-#pragma loop(hint_parallel(8))
-	for (int i = 0; i < max_script; i++)
-	{
-		data[i] *= v;
-	}
+	cblas_dscal(max_script, v, data, 1);
 }
 
 void d_matrix::colMultiply(double v, int c)
 {
-#pragma loop(hint_parallel(8))
-	for (int i = 0; i < col; i++)
-	{
-		getData(i, c) *= v;
-	}
+	cblas_dscal(row, v, getDataPointer(0, c), 1);
 }
 
 void d_matrix::applyFunction(std::function<double(double)> f)
