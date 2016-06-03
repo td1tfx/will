@@ -9,9 +9,9 @@ double d_matrix::ddot()
 void d_matrix::print()
 {
 #ifdef _DEBUG
-	for (int i1 = 0; i1 < m; i1++)
+	for (int i1 = 0; i1 < row; i1++)
 	{
-		for (int i2 = 0; i2 < n; i2++)
+		for (int i2 = 0; i2 < col; i2++)
 		{
 			fprintf(stderr, "%11.5lf ", getData(i1, i2));
 		}
@@ -40,20 +40,20 @@ void d_matrix::memcpyDataOut(double* dst, int size)
 void d_matrix::expand()
 {
 #pragma loop(hint_parallel(8))
-	for (int i = 1; i < n; i++)
+	for (int i = 1; i < col; i++)
 	{
-		memcpy(getDataPointer(0,i), getDataPointer(0,0), sizeof(double)*m);
+		memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row);
 	}
 }
 
 int d_matrix::indexColMaxAbs(int c)
 {
-	return cblas_idamax(m, getDataPointer(0, c), 1);
+	return cblas_idamax(row, getDataPointer(0, c), 1);
 }
 
 double d_matrix::sumColAbs(int c)
 {
-	return cblas_dasum(m, getDataPointer(0, c), 1);
+	return cblas_dasum(row, getDataPointer(0, c), 1);
 }
 
 void d_matrix::initData(double v)
@@ -86,7 +86,7 @@ void d_matrix::multiply(double v)
 void d_matrix::colMultiply(double v, int c)
 {
 #pragma loop(hint_parallel(8))
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < col; i++)
 	{
 		getData(i, c) *= v;
 	}
@@ -105,26 +105,26 @@ void d_matrix::applyFunction(std::function<double(double)> f)
 //复制数据，只处理较少的
 void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 {
-	memcpy(dst->data, src->data, sizeof(double)*std::min(dst->m*dst->n, src->m*src->n));
+	memcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col));
 }
 
 void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	double a /*= 1*/, double c /*= 0*/, CBLAS_TRANSPOSE ta /*= CblasNoTrans*/, CBLAS_TRANSPOSE tb /*= CblasNoTrans*/)
 {
-	int m = R->m;
-	int n = R->n;
-	int lda = A->m;
-	int k = A->n;
-	int ldb = B->m;
-	if (ta == CblasTrans) { k = A->m; }
+	int m = R->row;
+	int n = R->col;
+	int lda = A->row;
+	int k = A->col;
+	int ldb = B->row;
+	if (ta == CblasTrans) { k = A->row; }
 	cblas_dgemm(CblasColMajor, ta, tb, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
 }
 
 void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, CBLAS_TRANSPOSE ta /*= CblasNoTrans*/)
 {
-	int m = A->m, n = A->n;
+	int m = A->row, n = A->col;
 	if (ta == CblasTrans) { std::swap(m, n); };
-	cblas_dgemv(CblasColMajor, ta, m, n, a, A->data, A->m, B->data, 1, c, R->data, 1);
+	cblas_dgemv(CblasColMajor, ta, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
 }
 
 void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)

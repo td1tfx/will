@@ -14,19 +14,19 @@ struct d_matrix
 {
 private:
 	double* data = nullptr;
-	int m=0;
-	int n=0;
+	int row = 0;
+	int col = 0;
 	int max_script;
 	bool insideData = true;
 public:
 	d_matrix(int x, int y, bool insideData = true)
 	{
-		m = x;
-		n = y;
+		row = x;
+		col = y;
 		this->insideData = insideData;
 		if (insideData)
-			data = new double[m*n + 1];
-		max_script = m*n;
+			data = new double[row*col + 1];
+		max_script = row*col;
 	}
 	~d_matrix()
 	{
@@ -34,15 +34,15 @@ public:
 	}
 	int getRow()
 	{
-		return m;
+		return row;
 	}
 	int getCol()
 	{
-		return n;
+		return col;
 	}
 	double& getData(int x, int y)
 	{
-		return data[std::min(x + y*m, max_script)];
+		return data[std::min(x + y*row, max_script)];
 	}
 	double& getData(int i)
 	{
