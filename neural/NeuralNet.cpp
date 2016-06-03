@@ -512,22 +512,41 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 		auto outputMax = new double[nodeCount*groupCount];
 		getOutputData(nodeCount, groupCount, outputMax);
 
+		auto om = new int[groupCount];
+		auto em = new int[groupCount];
+		for (int i = 0; i < groupCount; i++)
+		{
+			for (int j = 0; j < nodeCount; j++)
+			{
+				if (outputMax[i*nodeCount + j] == 1)
+					om[i] = j;
+			}
+			for (int j = 0; j < nodeCount; j++)
+			{
+				if (expect[i*nodeCount + j] == 1)
+					em[i] = j;
+			}
+		}
 		if (groupCount <= 100)
 		{
 			for (int i = 0; i < groupCount; i++)
 			{
-				for (int j = 0; j < nodeCount; j++)
+				//if (om[i] != em[i])
 				{
-					if (outputMax[i*nodeCount + j] == 1)
-						fprintf(stdout, "%3d (%6.4lf) ", j, output[i*nodeCount + j]);
+					int om = 0, em = 0;
+					for (int j = 0; j < nodeCount; j++)
+					{
+						if (outputMax[i*nodeCount + j] == 1)
+							fprintf(stdout, "%3d (%6.4lf) ", j, output[i*nodeCount + j]);
+					}
+					fprintf(stdout, " --> ");
+					for (int j = 0; j < nodeCount; j++)
+					{
+						if (expect[i*nodeCount + j] == 1)
+							fprintf(stdout, "%3d ", j);
+					}
+					fprintf(stdout, "\n");
 				}
-				fprintf(stdout, " --> ");
-				for (int j = 0; j < nodeCount; j++)
-				{
-					if (expect[i*nodeCount + j] == 1)
-						fprintf(stdout, "%3d ", j);
-				}
-				fprintf(stdout, "\n");
 			}
 		}
 
@@ -536,6 +555,8 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 			n += std::abs(outputMax[i] - expect[i]);
 		n /= 2;
 		delete[] outputMax;
+		delete[] om;
+		delete[] em;
 		fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
 	}
 }

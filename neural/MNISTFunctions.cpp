@@ -46,12 +46,13 @@ int MNISTFunctions::readImageFile(const char* filename, double*& input)
 		input[i] = v/255.0;
 	}
 
-//  	for (int i = 0; i < 784*10; i++)
+// 	int check = 59990;
+//  	for (int i = 784 * check; i < 784*(check+10); i++)
 // 	{
 // 		if (input[i] != 0)
-// 			printf("%2.1f ", input[i]);
+// 			printf("1", input[i]);
 // 		else
-// 			printf("    ");
+// 			printf(" ");
 // 		if (i % 28 == 27)
 // 			printf("\n");
 // 	}
