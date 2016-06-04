@@ -109,14 +109,22 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	int k = A->col;
 	int ldb = B->row;
 	if (ta == CblasTrans) { k = A->row; }
-	cblas_dgemm(CblasColMajor, ta, tb, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
+
+	if (mythCuda::UseCublas)
+		mythCuda::getInstance()->myth_dgemm(ta, tb, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
+	else
+		cblas_dgemm(CblasColMajor, ta, tb, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
 }
 
 void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, CBLAS_TRANSPOSE ta /*= CblasNoTrans*/)
 {
 	int m = A->row, n = A->col;
 	if (ta == CblasTrans) { std::swap(m, n); };
-	cblas_dgemv(CblasColMajor, ta, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
+
+	if (mythCuda::UseCublas)
+		mythCuda::getInstance()->myth_dgemv(ta, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
+	else
+		cblas_dgemv(CblasColMajor, ta, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
 }
 
 void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)

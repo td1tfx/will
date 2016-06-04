@@ -1,13 +1,12 @@
 #pragma once
-extern "C"
-{
 #include "lib/cblas.h"
-}
 #include <stdio.h>
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
 #include <functional>
+
+#include "mythCuda.h"
 
 
 struct d_matrix

@@ -114,7 +114,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libopenblas64.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libopenblas64.dll.a;cublas.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ForceSymbolReferences>%(ForceSymbolReferences)</ForceSymbolReferences>
+      <ForceFileOutput>UndefinedSymbolOnly</ForceFileOutput>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -160,7 +162,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libopenblas64.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libopenblas64.dll.a;cublas.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ForceSymbolReferences>%(ForceSymbolReferences)</ForceSymbolReferences>
+      <ForceFileOutput>UndefinedSymbolOnly</ForceFileOutput>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -170,6 +174,7 @@
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="MatrixFunctions.cpp" />
     <ClCompile Include="MNISTFunctions.cpp" />
+    <ClCompile Include="mythCuda.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralLayer.cpp" />
     <ClCompile Include="NeuralLayerConv.cpp" />
@@ -186,6 +191,7 @@
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="MatrixFunctions.h" />
     <ClInclude Include="MNISTFunctions.h" />
+    <ClInclude Include="mythCuda.h" />
     <ClInclude Include="NeuralLayerConv.h" />
     <ClInclude Include="NeuralLayerFactory.h" />
     <ClInclude Include="NeuralLayerFull.h" />

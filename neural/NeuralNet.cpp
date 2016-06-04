@@ -32,6 +32,10 @@ void NeuralNet::run()
 	LearnSpeed = _option.LearnSpeed;
 	Lambda = _option.Regular;
 
+	if (_option.UseCUDA)
+	{
+		mythCuda::UseCublas = (mythCuda::init() == 0);
+	}
 	if (_option.UseMNIST == 0)
 	{
 		if (_option.TrainDataFile != "")
