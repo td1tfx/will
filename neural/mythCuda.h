@@ -15,26 +15,27 @@ public:
 	mythCuda();
 	~mythCuda();
 
-	cublasHandle_t handle;
+	
 	static mythCuda* _mythcuda;
 	static bool UseCublas;
 
-	static int init()
-	{
 #ifdef _USE_CUDA
+	cublasHandle_t handle;
+	static void init()
+	{
 		if (HasDevice())
 		{
 			_mythcuda = new mythCuda();
-			return 0;
+			UseCublas = true;
 		}
 		else
 		{
-			return -1;
+			UseCublas = false;
 		}
-#else
-		return -1;
-#endif
 	}
+#else
+	static void init() { }
+#endif
 
 	static mythCuda* getInstance()
 	{

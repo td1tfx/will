@@ -34,7 +34,7 @@ void NeuralNet::run()
 
 	if (_option.UseCUDA)
 	{
-		mythCuda::UseCublas = (mythCuda::init() == 0);
+		mythCuda::init();
 	}
 	if (_option.UseMNIST == 0)
 	{
