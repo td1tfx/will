@@ -1,14 +1,13 @@
 #pragma once
 
-
+#ifdef _USE_CUDA
 /* Includes, cuda */
 #include "lib/cublas/cuda_runtime.h"
 #include "lib/cublas/cublas_v2.h"
 #include "lib/cublas/helper_cuda.h"
+#endif
 
 #include "lib/cblas.h"
-
-#define MAXN 3000	//100m
 
 class mythCuda
 {
@@ -22,6 +21,7 @@ public:
 
 	static int init()
 	{
+#ifdef _USE_CUDA
 		if (HasDevice())
 		{
 			_mythcuda = new mythCuda();
@@ -31,6 +31,9 @@ public:
 		{
 			return -1;
 		}
+#else
+		return -1;
+#endif
 	}
 
 	static mythCuda* getInstance()

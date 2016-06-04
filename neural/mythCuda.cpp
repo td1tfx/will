@@ -3,8 +3,11 @@
 mythCuda* mythCuda::_mythcuda = nullptr;
 bool mythCuda::UseCublas = false;
 
+#ifdef _USE_CUDA
+
 mythCuda::mythCuda()
 {
+	int MAXN = 3000*3000;
 	auto status = cublasCreate(&handle);
 	if (status != CUBLAS_STATUS_SUCCESS)
 	{
@@ -13,19 +16,18 @@ mythCuda::mythCuda()
 	else
 	{
 		_mythcuda = this;
-
 		/* Allocate device memory for the matrices */
-		if (cudaMalloc((void **) &d_A, MAXN *MAXN * sizeof(d_A[0])) != cudaSuccess)
+		if (cudaMalloc((void **) &d_A, MAXN * sizeof(d_A[0])) != cudaSuccess)
 		{
 			fprintf(stderr, "!!!! device memory allocation error (allocate A)\n");
 		}
 
-		if (cudaMalloc((void **) &d_B, 6*MAXN *MAXN * sizeof(d_B[0])) != cudaSuccess)
+		if (cudaMalloc((void **) &d_B, 6 * MAXN * sizeof(d_B[0])) != cudaSuccess)
 		{
 			fprintf(stderr, "!!!! device memory allocation error (allocate B)\n");
 		}
 
-		if (cudaMalloc((void **) &d_C, MAXN *MAXN * sizeof(d_C[0])) != cudaSuccess)
+		if (cudaMalloc((void **) &d_C, MAXN * sizeof(d_C[0])) != cudaSuccess)
 		{
 			fprintf(stderr, "!!!! device memory allocation error (allocate C)\n");
 		}
@@ -112,25 +114,25 @@ void mythCuda::bind(const double* A, int sizeA, const double* B, int sizeB, doub
 
 	/* Initialize the device matrices with the host matrices */
 	cublasStatus_t status;
-	if (A){
+	if (A)
+	{
 		status = cublasSetVector(sizeA, sizeof(double), A, 1, d_A, 1);
-
 		if (status != CUBLAS_STATUS_SUCCESS)
 		{
 			fprintf(stderr, "!!!! device access error (write A)\n");
 		}
 	}
-	if (B){
+	if (B)
+	{
 		status = cublasSetVector(sizeB, sizeof(double), B, 1, d_B, 1);
-
 		if (status != CUBLAS_STATUS_SUCCESS)
 		{
 			fprintf(stderr, "!!!! device access error (write B)\n");
 		}
 	}
-	if (R){
+	if (R)
+	{
 		status = cublasSetVector(sizeR, sizeof(double), R, 1, d_C, 1);
-
 		if (status != CUBLAS_STATUS_SUCCESS)
 		{
 			fprintf(stderr, "!!!! device access error (write C)\n");
@@ -139,3 +141,4 @@ void mythCuda::bind(const double* A, int sizeA, const double* B, int sizeB, doub
 
 }
 
+#endif //_USE_CUDA
