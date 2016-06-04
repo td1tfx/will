@@ -172,6 +172,10 @@
     <ClCompile Include="MNISTFunctions.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralLayer.cpp" />
+    <ClCompile Include="NeuralLayerConv.cpp" />
+    <ClCompile Include="NeuralLayerFactory.cpp" />
+    <ClCompile Include="NeuralLayerFull.cpp" />
+    <ClCompile Include="NeuralLayerResample.cpp" />
     <ClCompile Include="NeuralNet.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -182,10 +186,13 @@
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="MatrixFunctions.h" />
     <ClInclude Include="MNISTFunctions.h" />
+    <ClInclude Include="NeuralLayerConv.h" />
+    <ClInclude Include="NeuralLayerFactory.h" />
+    <ClInclude Include="NeuralLayerFull.h" />
+    <ClInclude Include="NeuralLayerResample.h" />
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralLayer.h" />
     <ClInclude Include="Option.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="win.h" />
   </ItemGroup>

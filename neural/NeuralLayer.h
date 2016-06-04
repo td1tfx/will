@@ -18,8 +18,8 @@ typedef enum
 {
 	FullConnection,
 	Convolution,
-	Pooling,
-} NeuralLayerWorkMode;
+	Resample,
+} NeuralLayerConnectionMode;
 
 //神经层
 class NeuralLayer
@@ -30,20 +30,20 @@ public:
 
 	int Id;
 
-	int NodeCount;
-	static int GroupCount;
-	static int Step;
+	int OutputCount;  //对于全连接层，输出数等于节点数，对于其他形式定义不同
+	static int GroupCount;   //对于所有层数据量都一样
+	static int Step;  //仅调试用
 
 	NeuralLayerType Type = Hidden;
+	NeuralLayerConnectionMode WorkMode = FullConnection;
 
-	NeuralLayerWorkMode WorkMode = FullConnection;
-	
-	//这几个矩阵形式相同，行数是节点数，列数是数据组数
-	d_matrix *InputMatrix = nullptr, *OutputMatrix = nullptr, *ExpectMatrix = nullptr, *DeltaMatrix = nullptr;
+	bool NeedTrain = true;   //如果不需要训练那么也无需反向传播，在训练的时候也只需激活一次
+	void setNeedTrain(bool nt) { NeedTrain = nt; }
 
-	void deleteData();
-	
-	//weight矩阵，行数是本层的节点数，列数是上一层的节点数
+	//对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数
+	//Expect仅输出层使用，输入层需要直接设置Output
+	d_matrix *InputMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
+	//weight矩阵，对于全连接层，行数是本层的节点数，列数是上一层的节点数
 	d_matrix* WeightMatrix = nullptr;
 	//偏移向量，维度为本层节点数
 	d_matrix* BiasVector = nullptr;
@@ -52,31 +52,31 @@ public:
 
 	NeuralLayer *PrevLayer, *NextLayer;
 
-	void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden);
+	void deleteData();
 	void resetData(int groupCount);
-	d_matrix*& getOutputMatrix() { return OutputMatrix; }	
-	d_matrix*& getExpectMatrix() { return ExpectMatrix; }
-	d_matrix*& getDeltaMatrix() { return DeltaMatrix; }
-
-	double& getOutputValue(int x, int y) { return OutputMatrix->getData(x, y); }
-
-	static void connetLayer(NeuralLayer* startLayer, NeuralLayer* endLayer);
-	void connetPrevlayer(NeuralLayer* prevLayer);
-	void connetNextlayer(NeuralLayer* nextLayer);
-	//void connet(NueralLayer nextLayer);
 	void markMax();
 	void normalized();
 
 	//dactive是active的导数
 	std::function<double(double)> _activeFunction = MyMath::sigmoid;
 	std::function<double(double)> _dactiveFunction = MyMath::dsigmoid;
-
 	void setFunctions(std::function<double(double)> active, std::function<double(double)> dactive);
 
-	void activeOutputValue();
+	virtual void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden) {}
+	virtual void connetPrevlayer(NeuralLayer* prevLayer) {}
+	virtual void activeOutputValue() {}
+	virtual void updateDelta() {}
+	virtual void backPropagate(double learnSpeed, double lambda) {}
+	virtual int saveInfo(FILE* fout) { return 0; }
+	virtual int readInfo(double* v, int n) { return 0; }
 
-	void updateDelta();
-	void backPropagate(double learnSpeed = 0.5, double lambda = 0.1);
+	//以下函数仅建议使用在输入和输出层，隐藏层不建议使用！
+	d_matrix* getOutputMatrix() { return OutputMatrix; }
+	d_matrix* getExpectMatrix() { return ExpectMatrix; }
+	d_matrix* getDeltaMatrix() { return DeltaMatrix; }
+	double& getOutputValue(int x, int y) { return OutputMatrix->getData(x, y); }
 
 };
+
+
 

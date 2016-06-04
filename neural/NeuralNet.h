@@ -4,11 +4,10 @@
 #include <string.h>
 #include <cmath>
 #include "NeuralLayer.h"
-#include "lib/libconvert.h"
 #include "MNISTFunctions.h"
 #include "Option.h"
-
-
+#include "NeuralLayerFactory.h"
+#include "lib/libconvert.h"
 
 //学习模式
 typedef enum 
@@ -104,7 +103,7 @@ public:
 
 	//具体设置
 	virtual void createByData(int layerCount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
-	void outputBondWeight(const char* filename = nullptr); 
+	void saveInfo(const char* filename = nullptr); 
 	void createByLoad(const char* filename);
 
 	//NeuralNetCalMode activeMode = ByNode;
@@ -112,7 +111,6 @@ public:
 
 	void readMNIST();
 
-	bool TestMax = false;
 	void selectTest();
 	void test();
 	void printResult(int nodeCount, int groupCount, double* output, double* expect);

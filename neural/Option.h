@@ -13,9 +13,10 @@ OPTION_STRING(TestDataFile, "");\
 OPTION_INT(UseMNIST, 0);\
 OPTION_INT(LoadNet, 0);\
 OPTION_INT(TestMax, 0);\
+OPTION_INT(ForceOutput, 0);\
 \
 OPTION_INT(Layer, 3);\
-OPTION_INT(NodePerLayer, 7);\
+OPTION_STRING(NodePerLayer, "0,7,0");\
 \
 OPTION_INT(LearnMode, 0);\
 OPTION_INT(WorkMode, 0);\

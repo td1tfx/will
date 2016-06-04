@@ -40,6 +40,10 @@ public:
 	{
 		return col;
 	}
+	int getDataCount()
+	{
+		return max_script;
+	}
 	double& getData(int x, int y)
 	{
 		return data[std::min(x + y*row, max_script)];

@@ -41,6 +41,18 @@
     <ClCompile Include="lib\INIReader.cpp">
       <Filter>lib</Filter>
     </ClCompile>
+    <ClCompile Include="NeuralLayerFull.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NeuralLayerConv.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NeuralLayerResample.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NeuralLayerFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNet.h">
@@ -64,9 +76,6 @@
     <ClInclude Include="MyMath.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="config.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -80,6 +89,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="win.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralLayerFull.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralLayerConv.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralLayerResample.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralLayerFactory.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

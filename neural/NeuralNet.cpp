@@ -31,7 +31,6 @@ void NeuralNet::run()
 
 	LearnSpeed = _option.LearnSpeed;
 	Lambda = _option.Regular;
-	TestMax = _option.TestMax;
 
 	if (_option.UseMNIST == 0)
 	{
@@ -49,8 +48,11 @@ void NeuralNet::run()
 	//if (readStringFromFile(_option.LoadFile) == "")
 	//	_option.LoadNet == 0;
 
+	std::vector<double> v;
+	int n = findNumbers(_option.NodePerLayer, v);
+
 	if (_option.LoadNet == 0)
-		createByData(_option.Layer, _option.NodePerLayer);
+		createByData(_option.Layer, int(v[0]));
 	else
 		createByLoad(_option.LoadFile.c_str());
 
@@ -59,7 +61,7 @@ void NeuralNet::run()
 	test();
 
 	if (_option.SaveFile != "")
-		outputBondWeight(_option.SaveFile.c_str());
+		saveInfo(_option.SaveFile.c_str());
 	if (_option.TestDataFile != "")
 	{
 		readData(_option.TestDataFile.c_str(), Test);
@@ -98,7 +100,7 @@ void NeuralNet::createLayers(int layerCount)
 	Layers.resize(layerCount);
 	for (int i = 0; i < layerCount; i++)
 	{
-		auto layer = new NeuralLayer();
+		auto layer = NeuralLayerFactory::createLayer(FullConnection);
 		layer->Id = i;
 		Layers[i] = layer;
 	}
@@ -240,7 +242,7 @@ void NeuralNet::readData(const char* filename, DateMode dm/*= Train*/)
 
 	int mark = 3;
 	//数据格式：前两个是输入变量数和输出变量数，之后依次是每组的输入和输出，是否有回车不重要
-	std::string str = readStringFromFile(filename) + "\n";
+	std::string str = readStringFromFile(filename);
 	if (str == "")
 		return;
 	std::vector<double> v;
@@ -299,46 +301,6 @@ void NeuralNet::resetGroupCount(int n)
 	}
 }
 
-//输出键结值
-void NeuralNet::outputBondWeight(const char* filename)
-{
-	FILE *fout = stdout;
-	if (filename)
-		fout = fopen(filename, "w+t");
-
-	fprintf(fout,"Net information:\n");
-	fprintf(fout,"%d\tlayers\n", Layers.size());
-	for (int i_layer = 0; i_layer < getLayerCount(); i_layer++)
-	{
-		fprintf(fout,"layer %d has %d nodes\n", i_layer, Layers[i_layer]->NodeCount);
-	}
-
-	fprintf(fout,"---------------------------------------\n");
-	for (int i_layer = 0; i_layer < getLayerCount() - 1; i_layer++)
-	{
-		auto& layer1 = Layers[i_layer];
-		auto& layer2 = Layers[i_layer + 1];
-		fprintf(fout, "weight for layer %d to %d\n", i_layer + 1, i_layer);
-		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
-		{
-			for (int i1 = 0; i1 < layer1->NodeCount; i1++)
-			{
-				fprintf(fout, "%14.11lf ", layer2->WeightMatrix->getData(i2, i1));
-			}
-			fprintf(fout, "\n");
-		}
-		fprintf(fout, "bias for layer %d\n", i_layer + 1);
-		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
-		{
-			fprintf(fout, "%14.11lf ", layer2->BiasVector->getData(i2));
-		}
-		fprintf(fout, "\n");
-	}
-
-	if (filename)
-		fclose(fout);
-}
-
 //依据输入数据创建神经网，网络的节点数只对隐藏层有用
 //此处是具体的网络结构
 void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
@@ -351,7 +313,7 @@ void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 	{
 		getLayer(i)->initData(nodesPerLayer, _train_groupCount, Hidden);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i, nodesPerLayer);
-	}	
+	}
 	getLastLayer()->initData(OutputNodeCount, _train_groupCount, Output);
 	fprintf(stdout, "Layer %d has %d nodes.\n", layerCount - 1, OutputNodeCount);
 
@@ -361,33 +323,52 @@ void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 	}
 }
 
+//输出键结值
+void NeuralNet::saveInfo(const char* filename)
+{
+	FILE *fout = stdout;
+	if (filename)
+		fout = fopen(filename, "w+t");
+
+	fprintf(fout,"Net information:\n");
+	fprintf(fout,"%d\tlayers\n", Layers.size());
+	for (int i_layer = 0; i_layer < getLayerCount(); i_layer++)
+	{
+		fprintf(fout,"layer %d has %d nodes\n", i_layer, Layers[i_layer]->OutputCount);
+	}
+
+	fprintf(fout,"---------------------------------------\n");
+	for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
+	{
+		Layers[i_layer]->saveInfo(fout);
+	}
+
+	if (filename)
+		fclose(fout);
+}
+
 //依据键结值创建神经网
 void NeuralNet::createByLoad(const char* filename)
 {
-	std::string str = readStringFromFile(filename) + "\n";
+	std::string str = readStringFromFile(filename);
 	if (str == "")
 		return;
-	std::vector<double> v;
-	int n = findNumbers(str, v);
-	// 	for (int i = 0; i < n; i++)
-	// 		printf("%14.11lf\n",v[i]);
-	// 	printf("\n");
-	std::vector<int> v_int;
-	v_int.resize(n);
-	for (int i_layer = 0; i_layer < n; i_layer++)
-	{
-		v_int[i_layer] = int(v[i_layer]);
-	}
+	std::vector<double> vv;
+	int n = findNumbers(str, vv);
+	auto v = new double[n];
+	for (int i = 0; i < n; i++)
+		v[i] = vv[i];
+
 	int k = 0;
-	int layerCount = v_int[k++];
+	int layerCount = int(v[k++]);
 	this->createLayers(layerCount);
 	getFirstLayer()->Type = Input;
 	getLastLayer()->Type = Output;
 	k++;
 	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{
-		getLayer(i_layer)->initData(v_int[k], _train_groupCount, getLayer(i_layer)->Type);
-		fprintf(stdout, "Layer %d has %d nodes.\n", i_layer, v_int[k]);
+		getLayer(i_layer)->initData(int(v[k]), _train_groupCount, getLayer(i_layer)->Type);
+		fprintf(stdout, "Layer %d has %d nodes.\n", i_layer, int(v[k]));
 		k += 2;
 	}
 	k = 1 + layerCount * 2;
@@ -396,19 +377,8 @@ void NeuralNet::createByLoad(const char* filename)
 		auto& layer1 = Layers[i_layer];
 		auto& layer2 = Layers[i_layer + 1];
 		layer2->connetPrevlayer(layer1);
-		k += 2;
-		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
-		{
-			for (int i1 = 0; i1 < layer1->NodeCount; i1++)
-			{
-				layer2->WeightMatrix->getData(i2, i1) = v[k++];
-			}
-		}
-		k += 1;
-		for (int i2 = 0; i2 < layer2->NodeCount; i2++)
-		{
-			layer2->BiasVector->getData(i2) = v[k++];
-		}
+		int readcount = layer2->readInfo(v + k, n - k);
+		k += readcount;
 	}
 }
 
@@ -493,7 +463,7 @@ void NeuralNet::test()
 
 void NeuralNet::printResult(int nodeCount, int groupCount, double* output, double* expect)
 {
-	if (groupCount <= 100)
+	if (_option.ForceOutput || groupCount <= 100)
 	{
 		for (int i = 0; i < groupCount; i++)
 		{
@@ -510,7 +480,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 		}
 	}
 
-	if (TestMax)
+	if (_option.TestMax)
 	{
 		getLastLayer()->markMax();
 		auto outputMax = new double[nodeCount*groupCount];
@@ -531,7 +501,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, double* output, doubl
 					em[i] = j;
 			}
 		}
-		if (groupCount <= 100)
+		if (_option.ForceOutput || groupCount <= 100)
 		{
 			for (int i = 0; i < groupCount; i++)
 			{
