@@ -34,7 +34,7 @@ void NeuralNet::run()
 
 	if (_option.UseCUDA)
 	{
-		mythCuda::init();
+		d_matrix::initCublas();
 	}
 	if (_option.UseMNIST == 0)
 	{
@@ -112,31 +112,45 @@ void NeuralNet::createLayers(int layerCount)
 
 
 
-//计算输出
 //这里按照前面的设计应该是逐步回溯计算，使用栈保存计算的顺序，待完善后修改
-void NeuralNet::activeOutputValue(double* input, double* output, int groupCount)
-{	
-	if (input)
+void NeuralNet::active(double* input, double* expect, double* output, int groupCount, int batchCount,
+	bool learn /*= false*/, bool neederror /*= false*/, double* error /*= nullptr*/)
+{
+	//if (error) *error = 0;
+	for (int i = 0; i < groupCount; i += batchCount)
 	{
-		setInputData(input, InputNodeCount, 0);
-	}	
-	for (int i = 1; i < getLayerCount(); i++)
-	{
-		Layers[i]->activeOutputValue();
-	}
+		resetGroupCount(batchCount);
+		if (input)
+		{
+			setInputData(input, InputNodeCount, i);
+		}
+		if (expect)
+		{
+			setExpectData(expect, OutputNodeCount, i);
+		}
 
-	if (WorkMode == Probability)
-	{
-		getLastLayer()->normalized();
-	}
-	else if (WorkMode == Classify)
-	{
-		getLastLayer()->markMax();
-	}
-
-	if (output)
-	{
-		getOutputData(OutputNodeCount, groupCount, output);
+		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
+		{
+			Layers[i_layer]->activeOutputValue();
+		}
+		if (WorkMode == Probability) { getLastLayer()->normalized(); }
+		else if (WorkMode == Classify) { getLastLayer()->markMax(); }
+		if (learn)
+		{
+			for (int i_layer = getLayerCount() - 1; i_layer > 0; i_layer--)
+			{
+				Layers[i_layer]->backPropagate(LearnSpeed, Lambda);
+			}
+		}
+		if (output)
+		{
+			getOutputData(OutputNodeCount, groupCount, output + OutputNodeCount*groupCount);
+		}
+		//计算误差，注意这个算法对于minibatch不严格
+		if (neederror && error)
+		{
+			*error += getLastLayer()->getDeltaMatrix()->ddot() / groupCount / OutputNodeCount;
+		}
 	}
 }
 
@@ -153,31 +167,17 @@ void NeuralNet::setExpectData(double* expect, int nodeCount, int groupid)
 
 void NeuralNet::getOutputData(int nodeCount, int groupCount, double* output)
 {
-	getLastLayer()->getOutputMatrix()->memcpyDataOut(output, sizeof(double)*nodeCount*groupCount);
+	getLastLayer()->getOutputMatrix()->memcpyDataOut(output, nodeCount*groupCount);
 }
 
-//学习过程
-void NeuralNet::learn()
-{
-	//正向计算
-	activeOutputValue(nullptr, nullptr, _train_groupCount);
-	//反向传播
-	for (int i = getLayerCount() - 1; i > 0; i--)
-	{
-		Layers[i]->backPropagate(LearnSpeed, Lambda);
-	}
-}
 
 //训练一批数据，输出步数和误差，若训练次数为0可以理解为纯测试模式
 void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double tol /*= 1e-3*/, double dtol /*= 1e-9*/)
 {
 	if (times <= 0) return;
 	//这里计算初始的误差，如果足够小就不训练了
-	setInputData(_train_inputData, InputNodeCount, 0);
-	setExpectData(_train_expectData, OutputNodeCount, 0);
-	activeOutputValue(nullptr, nullptr, _train_groupCount);
-	getLastLayer()->updateDelta();
-	double e = getLastLayer()->getDeltaMatrix()->ddot() / (_train_groupCount*OutputNodeCount);
+	double e = 0;
+	active(_train_inputData, _train_expectData, nullptr, _train_groupCount, MiniBatchCount, false, true, &e);	
 	fprintf(stdout, "step = %e, mse = %e\n", 0.0, e);
 	if (e < tol) return;
 	double e0 = e;
@@ -189,7 +189,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	}
 	else if (LearnMode == Batch)
 	{
-		//resetGroupCount(_train_groupCount);
+		resetGroupCount(_train_groupCount);
 		MiniBatchCount = _train_groupCount;
 		e0 = 0;  //如果是使用所有数据训练，初始误差设置一个值，避免判断错误
 	}
@@ -203,29 +203,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	for (int count = 1; count <= times; count++)
 	{
 		//getFirstLayer()->step = count;
-		if (LearnMode == Batch)
-		{
-			learn();
-			//计算误差，实际是上一步的
-			if (count % interval == 0)
-			{
-				e = getLastLayer()->getDeltaMatrix()->ddot();
-			}
-		}
-		else
-		{
-			for (int i = 0; i < _train_groupCount; i += MiniBatchCount)
-			{
-				setInputData(_train_inputData, InputNodeCount, i);
-				setExpectData(_train_expectData, OutputNodeCount, i);
-				learn();
-				//计算误差，注意这个算法对于minibatch不严格
-				if (count % interval == 0)
-				{
-					e += getLastLayer()->getDeltaMatrix()->ddot();
-				}
-			}
-		}
+		active(nullptr, nullptr, nullptr, _train_groupCount, MiniBatchCount, true, count % interval == 0, &e);
 		if (count % interval == 0)
 		{
 			e /= (_train_groupCount*OutputNodeCount);
@@ -299,6 +277,7 @@ void NeuralNet::readData(const char* filename, DateMode dm/*= Train*/)
 
 void NeuralNet::resetGroupCount(int n)
 {
+	if (n == NeuralLayer::GroupCount) return;
 	for (auto l : Layers)
 	{
 		l->resetData(n);
@@ -311,14 +290,14 @@ void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
 	this->createLayers(layerCount);
 
-	getFirstLayer()->initData(InputNodeCount, _train_groupCount, Input);
+	getFirstLayer()->initData(InputNodeCount, MiniBatchCount, Input);
 	fprintf(stdout, "Layer %d has %d nodes.\n", 0, InputNodeCount);
 	for (int i = 1; i < layerCount - 1; i++)
 	{
-		getLayer(i)->initData(nodesPerLayer, _train_groupCount, Hidden);
+		getLayer(i)->initData(nodesPerLayer, MiniBatchCount, Hidden);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i, nodesPerLayer);
 	}
-	getLastLayer()->initData(OutputNodeCount, _train_groupCount, Output);
+	getLastLayer()->initData(OutputNodeCount, MiniBatchCount, Output);
 	fprintf(stdout, "Layer %d has %d nodes.\n", layerCount - 1, OutputNodeCount);
 
 	for (int i = 1; i < layerCount; i++)
@@ -334,14 +313,14 @@ void NeuralNet::saveInfo(const char* filename)
 	if (filename)
 		fout = fopen(filename, "w+t");
 
-	fprintf(fout,"Net information:\n");
-	fprintf(fout,"%d\tlayers\n", Layers.size());
+	fprintf(fout, "Net information:\n");
+	fprintf(fout, "%d\tlayers\n", Layers.size());
 	for (int i_layer = 0; i_layer < getLayerCount(); i_layer++)
 	{
-		fprintf(fout,"layer %d has %d nodes\n", i_layer, Layers[i_layer]->OutputCount);
+		fprintf(fout, "layer %d has %d nodes\n", i_layer, Layers[i_layer]->OutputCount);
 	}
 
-	fprintf(fout,"---------------------------------------\n");
+	fprintf(fout, "---------------------------------------\n");
 	for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
 	{
 		Layers[i_layer]->saveInfo(fout);
@@ -371,7 +350,7 @@ void NeuralNet::createByLoad(const char* filename)
 	k++;
 	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{
-		getLayer(i_layer)->initData(int(v[k]), _train_groupCount, getLayer(i_layer)->Type);
+		getLayer(i_layer)->initData(int(v[k]), MiniBatchCount, getLayer(i_layer)->Type);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i_layer, int(v[k]));
 		k += 2;
 	}
@@ -394,7 +373,7 @@ void NeuralNet::readMNIST()
 
 	MNISTFunctions::readImageFile("t10k-images.idx3-ubyte", _test_inputData);
 	MNISTFunctions::readLabelFile("t10k-labels.idx1-ubyte", _test_expectData);
-	_test_groupCount = 10000;
+	_test_groupCount = 1000;
 }
 
 void NeuralNet::loadOptoin(const char* filename)
@@ -447,18 +426,16 @@ void NeuralNet::test()
 {
 	if (_train_groupCount > 0)
 	{
-		resetGroupCount(_train_groupCount);
 		auto train_output = new double[OutputNodeCount*_train_groupCount];
-		activeOutputValue(_train_inputData, train_output, _train_groupCount);
+		active(_train_inputData, nullptr, train_output, _train_groupCount, MiniBatchCount);
 		fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", _train_groupCount);
 		printResult(OutputNodeCount, _train_groupCount, train_output, _train_expectData);
 		delete[] train_output;
 	}
 	if (_test_groupCount > 0)
 	{
-		resetGroupCount(_test_groupCount);
 		auto test_output = new double[OutputNodeCount*_test_groupCount];
-		activeOutputValue(_test_inputData, test_output, _test_groupCount);
+		active(_test_inputData, nullptr, test_output, _test_groupCount, MiniBatchCount);
 		fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", _test_groupCount);
 		printResult(OutputNodeCount, _test_groupCount, test_output, _test_expectData);
 		delete[] test_output;

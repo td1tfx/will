@@ -77,11 +77,10 @@ public:
 
 	void createLayers(int layerCount);  //包含输入和输出层
 
-	void learn();
-
 	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 0);  //训练过程
 	
-	void activeOutputValue(double* input, double* output, int groupCount);  //计算一组输出
+	void active(double* input, double* expect, double* output, int groupCount, int batchCount,
+		bool learn = false, bool neederror = false, double* error = nullptr);  //计算一组输出
 
 	void setInputData(double* input, int nodeCount, int groupid);
 	void setExpectData(double* expect, int nodeCount, int groupid);

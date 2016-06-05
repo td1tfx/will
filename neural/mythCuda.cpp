@@ -42,7 +42,20 @@ mythCuda::~mythCuda()
 	_mythcuda = nullptr;
 }
 
-bool mythCuda::HasDevice()
+void mythCuda::init()
+{
+	if (hasDevice())
+	{
+		_mythcuda = new mythCuda();
+		UseCublas = true;
+	}
+	else
+	{
+		UseCublas = false;
+	}
+}
+
+bool mythCuda::hasDevice()
 {
 	int dev = findCudaDevice(0, nullptr);
 	if (dev == -1)
@@ -55,11 +68,10 @@ bool mythCuda::HasDevice()
 	}
 }
 
-double mythCuda::myth_ddot(const int N, const double *X, const int incX,
-	const double *Y, const int incY)
+double mythCuda::myth_ddot(const int N, const double *X, const int incX, const double *Y, const int incY)
 {
 	double ret = 0;
-	bind(X, N, Y, N, NULL, NULL);
+	bind(X, N, Y, N, nullptr, 0);
 	cublasDdot(handle, N, d_A, incX, d_B, incY, &ret);
 	return ret;
 }

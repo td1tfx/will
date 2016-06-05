@@ -36,15 +36,16 @@ void NeuralLayer::resetData(int groupCount)
 void NeuralLayer::markMax()
 {
 	if (OutputCount <= 0) return;
+	auto temp = new double[OutputCount*GroupCount];
+	memset(temp, 0, sizeof(double)*OutputCount*GroupCount);
 	for (int i_group = 0; i_group < GroupCount; i_group++)
 	{
 		int index = OutputMatrix->indexColMaxAbs(i_group);
-		for (int i_node = 0; i_node < OutputCount; i_node++)
-		{
-			OutputMatrix->getData(i_node, i_group) = 0;
-		}
-		OutputMatrix->getData(index, i_group) = 1;
+		temp[index+i_group*OutputCount] = 1;
+		//printf("%d", index);
 	}
+	OutputMatrix->memcpyDataIn(temp, OutputCount*GroupCount);
+	delete temp;
 }
 
 //归一化，计算概率使用，输出层激活函数为exp

@@ -106,7 +106,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_USE_CUDA;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
     </ClCompile>
@@ -152,7 +152,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_USE_CUDA;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
     </ClCompile>
@@ -174,7 +174,6 @@
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="MatrixFunctions.cpp" />
     <ClCompile Include="MNISTFunctions.cpp" />
-    <ClCompile Include="mythCuda.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralLayer.cpp" />
     <ClCompile Include="NeuralLayerConv.cpp" />
@@ -191,7 +190,6 @@
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="MatrixFunctions.h" />
     <ClInclude Include="MNISTFunctions.h" />
-    <ClInclude Include="mythCuda.h" />
     <ClInclude Include="NeuralLayerConv.h" />
     <ClInclude Include="NeuralLayerFactory.h" />
     <ClInclude Include="NeuralLayerFull.h" />

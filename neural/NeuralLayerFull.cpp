@@ -74,7 +74,7 @@ void NeuralLayerFull::updateDelta()
 	{
 		//nextLayer->weight->print();
 		//nextLayer->delta->print();
-		d_matrix::product(NextLayer->WeightMatrix, NextLayer->DeltaMatrix, DeltaMatrix, 1, 0, CblasTrans, CblasNoTrans);
+		d_matrix::product(NextLayer->WeightMatrix, NextLayer->DeltaMatrix, DeltaMatrix, 1, 0, Trans, NoTrans);
 		//this->delta->print();
 		InputMatrix->applyFunction(_dactiveFunction);
 		d_matrix::hadamardProduct(DeltaMatrix, InputMatrix, DeltaMatrix);
@@ -86,26 +86,16 @@ void NeuralLayerFull::backPropagate(double learnSpeed, double lambda)
 	updateDelta();
 	//lambda = 0.0;
 	d_matrix::product(DeltaMatrix, PrevLayer->OutputMatrix, WeightMatrix,
-		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, CblasNoTrans, CblasTrans);
-	d_matrix::productVector(DeltaMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, CblasNoTrans);
+		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, NoTrans, Trans);
+	d_matrix::productVector(DeltaMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, NoTrans);
 }
 
 int NeuralLayerFull::saveInfo(FILE* fout)
 {
 	fprintf(fout, "weight for layer %d to %d\n", Id, Id - 1);
-	for (int i = 0; i < WeightMatrix->getRow(); i++)
-	{
-		for (int j = 0; j < WeightMatrix->getCol(); j++)
-		{
-			fprintf(fout, "%14.11lf ", WeightMatrix->getData(i, j));
-		}
-		fprintf(fout, "\n");
-	}
+	WeightMatrix->print(fout);
 	fprintf(fout, "bias for layer %d\n", Id);
-	for (int i = 0; i < BiasVector->getDataCount(); i++)
-	{
-		fprintf(fout, "%14.11lf ", BiasVector->getData(i));
-	}
+	BiasVector->print(fout);
 	fprintf(fout, "\n");
 	return 3 + WeightMatrix->getDataCount() + BiasVector->getDataCount();
 }
