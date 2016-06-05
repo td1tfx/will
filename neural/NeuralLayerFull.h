@@ -10,6 +10,7 @@ public:
 	virtual ~NeuralLayerFull();
 
 	virtual void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden);
+	virtual void resetData(int groupCount);
 	virtual void connetPrevlayer(NeuralLayer* prevLayer);
 	virtual void activeOutputValue();
 	virtual void updateDelta();

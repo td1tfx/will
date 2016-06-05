@@ -48,6 +48,7 @@ public:
 
 	Option _option;
 	void loadOptoin(const char* filename);
+	int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
 
 	void run();
 
@@ -79,25 +80,25 @@ public:
 
 	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 0);  //训练过程
 	
-	void active(double* input, double* expect, double* output, int groupCount, int batchCount,
-		bool learn = false, bool neederror = false, double* error = nullptr);  //计算一组输出
+	void active(d_matrix* input, d_matrix* expect, d_matrix* output, int groupCount, int batchCount,
+		bool learn = false, double* error = nullptr);  //计算一组输出
 
-	void setInputData(double* input, int nodeCount, int groupid);
-	void setExpectData(double* expect, int nodeCount, int groupid);
+	void setInputData(d_matrix* input, int groupid);
+	void setExpectData(d_matrix* expect, int groupid);
 
-	void getOutputData(int nodeCount, int groupCount, double* output);
+	void getOutputData(d_matrix* output, int groupCount, int col=0);
 
 	//数据
-	double* _train_inputData = nullptr;
-	double* _train_expectData = nullptr;
+	d_matrix* _train_inputData = nullptr;
+	d_matrix* _train_expectData = nullptr;
 	int _train_groupCount = 0;   //实际的数据量
 	
 	typedef enum { Train, Test } DateMode;
 	void readData(const char* filename, DateMode dm = Train);
-	void resetGroupCount(int n);
+	int resetGroupCount(int n);
 
-	double* _test_inputData = nullptr;
-	double* _test_expectData = nullptr;
+	d_matrix* _test_inputData = nullptr;
+	d_matrix* _test_expectData = nullptr;
 	int _test_groupCount = 0;
 
 	//具体设置
@@ -112,6 +113,6 @@ public:
 
 	void selectTest();
 	void test();
-	void printResult(int nodeCount, int groupCount, double* output, double* expect);
+	void printResult(int nodeCount, int groupCount, d_matrix* output, d_matrix* expect);
 };
 

@@ -7,7 +7,7 @@
 #include <functional>
 
 #ifdef _MSC_VER
-#define _USE_CUDA1
+#define _USE_CUDA
 #endif
 
 #ifdef _USE_CUDA
@@ -59,68 +59,36 @@ struct d_matrix
 {
 private:
 	static bool inited;
-#ifdef _USE_CUDA
-	static bool globalUseCublas;
-	bool UseCublas = false;
-#else
-	const bool UseCublas = false;
-	static bool globalUseCublas;
-#endif
+
+	int UseCublas = false;
+	static int globalUseCublas;
+
 	double* data = nullptr;
 	int row = 0;
 	int col = 0;
 	int max_script;
-	bool insideData = true;
+	int insideData = 1;
 	DataPosition dataIsWhere = DataInHost;
-
+	int data_size = -1;
 public:
-	d_matrix(int x, int y, bool insideData = true)
-	{
-		row = x;
-		col = y;
-		this->insideData = insideData;
-		if (insideData || UseCublas)
-			data = mallocData(row*col);
-		max_script = row*col;
-	}
-	~d_matrix()
-	{
-		if(data) freeData();
-	}
-	int getRow()
-	{
-		return row;
-	}
-	int getCol()
-	{
-		return col;
-	}
-	int getDataCount()
-	{
-		return max_script;
-	}
-	double& getData(int x, int y)
-	{
-		return data[std::min(x + y*row, max_script-1)];
-	}
-	double& getData(int i)
-	{
-		return data[std::min(i, max_script-1)];
-	}
-	double* getDataPointer(int x, int y)
-	{
-		return &getData(x, y);
-	}
-	double* getDataPointer(int i)
-	{
-		return &getData(i);
-	}
-	double* getDataPointer()
-	{
-		return data;
-	}
+	d_matrix(int x, int y, int tryInsideData = 1, int tryUseCublas = 1);
+	~d_matrix() { if (insideData) freeData(); }
+	int getRow() { return row; }
+	int getCol() { return col; }
+	int getDataCount() { return max_script; }
+	int xy2i(int x, int y) { return x + y*row; }
+	double& getData(int x, int y) { return data[std::min(xy2i(x, y), max_script - 1)]; }
+	double& getData(int i) { return data[std::min(i, max_script - 1)]; }
+	double* getDataPointer(int x, int y) { return &getData(x, y); }
+	double* getDataPointer(int i) { return &getData(i); }
+	double* getDataPointer() { return data; }
+	void resize(int m, int n, int force = 0);
+
 	//这个函数可能不安全，慎用！！
 	void resetDataPointer(double* d);
+	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
+	void setInsideData(bool id) { insideData = id; }
+
 	double& operator [] (int i)
 	{
 		return data[i];
@@ -133,6 +101,7 @@ public:
 	static void initCublas();
 
 	void print(FILE* fout);
+	int load(double* v, int n);
 	void memcpyDataIn(double* src, int size);
 	void memcpyDataOut(double* dst, int size);
 	void expand();
@@ -168,7 +137,7 @@ public:
 	//必须配对！
 	double* mallocData(int size);
 	void freeData();
-	
+
 	//必须配对！
 	double* malloc_getDataFromDevice();
 	void freeDataForDevice(double* temp);

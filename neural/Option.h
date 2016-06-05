@@ -30,7 +30,8 @@ OPTION_DOUBLE(Regular, 0.01);\
 OPTION_DOUBLE(Tol, 1e-3);\
 OPTION_DOUBLE(Dtol, 0);\
 \
-OPTION_INT(UseCUDA, 0);
+OPTION_INT(UseCUDA, 0);\
+OPTION_INT(MaxGroup, 60000);
 
 /*
 	大部分含义很明显

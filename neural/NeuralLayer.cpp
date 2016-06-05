@@ -2,6 +2,7 @@
 
 
 int NeuralLayer::GroupCount;
+int NeuralLayer::EffectiveGroupCount;
 int NeuralLayer::Step;
 
 NeuralLayer::NeuralLayer()
@@ -24,11 +25,6 @@ void NeuralLayer::deleteData()
 	if (DeltaMatrix) { delete DeltaMatrix; }
 	if (ExpectMatrix) { delete ExpectMatrix; }
 	if (_asBiasVector) { delete _asBiasVector; }
-}
-
-void NeuralLayer::resetData(int groupCount)
-{
-	initData(this->OutputCount, groupCount, this->Type);
 }
 
 

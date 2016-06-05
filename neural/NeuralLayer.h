@@ -32,6 +32,7 @@ public:
 
 	int OutputCount;  //对于全连接层，输出数等于节点数，对于其他形式定义不同
 	static int GroupCount;   //对于所有层数据量都一样
+	static int EffectiveGroupCount;  //必须小于数据组数，表示其后的是废数据
 	static int Step;  //仅调试用
 
 	NeuralLayerType Type = Hidden;
@@ -53,7 +54,6 @@ public:
 	NeuralLayer *PrevLayer, *NextLayer;
 
 	void deleteData();
-	void resetData(int groupCount);
 	void markMax();
 	void normalized();
 
@@ -63,6 +63,7 @@ public:
 	void setFunctions(std::function<double(double)> active, std::function<double(double)> dactive);
 
 	virtual void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden) {}
+	virtual void resetData(int groupCount) {}
 	virtual void connetPrevlayer(NeuralLayer* prevLayer) {}
 	virtual void activeOutputValue() {}
 	virtual void updateDelta() {}

@@ -27,7 +27,7 @@ unsigned char* MNISTFunctions::readFile(const char* filename)
 	return s;
 }
 
-int MNISTFunctions::readImageFile(const char* filename, double*& input)
+int MNISTFunctions::readImageFile(const char* filename, double* input)
 {
 	auto content = readFile(filename);
 	BE2LE(content + 4, 4);
@@ -38,7 +38,7 @@ int MNISTFunctions::readImageFile(const char* filename, double*& input)
 	int h = *(int*)(content + 12);
 	//fprintf(stderr, "%-30s%d groups data, w = %d, h = %d\n", filename, count, w, h);
 	int size = count*w*h;
-	input = new double[size];
+	//input = new double[size];
 	memset(input, 0, sizeof(double)*size);
 	for (int i = 0; i < size; i++)
 	{
@@ -61,13 +61,13 @@ int MNISTFunctions::readImageFile(const char* filename, double*& input)
 	return w*h;
 }
 
-int MNISTFunctions::readLabelFile(const char* filename, double*& expect)
+int MNISTFunctions::readLabelFile(const char* filename, double* expect)
 {
 	auto content = readFile(filename);
 	BE2LE(content + 4, 4);
 	int count = *(int*)(content + 4);
 	//fprintf(stderr, "%-30s%d groups data\n", filename, count);
-	expect = new double[count*10];
+	//expect = new double[count*10];
 	memset(expect, 0, sizeof(double)*count*10);
 	for (int i = 0; i < count; i++)
 	{

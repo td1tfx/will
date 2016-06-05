@@ -2,8 +2,45 @@
 
 
 cublasHandle_t d_matrix::handle;
-bool d_matrix::globalUseCublas = false;
+int d_matrix::globalUseCublas = 0;
 bool d_matrix::inited = false;
+
+d_matrix::d_matrix(int x, int y, int tryInsideData /*= 1*/, int tryUseCublas /*= 1*/)
+{
+	insideData = tryInsideData;
+	UseCublas = tryUseCublas && globalUseCublas;
+	if (insideData || UseCublas)
+		insideData = 1;
+
+	row = x;
+	col = y;
+	max_script = row*col;
+	if (insideData)
+	{
+		data = mallocData(max_script);
+		data_size = max_script;
+	}
+}
+
+void d_matrix::resize(int m, int n, int force /*= 0*/)
+{
+	if (!this) 
+		return;
+	row = m;
+	col = n;
+	max_script = m*n;
+	//空间不够或者强制则重新分配
+	if (max_script > data_size || force)
+	{
+		//重新申请空间
+		if (insideData)
+		{
+			freeData();
+			data = mallocData(row*col);
+		}
+		data_size = row*col;
+	}
+}
 
 //注意
 void d_matrix::resetDataPointer(double* d)
@@ -37,15 +74,31 @@ void d_matrix::initCublas()
 void d_matrix::print(FILE* fout)
 {
 	auto temp = malloc_getDataFromDevice();
-	for (int i1 = 0; i1 < row; i1++)
+	for (int i = 0; i < row; i++)
 	{
-		for (int i2 = 0; i2 < col; i2++)
+		for (int j = 0; j < col; j++)
 		{
-			fprintf(fout, "%14.11lf ", temp[i1 + i2]);
+			fprintf(fout, "%14.11lf ", temp[xy2i(i, j)]);
 		}
 		fprintf(fout, "\n");
 	}
 	freeDataForDevice(temp);
+}
+
+int d_matrix::load(double* v, int n)
+{
+	auto temp = mallocDataForDevice();
+	int k = 0;
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < col; j++)
+		{
+			temp[xy2i(i, j)] = v[k++];
+			if (k >= n) return k;
+		}
+	}
+	set_freeDataToDevice(temp);
+	return k;
 }
 
 //参数指针必须指向Host内存！

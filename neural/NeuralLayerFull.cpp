@@ -38,6 +38,17 @@ void NeuralLayerFull::initData(int nodeCount, int groupCount, NeuralLayerType ty
 	//output->print();
 }
 
+void NeuralLayerFull::resetData(int groupCount)
+{
+	this->GroupCount = groupCount;
+	InputMatrix->resize(OutputCount, groupCount);
+	OutputMatrix->resize(OutputCount, groupCount);
+	DeltaMatrix->resize(OutputCount, groupCount);
+	ExpectMatrix->resize(OutputCount, groupCount);
+	_asBiasVector->resize(groupCount, 1);
+	_asBiasVector->initData(1);
+}
+
 void NeuralLayerFull::connetPrevlayer(NeuralLayer* prevLayer)
 {
 	int n = this->OutputCount*this->OutputCount;
@@ -104,20 +115,9 @@ int NeuralLayerFull::readInfo(double* v, int n)
 {
 	int k = 0;
 	k += 2;
-	for (int i = 0; i < WeightMatrix->getRow(); i++)
-	{
-		for (int j = 0; j < WeightMatrix->getCol(); j++)
-		{
-			WeightMatrix->getData(i, j) = v[k++];
-			if (k >= n) return k;
-		}
-	}
+	k += WeightMatrix->load(v + k, n - k);
 	k += 1;
-	for (int i = 0; i < BiasVector->getDataCount(); i++)
-	{
-		BiasVector->getData(i) = v[k++];
-		if (k >= n) return k;
-	}
+	k += BiasVector->load(v + k, n - k);
 	return k;
 }
 
