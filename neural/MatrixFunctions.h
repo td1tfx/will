@@ -23,14 +23,14 @@
 #define cublasOperation_t CBLAS_TRANSPOSE
 #define CUBLAS_OP_N CblasNoTrans
 #define CUBLAS_OP_T CblasTrans
+#define cudaMemcpyDeviceToDevice 0
+#define cudaMemcpyDeviceToHost 0
+#define cudaMemcpyHostToDevice 0
+#define cudaSuccess 0
 
 #define cudaMalloc
 #define cudaFree
-#define cudaSuccess
 #define cudaMemcpy
-#define cudaMemcpyDeviceToDevice
-#define cudaMemcpyDeviceToHost
-#define cudaMemcpyHostToDevice
 
 #define cublasIdamax
 #define cublasDasum
