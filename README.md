@@ -6,8 +6,8 @@
 
 ## neural
 * 神经网络。利用反向传播算法构造，用于机器学习。目前在设法利用高性能库重构中。
-* Windows下面需要链接libgfortran.dll.a。
 * CBLAS的代码需少量修改才能在VS中使用。主要是出在vnsprintf和stderr的定义不同。
+* dll文件在[https://github.com/scarsty/will/issues/6]下载。
 
 ### neural-demo
 * 演示的神经网络，是按照教科书中的讲解以面向对象方法构造。已停止更新，分离至[https://github.com/scarsty/neural-demo]。
