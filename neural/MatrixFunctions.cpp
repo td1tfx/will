@@ -238,11 +238,6 @@ void d_matrix::colMultiply(double v, int c)
 	}
 }
 
-void d_matrix::applyFunction(std::function<double(double)> f)
-{
-	applyFunction(this, this, f);
-}
-
 
 //复制数据，只处理较少的
 void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
@@ -254,6 +249,17 @@ void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 	else
 	{
 		memcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col));
+	}
+}
+
+void d_matrix::cpyToCuda()
+{
+	if (globalUseCublas)
+	{
+		UseCublas = 1;
+		auto temp = mallocData(data_size);
+		std::swap(temp, data);
+		set_freeDataToDevice(temp);
 	}
 }
 
@@ -332,17 +338,13 @@ void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 // 	}
 }
 
-void d_matrix::applyFunction(d_matrix* A, d_matrix* R, std::function<double(double)> f)
+void d_matrix::applyFunction(d_matrix* A, d_matrix* R, d_matrix_func f)
 {
 	auto tempA = A->malloc_getDataFromDevice();
 	auto tempR = tempA;
 	if (A != R)
 		tempR = R->mallocDataForDevice();
-#pragma loop(hint_parallel(8))
-	for (int i = 0; i < std::min(A->max_script, R->max_script); i++)
-	{
-		tempR[i] = f(tempA[i]);
-	}
+	f(tempA, tempR, R->max_script);
 	if (A != R)
 		A->set_freeDataToDevice(tempA);
 	R->set_freeDataToDevice(tempR);
@@ -360,7 +362,10 @@ double* d_matrix::mallocData(int size)
 			return d;
 		}
 	}
-	return new double[size];
+	else
+	{
+		return new double[size];
+	}
 }
 
 void d_matrix::freeData()

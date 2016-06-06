@@ -96,7 +96,7 @@ void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
 	 WorkMode = wm; 
 	 if (wm == Probability)
 	 {
-		 getLastLayer()->setFunctions(MyMath::exp1, MyMath::dexp1);
+		 getLastLayer()->setFunctions(MyMath::exp_v, MyMath::dexp_v);
 	 }
 }
 

@@ -58,9 +58,9 @@ public:
 	void normalized();
 
 	//dactive是active的导数
-	std::function<double(double)> _activeFunction = MyMath::sigmoid;
-	std::function<double(double)> _dactiveFunction = MyMath::dsigmoid;
-	void setFunctions(std::function<double(double)> active, std::function<double(double)> dactive)
+	d_matrix_func _activeFunction = MyMath::sigmoid_v;
+	d_matrix_func _dactiveFunction = MyMath::dsigmoid_v;
+	void setFunctions(d_matrix_func active, d_matrix_func dactive)
 	{
 		_activeFunction = active;
 		_dactiveFunction = dactive;

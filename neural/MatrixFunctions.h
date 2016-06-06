@@ -42,6 +42,8 @@
 #define cublasDaxpy
 #endif
 
+typedef std::function<int(double*, double*, int)> d_matrix_func;
+
 typedef enum
 {
 	NoTrans,
@@ -114,9 +116,10 @@ public:
 	void initRandom();
 	void multiply(double v);
 	void colMultiply(double v, int c);
-	void applyFunction(std::function<double(double)> f);
+	void applyFunction(d_matrix_func f) { applyFunction(this, this, f); }
 
 	static void cpyData(d_matrix* dst, d_matrix* src);
+	void cpyToCuda();
 
 	static void product(d_matrix* A, d_matrix* B, d_matrix* R,
 		double a = 1, double c = 0, d_matrixTrans ta = NoTrans, d_matrixTrans tb = NoTrans);
@@ -124,7 +127,7 @@ public:
 		double a = 1, double c = 0, d_matrixTrans ta = NoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
-	static void applyFunction(d_matrix* A, d_matrix* R, std::function<double(double)> f);
+	static void applyFunction(d_matrix* A, d_matrix* R, d_matrix_func f);
 
 private:
 	static cublasHandle_t handle;

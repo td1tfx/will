@@ -1,19 +1,27 @@
 #pragma once
 #include <math.h>
-//#include "NeuralNode.h"
+#include <string.h>
+
+#define MyMathFor(f) do{for(int i=0;i<=size;i++){y[i]=f(x[i]);}return 0;}while(0)
+#define dexp_v exp_v
 
 namespace MyMath
 {
-	//static xoid setFunctions(class NeuralNode* node, std::function<double(double)> activeFunction, std::function<double(double)> feedbackFunction);
-
 	static double sigmoid(double x) { return 1.0 / (1 + exp(-x)); }
-	static double dsigmoid(double x) { double a = 1 + exp(-x); return exp(-x) / (a*a); }
-	static double linear(double x) { return x; }
-	static double dlinear(double x) { return 1; }
-	static double exp1(double x) { return exp(x); }
-	static double dexp1(double x) { return exp(x); }
-	static double tanh1(double x) { return tanh(x); }
-	static double dtanh1(double x) { return 1 / cosh(x) / cosh(x); }
+	static double dsigmoid(double x) { double a = 1 + exp(-x); return (a-1) / (a*a); }
+
+	static int sigmoid_v(double* x, double* y, int size) { MyMathFor(sigmoid); }
+	static int dsigmoid_v(double* x, double* y, int size) { MyMathFor(dsigmoid); }
+
+	static int linear_v(double* x, double* y, int size) { memcpy(y, x, sizeof(double)*size); }
+	static double constant(double x) { return 1; }
+	static int dlinear_v(double* x, double* y, int size) { MyMathFor(constant); }
+
+	static int exp_v(double* x, double* y, int size) { MyMathFor(exp); }
+	//dexp_v = exp_v
+	
+	static int tanh_v(double* x, double* y, int size) { MyMathFor(tanh); }
+	static double dtanh(double x) { return 1 / cosh(x) / cosh(x); }
 
 	static double sign1(double x) { return x > 0 ? 1 : -1; }
 	static double dsign1(double x) { return 1; }
