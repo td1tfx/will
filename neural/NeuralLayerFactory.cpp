@@ -13,7 +13,7 @@ NeuralLayerFactory::~NeuralLayerFactory()
 
 NeuralLayer* NeuralLayerFactory::createLayer(NeuralLayerConnectionMode mode)
 {
-	NeuralLayer* layer;
+	NeuralLayer* layer = nullptr;
 	switch (mode)
 	{
 	case FullConnection:

@@ -22,5 +22,6 @@ icpc: CXX=icpc
 icpc: all
 
 clang: CXX=clang++
-clang: CPPFLAGS=-I. -I./lib -O3 -std=c++11 -flto
+clang: CPPFLAGS=-I. -I./lib -O3 -std=c++11
+clang: LDLAGS=-L. -lopenblas
 clang: all
