@@ -126,7 +126,6 @@ public:
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void applyFunction(d_matrix* A, d_matrix* R, std::function<double(double)> f);
 
-
 private:
 	static cublasHandle_t handle;
 	static cublasOperation_t get_cublas_trans(d_matrixTrans t)

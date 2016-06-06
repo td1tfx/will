@@ -55,9 +55,4 @@ void NeuralLayer::normalized()
 	}
 }
 
-void NeuralLayer::setFunctions(std::function<double(double)> active, std::function<double(double)> dactive)
-{
-	_activeFunction = active;
-	_dactiveFunction = dactive;
-}
 

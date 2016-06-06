@@ -11,12 +11,12 @@
     <LocalDebuggerCommandArguments>p.ini</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>p.ini</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>mnist.ini</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\work</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>p.ini</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>mnist.ini</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\work</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

@@ -348,6 +348,7 @@ void d_matrix::applyFunction(d_matrix* A, d_matrix* R, std::function<double(doub
 	R->set_freeDataToDevice(tempR);
 }
 
+
 double* d_matrix::mallocData(int size)
 {
 	if (UseCublas)

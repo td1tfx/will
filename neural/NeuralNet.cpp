@@ -117,7 +117,7 @@ void NeuralNet::createLayers(int layerCount)
 void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int groupCount, int batchCount,
 	bool learn /*= false*/, double* error /*= nullptr*/)
 {
-	//if (error) *error = 0;
+	if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)
 	{
 		int n = resetGroupCount(std::min(batchCount, groupCount-i));
@@ -212,6 +212,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	}
 
 	//ÑµÁ·¹ý³Ì
+	e = 0;
 	for (int count = 1; count <= times; count++)
 	{
 		//getFirstLayer()->step = count;

@@ -62,15 +62,10 @@ void NeuralLayerFull::connetPrevlayer(NeuralLayer* prevLayer)
 
 void NeuralLayerFull::activeOutputValue()
 {
-	//this->weight->print();
-	//prevLayer->output->print();
 	d_matrix::cpyData(InputMatrix, BiasVector);
 	InputMatrix->expand();
-	//input->print();
 	d_matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
-	//this->input->print();
 	d_matrix::applyFunction(InputMatrix, OutputMatrix, _activeFunction);
-
 }
 
 void NeuralLayerFull::updateDelta()
@@ -83,10 +78,7 @@ void NeuralLayerFull::updateDelta()
 	}
 	else
 	{
-		//nextLayer->weight->print();
-		//nextLayer->delta->print();
 		d_matrix::product(NextLayer->WeightMatrix, NextLayer->DeltaMatrix, DeltaMatrix, 1, 0, Trans, NoTrans);
-		//this->delta->print();
 		InputMatrix->applyFunction(_dactiveFunction);
 		d_matrix::hadamardProduct(DeltaMatrix, InputMatrix, DeltaMatrix);
 	}

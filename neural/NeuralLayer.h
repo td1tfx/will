@@ -60,7 +60,11 @@ public:
 	//dactive是active的导数
 	std::function<double(double)> _activeFunction = MyMath::sigmoid;
 	std::function<double(double)> _dactiveFunction = MyMath::dsigmoid;
-	void setFunctions(std::function<double(double)> active, std::function<double(double)> dactive);
+	void setFunctions(std::function<double(double)> active, std::function<double(double)> dactive)
+	{
+		_activeFunction = active;
+		_dactiveFunction = dactive;
+	}
 
 	virtual void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden) {}
 	virtual void resetData(int groupCount) {}
