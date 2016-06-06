@@ -2,9 +2,11 @@
 #include <string>
 #include "lib/INIReader.h"
 
-struct Option
-{
+//两种情况下宏的展开方式不同
+
+/* define begin */
 #define OPTION_PARAMETERS \
+\
 OPTION_STRING(TrainDataFile, "");\
 OPTION_STRING(LoadFile, "");\
 OPTION_STRING(SaveFile, "");\
@@ -17,8 +19,9 @@ OPTION_INT(ForceOutput, 0);\
 \
 OPTION_INT(Layer, 3);\
 OPTION_STRING(NodePerLayer, "7");\
+/* NodePerLayer是一个字串，定义每层节点数，但是不包含输入和输出层 */\
 \
-OPTION_INT(LearnMode, 0);\
+OPTION_INT(BatchMode, 0);\
 OPTION_INT(WorkMode, 0);\
 OPTION_INT(MiniBatch, -1);\
 \
@@ -31,16 +34,15 @@ OPTION_DOUBLE(Tol, 1e-3);\
 OPTION_DOUBLE(Dtol, 0);\
 \
 OPTION_INT(UseCUDA, 0);\
-OPTION_INT(MaxGroup, 60000);
+OPTION_INT(MaxGroup, 60000);\
+/* define end */
 
-/*
-	大部分含义很明显
-    NodePerLayer是一个字串，定义每层节点数，但是不包含输入和输出层
-*/
+struct Option
+{
 #define OPTION_STRING(a, b) std::string a = (b)
 #define OPTION_INT(a, b) int a = (b)
 #define OPTION_DOUBLE(a, b) double a = (b)	
-OPTION_PARAMETERS
+	OPTION_PARAMETERS
 #undef OPTION_STRING
 #undef OPTION_INT
 #undef OPTION_DOUBLE
@@ -51,11 +53,12 @@ OPTION_PARAMETERS
 #define OPTION_STRING(a, b) a = ini.Get("will", #a, (b))
 #define OPTION_INT(a, b) a = ini.GetInteger("will", #a, (b))
 #define OPTION_DOUBLE(a, b) a = ini.GetReal("will", #a, (b))
-OPTION_PARAMETERS
+		OPTION_PARAMETERS
 #undef OPTION_STRING
 #undef OPTION_INT
 #undef OPTION_DOUBLE
 	}
-#undef OPTION_PARAMETERS
 };
+
+#undef OPTION_PARAMETERS
 

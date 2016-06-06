@@ -364,15 +364,17 @@ double* d_matrix::mallocData(int size)
 
 void d_matrix::freeData()
 {
+	if (!data)
+		return;
 	if (UseCublas)
 	{
-		if (dataIsWhere = DataInDevice)
-		{
-			cudaFree(data);
-			return;
-		}
+		cudaFree(data);
+		return;
 	}
-	delete data;
+	else
+	{
+		delete data;
+	}
 }
 
 double* d_matrix::malloc_getDataFromDevice()

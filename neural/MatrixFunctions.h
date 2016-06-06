@@ -15,6 +15,7 @@
 #include "lib/cublas/cublas_v2.h"
 #include "lib/cublas/helper_cuda.h"
 #else
+
 //ÆÁ±ÎËùÓÐcudaº¯Êý
 
 #define cublasHandle_t int
@@ -23,22 +24,22 @@
 #define CUBLAS_OP_N CblasNoTrans
 #define CUBLAS_OP_T CblasTrans
 
-#define cudaMalloc 0
-#define cudaFree 0
-#define cudaSuccess 0
-#define cudaMemcpy 0
-#define cudaMemcpyDeviceToDevice 0
-#define cudaMemcpyDeviceToHost 0
-#define cudaMemcpyHostToDevice 0
+#define cudaMalloc
+#define cudaFree
+#define cudaSuccess
+#define cudaMemcpy
+#define cudaMemcpyDeviceToDevice
+#define cudaMemcpyDeviceToHost
+#define cudaMemcpyHostToDevice
 
-#define cublasIdamax 0
-#define cublasDasum 0
-#define cublasDdot 0
-#define cublasDscal 0
-#define cublasDgemm 0
-#define cublasDgemv 0
-#define cublasDcopy 0
-#define cublasDaxpy 0
+#define cublasIdamax
+#define cublasDasum
+#define cublasDdot
+#define cublasDscal
+#define cublasDgemm
+#define cublasDgemv
+#define cublasDcopy
+#define cublasDaxpy
 #endif
 
 typedef enum

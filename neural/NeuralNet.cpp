@@ -25,8 +25,8 @@ NeuralNet::~NeuralNet()
 //运行，注意容错保护较弱
 void NeuralNet::run()
 {
-	LearnMode = NeuralNetLearnMode(_option.LearnMode);
-	MiniBatchCount = _option.MiniBatch;
+	BatchMode = NeuralNetBatchMode(_option.BatchMode);
+	MiniBatchCount = std::max(1, _option.MiniBatch);
 	WorkMode = NeuralNetWorkMode(_option.WorkMode);
 
 	LearnSpeed = _option.LearnSpeed;
@@ -76,16 +76,16 @@ void NeuralNet::run()
 }
 
 //设置学习模式
-void NeuralNet::setLearnMode(NeuralNetLearnMode lm, int lb /*= -1*/)
+void NeuralNet::setLearnMode(NeuralNetBatchMode lm, int lb /*= -1*/)
 {
-	LearnMode = lm;
+	BatchMode = lm;
 	//批量学习时，节点数据量等于实际数据量
-	if (LearnMode == Online)
+	if (BatchMode == Online)
 	{
 		MiniBatchCount = 1;
 	}
 	//这里最好是能整除的
-	if (LearnMode == MiniBatch)
+	if (BatchMode == MiniBatch)
 	{
 		MiniBatchCount = lb;
 	}
@@ -120,7 +120,7 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 	//if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)
 	{
-		resetGroupCount(batchCount);
+		int n = resetGroupCount(std::min(batchCount, groupCount-i));
 		if (input)
 		{
 			setInputData(input, i);
@@ -153,7 +153,7 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 		}
 		if (output)
 		{
-			getOutputData(output, batchCount, i);
+			getOutputData(output, n, i);
 		}
 		//计算误差，注意这个算法对于minibatch不严格
 		if (error)
@@ -196,16 +196,16 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	if (e < tol) return;
 	double e0 = e;
 	
-	if (LearnMode == Online)
+	if (BatchMode == Online)
 	{
 		resetGroupCount(1);
 		MiniBatchCount = 1;
 	}
-	else if (LearnMode == Batch)
+	else if (BatchMode == Batch)
 	{
 		MiniBatchCount = resetGroupCount(_train_groupCount);
 	}
-	else if (LearnMode == MiniBatch)
+	else if (BatchMode == MiniBatch)
 	{
 		if (MiniBatchCount > 0)
 			resetGroupCount(MiniBatchCount);

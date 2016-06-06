@@ -15,10 +15,10 @@ typedef enum
 	Batch = 0,
 	Online = 1,
 	MiniBatch = 2,
-	//输入向量如果0的项较多，在线学习会比较快
+	//在线学习一般会比较快
 	//通常情况下批量学习会考虑全局优先，应为首选
 	//在线学习每次都更新所有键结值，批量学习每一批数据更新一次键结值
-} NeuralNetLearnMode;
+} NeuralNetBatchMode;
 
 //计算模式（no use）
 /*
@@ -63,9 +63,9 @@ public:
 	int InputNodeCount;
 	int OutputNodeCount;
 
-	NeuralNetLearnMode LearnMode = Batch;
+	NeuralNetBatchMode BatchMode = Batch;
 	int MiniBatchCount = -1;
-	void setLearnMode(NeuralNetLearnMode lm, int lb = -1);
+	void setLearnMode(NeuralNetBatchMode lm, int lb = -1);
 
 	double LearnSpeed = 0.5;  //学习速度
 	void setLearnSpeed(double s) { LearnSpeed = s; }
