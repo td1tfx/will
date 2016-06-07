@@ -1,10 +1,11 @@
 #pragma once
-#include "lib/cblas.h"
 #include <stdio.h>
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
 #include <functional>
+#include "lib/cblas.h"
+#include "MyMath.h"
 
 #ifdef _MSC_VER
 #define _USE_CUDA
@@ -14,6 +15,16 @@
 #include "lib/cublas/cuda_runtime.h"
 #include "lib/cublas/cublas_v2.h"
 #include "lib/cublas/helper_cuda.h"
+#include "myth_cuda.h"
+
+#pragma comment (lib, "cublas.lib")
+#pragma comment (lib, "cudart_static.lib")
+#ifdef _DEBUG
+#pragma comment (lib, "neural-cuda.lib")
+#else
+#pragma comment (lib, "neural-cuda.lib")
+#endif
+
 #else
 
 //屏蔽所有cuda函数
@@ -40,9 +51,12 @@
 #define cublasDgemv
 #define cublasDcopy
 #define cublasDaxpy
-#endif
 
-typedef std::function<int(double*, double*, int)> d_matrix_func;
+#define cuda_sigmoid
+#define cuda_dsigmoid
+#define cuda_hadamardProduct
+
+#endif
 
 typedef enum
 {
@@ -58,13 +72,21 @@ typedef enum
 	DataInNowhere,
 } DataPosition;
 
+typedef enum
+{
+	Sigmoid = 0,
+	Softmax,
+	Tanh,
+	Findmax,
+} ActiveFunctionMode;
+
 struct d_matrix
 {
 private:
 	static bool inited;
 
-	int UseCublas = false;
-	static int globalUseCublas;
+	int UseCuda = false;
+	static int globalUseCuda;
 
 	double* data = nullptr;
 	int row = 0;
@@ -116,7 +138,6 @@ public:
 	void initRandom();
 	void multiply(double v);
 	void colMultiply(double v, int c);
-	void applyFunction(d_matrix_func f) { applyFunction(this, this, f); }
 
 	static void cpyData(d_matrix* dst, d_matrix* src);
 	void cpyToCuda();
@@ -127,7 +148,6 @@ public:
 		double a = 1, double c = 0, d_matrixTrans ta = NoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
-	static void applyFunction(d_matrix* A, d_matrix* R, d_matrix_func f);
 
 private:
 	static cublasHandle_t handle;
@@ -147,6 +167,12 @@ public:
 	//必须配对！
 	double* mallocDataForDevice();
 	void set_freeDataToDevice(double* temp);
+
+public:
+	void activeFunction(ActiveFunctionMode afm) { activeFunction(this, this, afm); }
+	void dactiveFunction(ActiveFunctionMode afm) { dactiveFunction(this, this, afm); }
+	static void activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm);
+	static void dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm);
 
 };
 

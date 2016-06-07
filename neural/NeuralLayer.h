@@ -54,17 +54,10 @@ public:
 	NeuralLayer *PrevLayer, *NextLayer;
 
 	void deleteData();
-	void markMax();
-	void normalized();
 
 	//dactive是active的导数
-	d_matrix_func _activeFunction = MyMath::sigmoid_v;
-	d_matrix_func _dactiveFunction = MyMath::dsigmoid_v;
-	void setFunctions(d_matrix_func active, d_matrix_func dactive)
-	{
-		_activeFunction = active;
-		_dactiveFunction = dactive;
-	}
+	ActiveFunctionMode _activeMode = Sigmoid;
+	void setActiveFunction(ActiveFunctionMode afm) { _activeMode = afm; }
 
 	virtual void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden) {}
 	virtual void resetData(int groupCount) {}

@@ -166,7 +166,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libopenblas64.dll.a;cublas.lib;cudart_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libopenblas64.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <ForceSymbolReferences>%(ForceSymbolReferences)</ForceSymbolReferences>
       <ForceFileOutput>UndefinedSymbolOnly</ForceFileOutput>
     </Link>
@@ -194,6 +194,7 @@
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="MatrixFunctions.h" />
     <ClInclude Include="MNISTFunctions.h" />
+    <ClInclude Include="myth_cuda.h" />
     <ClInclude Include="NeuralLayerConv.h" />
     <ClInclude Include="NeuralLayerFactory.h" />
     <ClInclude Include="NeuralLayerFull.h" />

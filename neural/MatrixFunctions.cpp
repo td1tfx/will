@@ -2,14 +2,14 @@
 
 
 cublasHandle_t d_matrix::handle;
-int d_matrix::globalUseCublas = 0;
+int d_matrix::globalUseCuda = 0;
 bool d_matrix::inited = false;
 
 d_matrix::d_matrix(int x, int y, int tryInsideData /*= 1*/, int tryUseCublas /*= 1*/)
 {
 	insideData = tryInsideData;
-	UseCublas = tryUseCublas && globalUseCublas;
-	if (insideData || UseCublas)
+	UseCuda = tryUseCublas && globalUseCuda;
+	if (insideData || UseCuda)
 		insideData = 1;
 
 	row = x;
@@ -42,10 +42,10 @@ void d_matrix::resize(int m, int n, int force /*= 0*/)
 	}
 }
 
-//注意
+//注意，比较危险
 void d_matrix::resetDataPointer(double* d)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		memcpyDataIn(d, max_script);
 	}
@@ -67,7 +67,7 @@ void d_matrix::initCublas()
 		fprintf(stderr, "!!!! CUBLAS initialization error\n");
 	}
 	dev = findCudaDevice(0, nullptr);
-	globalUseCublas = (dev >= 0);
+	globalUseCuda = (dev >= 0);
 #endif	
 }
 
@@ -104,7 +104,7 @@ int d_matrix::load(double* v, int n)
 //参数指针必须指向Host内存！
 void d_matrix::memcpyDataIn(double* src, int size)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		cudaMemcpy(data, src, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyHostToDevice);
 	}
@@ -117,7 +117,7 @@ void d_matrix::memcpyDataIn(double* src, int size)
 //参数指针必须指向Host内存！
 void d_matrix::memcpyDataOut(double* dst, int size)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		cudaMemcpy(dst, data, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyDeviceToHost);
 	}
@@ -131,26 +131,27 @@ void d_matrix::memcpyDataOut(double* dst, int size)
 //将第一列复制到整个矩阵
 void d_matrix::expand()
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
-		for (int i = 1; i < col; i++)
+		for (int i = 1; i < col; i*=2)
 		{
-			cudaMemcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row, cudaMemcpyDeviceToDevice);
+			cudaMemcpy(getDataPointer(0, i), getDataPointer(0, 0), 
+				sizeof(double)*row*std::min(i, col - i), cudaMemcpyDeviceToDevice);
 		}
 	}
 	else
 	{
 		//#pragma loop(hint_parallel(8))
-		for (int i = 1; i < col; i++)
+		for (int i = 1; i < col; i*=2)
 		{
-			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row);
+			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row*std::min(i, col-i));
 		}
 	}
 }
 
 int d_matrix::indexColMaxAbs(int c)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		int r;
 		cublasIdamax(handle, row, getDataPointer(0, c), 1, &r);
@@ -164,7 +165,7 @@ int d_matrix::indexColMaxAbs(int c)
 
 double d_matrix::sumColAbs(int c)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		double r;
 		cublasDasum(handle, row, getDataPointer(0, c), 1, &r);
@@ -178,7 +179,7 @@ double d_matrix::sumColAbs(int c)
 
 double d_matrix::ddot()
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		double r;
 		cublasDdot(handle, max_script, data, 1, data, 1, &r);
@@ -216,7 +217,7 @@ void d_matrix::initRandom()
 
 void d_matrix::multiply(double v)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		cublasDscal(handle, row, &v, data, 1);
 	}
@@ -228,7 +229,7 @@ void d_matrix::multiply(double v)
 
 void d_matrix::colMultiply(double v, int c)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		cublasDscal(handle, row, &v, getDataPointer(0, c), 1);
 	}
@@ -242,7 +243,7 @@ void d_matrix::colMultiply(double v, int c)
 //复制数据，只处理较少的
 void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 {
-	if (dst->UseCublas)
+	if (dst->UseCuda)
 	{
 		cudaMemcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col), cudaMemcpyDeviceToDevice);
 	}
@@ -254,9 +255,9 @@ void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 
 void d_matrix::cpyToCuda()
 {
-	if (globalUseCublas)
+	if (globalUseCuda)
 	{
-		UseCublas = 1;
+		UseCuda = 1;
 		auto temp = mallocData(data_size);
 		std::swap(temp, data);
 		set_freeDataToDevice(temp);
@@ -272,7 +273,7 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	int k = A->col;
 	int ldb = B->row;
 	if (ta == Trans) { k = A->row; }
-	if (globalUseCublas)
+	if (globalUseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		auto tb1 = get_cublas_trans(tb); 
@@ -291,7 +292,7 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 	int m = A->row, n = A->col;
 	if (ta == Trans) { std::swap(m, n); };
 
-	if (globalUseCublas)
+	if (globalUseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		cublasDgemv(handle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
@@ -305,6 +306,19 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 
 void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
 {
+	if (globalUseCuda)
+	{
+		cuda_hadamardProduct(A->data, B->data, R->data, R->max_script);
+	}
+	else
+	{
+#pragma loop(hint_parallel(8))
+		for (int i = 0; i < R->max_script; i++)
+		{
+			R->data[i] = A->data[i] * B->data[i];
+		}
+	}
+	/*
 	auto tempA = A->malloc_getDataFromDevice();
 	auto tempB = B->malloc_getDataFromDevice();
 	auto tempR = R->mallocDataForDevice();
@@ -316,11 +330,12 @@ void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
 	A->freeDataForDevice(tempA);
 	B->freeDataForDevice(tempB);
 	R->set_freeDataToDevice(tempR);
+	*/
 }
 
 void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 {
-	if (globalUseCublas)
+	if (globalUseCuda)
 	{
 		double a = -1;
 		cublasDcopy(handle, R->max_script, A->data, 1, R->data, 1);
@@ -338,22 +353,10 @@ void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 // 	}
 }
 
-void d_matrix::applyFunction(d_matrix* A, d_matrix* R, d_matrix_func f)
-{
-	auto tempA = A->malloc_getDataFromDevice();
-	auto tempR = tempA;
-	if (A != R)
-		tempR = R->mallocDataForDevice();
-	f(tempA, tempR, R->max_script);
-	if (A != R)
-		A->set_freeDataToDevice(tempA);
-	R->set_freeDataToDevice(tempR);
-}
-
 
 double* d_matrix::mallocData(int size)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		double* d;
 		if (cudaMalloc((void **)&d, size * sizeof(double)) == cudaSuccess)
@@ -372,7 +375,7 @@ void d_matrix::freeData()
 {
 	if (!data)
 		return;
-	if (UseCublas)
+	if (UseCuda)
 	{
 		cudaFree(data);
 		return;
@@ -385,7 +388,7 @@ void d_matrix::freeData()
 
 double* d_matrix::malloc_getDataFromDevice()
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		auto temp = new double[max_script];
 		cudaMemcpy(temp, data, sizeof(double)*max_script, cudaMemcpyDeviceToHost);
@@ -399,7 +402,7 @@ double* d_matrix::malloc_getDataFromDevice()
 
 void d_matrix::freeDataForDevice(double* temp)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		delete temp;
 	}
@@ -407,7 +410,7 @@ void d_matrix::freeDataForDevice(double* temp)
 
 double* d_matrix::mallocDataForDevice()
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		return new double[max_script];
 	}
@@ -419,10 +422,98 @@ double* d_matrix::mallocDataForDevice()
 
 void d_matrix::set_freeDataToDevice(double* temp)
 {
-	if (UseCublas)
+	if (UseCuda)
 	{
 		cudaMemcpy(data, temp, sizeof(double)*max_script, cudaMemcpyHostToDevice);
 		delete temp;
+	}
+}
+
+void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
+{
+	if (globalUseCuda)
+	{
+		switch (afm)
+		{
+		case Sigmoid:
+			cuda_sigmoid(A->data, R->data, R->max_script);
+			break;
+		case Softmax:
+			break;
+		case Tanh:
+			break;
+		case Findmax:
+			break;
+		}
+	}
+	else
+	{
+		switch (afm)
+		{
+		case Sigmoid:
+			MyMath::sigmoid_v(A->data, R->data, R->max_script);
+			break;
+		case Softmax:
+			MyMath::exp_v(A->data, R->data, R->max_script);
+			for (int i = 0; i < R->col; i++)
+			{
+				double sum = R->sumColAbs(i);
+				if (sum == 0) continue;
+				R->colMultiply(1 / sum, i);
+			}
+			break;
+		case Tanh:
+			MyMath::tanh_v(A->data, R->data, R->max_script);
+			break;
+		case Findmax:
+			if (R->max_script <= 0) return;
+			auto temp = new double[R->max_script];
+			memset(temp, 0, sizeof(double)*R->max_script);
+			std::swap(R->data, temp);
+			delete temp;
+			for (int i_group = 0; i_group < R->col; i_group++)
+			{
+				int index = A->indexColMaxAbs(i_group);
+				R->getData(index, i_group) = 1;
+			}
+			break;
+		}
+	}
+}
+
+void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
+{
+	if (globalUseCuda)
+	{
+		switch (afm)
+		{
+		case Sigmoid:
+			cuda_dsigmoid(A->data, R->data, R->max_script);
+			break;
+		case Softmax:
+			break;
+		case Tanh:
+			break;
+		case Findmax:
+			break;
+		}
+	}
+	else
+	{
+		switch (afm)
+		{
+		case Sigmoid:
+			MyMath::dsigmoid_v(A->data, R->data, R->max_script);
+			break;
+		case Softmax:
+			MyMath::exp_v(A->data, R->data, R->max_script);
+			break;
+		case Tanh:
+			MyMath::dtanh_v(A->data, R->data, R->max_script);
+			break;
+		case Findmax:
+			break;
+		}
 	}
 }
 

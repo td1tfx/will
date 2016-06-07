@@ -103,6 +103,9 @@
     <ClInclude Include="NeuralLayerFactory.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="myth_cuda.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Makefile" />

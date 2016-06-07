@@ -65,7 +65,7 @@ void NeuralLayerFull::activeOutputValue()
 	d_matrix::cpyData(InputMatrix, BiasVector);
 	InputMatrix->expand();
 	d_matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
-	d_matrix::applyFunction(InputMatrix, OutputMatrix, _activeFunction);
+	d_matrix::activeFunction(InputMatrix, OutputMatrix, _activeMode);
 }
 
 void NeuralLayerFull::updateDelta()
@@ -79,7 +79,7 @@ void NeuralLayerFull::updateDelta()
 	else
 	{
 		d_matrix::product(NextLayer->WeightMatrix, NextLayer->DeltaMatrix, DeltaMatrix, 1, 0, Trans, NoTrans);
-		InputMatrix->applyFunction(_dactiveFunction);
+		InputMatrix->dactiveFunction(_activeMode);
 		d_matrix::hadamardProduct(DeltaMatrix, InputMatrix, DeltaMatrix);
 	}
 }

@@ -96,7 +96,11 @@ void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
 	 WorkMode = wm; 
 	 if (wm == Probability)
 	 {
-		 getLastLayer()->setFunctions(MyMath::exp_v, MyMath::dexp_v);
+		 getLastLayer()->setActiveFunction(Softmax);
+	 }
+	 if (wm == Classify)
+	 {
+		 getLastLayer()->setActiveFunction(Findmax);
 	 }
 }
 
@@ -133,15 +137,6 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
 		{
 			Layers[i_layer]->activeOutputValue();
-		}
-
-		if (WorkMode == Probability)
-		{
-			getLastLayer()->normalized();
-		}
-		else if (WorkMode == Classify)
-		{
-			getLastLayer()->markMax();
 		}
 
 		if (learn)
@@ -196,19 +191,21 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	if (e < tol) return;
 	double e0 = e;
 	
-	if (BatchMode == Online)
+	switch (BatchMode)
 	{
+	case Batch:
+		MiniBatchCount = resetGroupCount(_train_groupCount);
+		break;
+	case Online:
 		resetGroupCount(1);
 		MiniBatchCount = 1;
-	}
-	else if (BatchMode == Batch)
-	{
-		MiniBatchCount = resetGroupCount(_train_groupCount);
-	}
-	else if (BatchMode == MiniBatch)
-	{
+		break;
+	case MiniBatch:
 		if (MiniBatchCount > 0)
 			resetGroupCount(MiniBatchCount);
+		break;
+	default:
+		break;
 	}
 
 	//ÑµÁ·¹ý³Ì
