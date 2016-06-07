@@ -45,8 +45,8 @@ void NeuralLayerFull::resetData(int groupCount)
 	OutputMatrix->resize(OutputCount, groupCount);
 	DeltaMatrix->resize(OutputCount, groupCount);
 	ExpectMatrix->resize(OutputCount, groupCount);
-	_asBiasVector->resize(groupCount, 1);
-	_asBiasVector->initData(1);
+	if (_asBiasVector->resize(groupCount, 1)) 
+		_asBiasVector->initData(1);
 }
 
 void NeuralLayerFull::connetPrevlayer(NeuralLayer* prevLayer)

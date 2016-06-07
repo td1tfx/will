@@ -22,10 +22,11 @@ d_matrix::d_matrix(int x, int y, int tryInsideData /*= 1*/, int tryUseCublas /*=
 	}
 }
 
-void d_matrix::resize(int m, int n, int force /*= 0*/)
+//返回值：-1空矩阵，未重新分配内存，1重新分配内存
+int d_matrix::resize(int m, int n, int force /*= 0*/)
 {
 	if (!this) 
-		return;
+		return -1;
 	row = m;
 	col = n;
 	max_script = m*n;
@@ -39,7 +40,9 @@ void d_matrix::resize(int m, int n, int force /*= 0*/)
 			data = mallocData(row*col);
 		}
 		data_size = row*col;
+		return 1;
 	}
+	return 0;
 }
 
 //注意，比较危险

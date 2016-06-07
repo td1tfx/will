@@ -107,7 +107,7 @@ public:
 	double* getDataPointer(int m, int n) { return &getData(m, n); }
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
-	void resize(int m, int n, int force = 0);
+	int resize(int m, int n, int force = 0);
 
 	//这个函数可能不安全，慎用！！
 	void resetDataPointer(double* d, int d_in_cuda=0);
