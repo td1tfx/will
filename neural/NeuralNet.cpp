@@ -205,7 +205,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	{
 		//getFirstLayer()->step = count;
 		active(_train_inputData, _train_expectData, nullptr, _train_groupCount, MiniBatchCount, true, count % interval == 0?&e:nullptr);
-		if (count % interval == 0)
+		if (count % interval == 0 || count == times)
 		{
 			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
 			if (e < tol || std::abs(e - e0) < dtol) break;
