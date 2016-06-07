@@ -5,12 +5,10 @@ cublasHandle_t d_matrix::handle;
 int d_matrix::globalUseCuda = 0;
 bool d_matrix::inited = false;
 
-d_matrix::d_matrix(int x, int y, int tryInsideData /*= 1*/, int tryUseCublas /*= 1*/)
+d_matrix::d_matrix(int x, int y, int tryInsideData /*= 1*/, int tryUseCuda /*= 1*/)
 {
 	insideData = tryInsideData;
-	UseCuda = tryUseCublas && globalUseCuda;
-	if (insideData)
-		insideData = 1;
+	UseCuda = tryUseCuda && globalUseCuda;
 
 	row = x;
 	col = y;
@@ -286,7 +284,7 @@ void d_matrix::tryUploadToCuda()
 
 void d_matrix::tryDownloadFromCuda()
 {
-	if (UseCuda = 1)
+	if (UseCuda == 1)
 	{
 		auto temp = malloc_getDataFromDevice();
 		if (temp)
@@ -454,6 +452,7 @@ void d_matrix::freeData()
 	{
 		delete data;
 	}
+	data = nullptr;
 }
 
 double* d_matrix::malloc_getDataFromDevice()

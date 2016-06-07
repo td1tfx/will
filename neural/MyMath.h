@@ -2,7 +2,7 @@
 #include <math.h>
 #include <string.h>
 
-#define MyMathFor(f) do{for(int i=0;i<=size;i++){y[i]=f(x[i]);}return 0;}while(0)
+#define MyMathFor(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}return 0;}while(0)
 #define dexp_v exp_v 
 namespace MyMath
 {

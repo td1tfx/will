@@ -88,7 +88,6 @@ void NeuralLayerFull::updateDelta()
 void NeuralLayerFull::backPropagate(double learnSpeed, double lambda)
 {
 	updateDelta();
-	//lambda = 0.0;
 	d_matrix::product(DeltaMatrix, PrevLayer->OutputMatrix, WeightMatrix,
 		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, NoTrans, Trans);
 	d_matrix::productVector(DeltaMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, NoTrans);

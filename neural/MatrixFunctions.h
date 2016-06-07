@@ -97,7 +97,7 @@ private:
 	DataPosition dataIsWhere = DataInHost;
 	int data_size = -1;
 public:
-	d_matrix(int x, int y, int tryInsideData = 1, int tryUseCublas = 1);
+	d_matrix(int x, int y, int tryInsideData = 1, int tryUseCuda = 1);
 	~d_matrix() { if (insideData) freeData(); }
 	int getRow() { return row; }
 	int getCol() { return col; }
@@ -113,7 +113,7 @@ public:
 	//这个函数可能不安全，慎用！！
 	void resetDataPointer(double* d, int d_in_cuda=0);
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
-	void setInsideData(bool id) { insideData = id; }
+	void setInsideData(int id) { insideData = id; }
 
 	double& operator [] (int i)
 	{
