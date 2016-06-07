@@ -431,41 +431,51 @@ void d_matrix::set_freeDataToDevice(double* temp)
 
 void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 {
-	if (globalUseCuda)
+	switch (afm)
 	{
-		switch (afm)
+	case Sigmoid:
+		if (globalUseCuda)
 		{
-		case Sigmoid:
 			cuda_sigmoid(A->data, R->data, R->max_script);
-			break;
-		case Softmax:
-			break;
-		case Tanh:
-			break;
-		case Findmax:
-			break;
 		}
-	}
-	else
-	{
-		switch (afm)
+		else
 		{
-		case Sigmoid:
 			MyMath::sigmoid_v(A->data, R->data, R->max_script);
-			break;
-		case Softmax:
+		}		
+		break;
+	case Softmax:
+		if (globalUseCuda)
+		{
+			cuda_exp(A->data, R->data, R->max_script);
+		}
+		else
+		{
 			MyMath::exp_v(A->data, R->data, R->max_script);
-			for (int i = 0; i < R->col; i++)
-			{
-				double sum = R->sumColAbs(i);
-				if (sum == 0) continue;
-				R->colMultiply(1 / sum, i);
-			}
-			break;
-		case Tanh:
+		}	
+		for (int i = 0; i < R->col; i++)
+		{
+			double sum = R->sumColAbs(i);
+			if (sum == 0) continue;
+			R->colMultiply(1 / sum, i);
+		}
+		break;
+	case Tanh:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
 			MyMath::tanh_v(A->data, R->data, R->max_script);
-			break;
-		case Findmax:
+		}
+		break;
+	case Findmax:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
 			if (R->max_script <= 0) return;
 			auto temp = new double[R->max_script];
 			memset(temp, 0, sizeof(double)*R->max_script);
@@ -476,44 +486,56 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 				int index = A->indexColMaxAbs(i_group);
 				R->getData(index, i_group) = 1;
 			}
-			break;
 		}
+		break;
 	}
 }
 
 void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 {
-	if (globalUseCuda)
+	switch (afm)
 	{
-		switch (afm)
+	case Sigmoid:
+		if (globalUseCuda)
 		{
-		case Sigmoid:
 			cuda_dsigmoid(A->data, R->data, R->max_script);
-			break;
-		case Softmax:
-			break;
-		case Tanh:
-			break;
-		case Findmax:
-			break;
 		}
-	}
-	else
-	{
-		switch (afm)
+		else
 		{
-		case Sigmoid:
 			MyMath::dsigmoid_v(A->data, R->data, R->max_script);
-			break;
-		case Softmax:
-			MyMath::exp_v(A->data, R->data, R->max_script);
-			break;
-		case Tanh:
-			MyMath::dtanh_v(A->data, R->data, R->max_script);
-			break;
-		case Findmax:
-			break;
 		}
+		break;
+	case Softmax:
+		//softmax一般是最后一层，可能无用
+		if (globalUseCuda)
+		{
+			cuda_exp(A->data, R->data, R->max_script);
+		}
+		else
+		{
+			MyMath::exp_v(A->data, R->data, R->max_script);
+		}
+		break;
+	case Tanh:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
+			MyMath::dtanh_v(A->data, R->data, R->max_script);
+		}
+		break;
+	case Findmax:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
+
+		}
+		break;
 	}
 }
 
