@@ -52,6 +52,7 @@
 #define cublasDcopy
 #define cublasDaxpy
 
+#define cuda_exp
 #define cuda_sigmoid
 #define cuda_dsigmoid
 #define cuda_hadamardProduct
