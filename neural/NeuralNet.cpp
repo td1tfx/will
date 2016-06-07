@@ -164,12 +164,12 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 
 void NeuralNet::setInputData(d_matrix* input, int groupid)
 {
-	getFirstLayer()->getOutputMatrix()->resetDataPointer(input->getDataPointer(0, groupid));
+	getFirstLayer()->getOutputMatrix()->shareData(input, 0, groupid);
 }
 
 void NeuralNet::setExpectData(d_matrix* expect, int groupid)
 {
-	getLastLayer()->getExpectMatrix()->resetDataPointer(expect->getDataPointer(0, groupid));
+	getLastLayer()->getExpectMatrix()->shareData(expect, 0, groupid);
 }
 
 
@@ -209,7 +209,8 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	}
 
 	//训练过程
-	e = 0;
+	_train_inputData->tryLoadToCuda();
+	_train_expectData->tryLoadToCuda();
 	for (int count = 1; count <= times; count++)
 	{
 		//getFirstLayer()->step = count;
@@ -219,7 +220,6 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
 			if (e < tol || std::abs(e - e0) < dtol) break;
 			e0 = e;
-			e = 0;
 		}
 	}
 }
@@ -447,6 +447,7 @@ void NeuralNet::selectTest()
 //输出拟合的结果和测试集的结果
 void NeuralNet::test()
 {
+	_train_expectData->tryLoadFromCuda();
 	if (_train_groupCount > 0)
 	{		
 		auto train_output = new d_matrix(OutputNodeCount, _train_groupCount, 1, 0);

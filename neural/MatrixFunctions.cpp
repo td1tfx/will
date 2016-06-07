@@ -43,11 +43,18 @@ void d_matrix::resize(int m, int n, int force /*= 0*/)
 }
 
 //×¢Òâ£¬±È½ÏÎ£ÏÕ
-void d_matrix::resetDataPointer(double* d)
+void d_matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
 {
 	if (UseCuda)
 	{
-		memcpyDataIn(d, max_script);
+		if (d_in_cuda == 0)
+		{
+			memcpyDataIn(d, max_script);
+		}
+		else
+		{
+			data = d;
+		}
 	}
 	else
 	{
@@ -253,14 +260,49 @@ void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 	}
 }
 
-void d_matrix::cpyToCuda()
+void d_matrix::tryLoadToCuda()
 {
 	if (globalUseCuda)
 	{
 		UseCuda = 1;
 		auto temp = mallocData(data_size);
-		std::swap(temp, data);
-		set_freeDataToDevice(temp);
+		if (temp)
+		{
+			std::swap(temp, data);
+			set_freeDataToDevice(temp);
+		}
+		else
+		{
+			UseCuda = 0;
+		}
+	}
+}
+
+void d_matrix::tryLoadFromCuda()
+{
+	if (UseCuda = 1)
+	{
+		auto temp = malloc_getDataFromDevice();
+		if (temp)
+		{
+			std::swap(temp, data);
+			cudaFree(temp);
+		}
+		UseCuda = 0;
+	}
+}
+
+void d_matrix::shareData(d_matrix* A, int m, int n)
+{
+	if ((UseCuda && A->UseCuda)
+		|| (!UseCuda && !A->UseCuda))
+	this->data = A->getDataPointer(m, n);
+	else if (UseCuda && !A->UseCuda)
+	{
+		memcpyDataIn(A->getDataPointer(m, n), max_script);
+	}
+	else
+	{
 	}
 }
 
@@ -358,12 +400,12 @@ double* d_matrix::mallocData(int size)
 {
 	if (UseCuda)
 	{
-		double* d;
+		double* d = nullptr;
 		if (cudaMalloc((void **)&d, size * sizeof(double)) == cudaSuccess)
 		{
 			dataIsWhere = DataInDevice;
-			return d;
 		}
+		return d;
 	}
 	else
 	{

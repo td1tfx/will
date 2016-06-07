@@ -101,16 +101,16 @@ public:
 	int getRow() { return row; }
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
-	int xy2i(int x, int y) { return x + y*row; }
-	double& getData(int x, int y) { return data[std::min(xy2i(x, y), max_script - 1)]; }
+	int xy2i(int m, int n) { return m + n*row; }
+	double& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }
 	double& getData(int i) { return data[std::min(i, max_script - 1)]; }
-	double* getDataPointer(int x, int y) { return &getData(x, y); }
+	double* getDataPointer(int m, int n) { return &getData(m, n); }
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
 	void resize(int m, int n, int force = 0);
 
 	//这个函数可能不安全，慎用！！
-	void resetDataPointer(double* d);
+	void resetDataPointer(double* d, int d_in_cuda=0);
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
 	void setInsideData(bool id) { insideData = id; }
 
@@ -140,7 +140,9 @@ public:
 	void colMultiply(double v, int c);
 
 	static void cpyData(d_matrix* dst, d_matrix* src);
-	void cpyToCuda();
+	void tryLoadToCuda();
+	void tryLoadFromCuda();
+	void shareData(d_matrix* A, int m, int n);
 
 	static void product(d_matrix* A, d_matrix* B, d_matrix* R,
 		double a = 1, double c = 0, d_matrixTrans ta = NoTrans, d_matrixTrans tb = NoTrans);
