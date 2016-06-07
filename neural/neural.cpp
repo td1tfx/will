@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
 	fprintf(stdout, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
 
 #ifdef _WIN32
+	fprintf(stderr, "\nPress any key to exit.\n");
 	getchar();
 #endif
 	return 0;
