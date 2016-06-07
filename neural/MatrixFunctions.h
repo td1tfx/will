@@ -140,13 +140,15 @@ public:
 	void colMultiply(double v, int c);
 
 	static void cpyData(d_matrix* dst, d_matrix* src);
-	void tryLoadToCuda();
-	void tryLoadFromCuda();
+	void tryUploadToCuda();
+	void tryDownloadFromCuda();
 	void shareData(d_matrix* A, int m, int n);
 
 	static void product(d_matrix* A, d_matrix* B, d_matrix* R,
 		double a = 1, double c = 0, d_matrixTrans ta = NoTrans, d_matrixTrans tb = NoTrans);
 	static void productVector(d_matrix* A, d_matrix* B, d_matrix* R,
+		double a = 1, double c = 0, d_matrixTrans ta = NoTrans);
+	static void productVector2(d_matrix* A, d_matrix* B, d_matrix* R,
 		double a = 1, double c = 0, d_matrixTrans ta = NoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);

@@ -127,11 +127,11 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 		int n = resetGroupCount(std::min(batchCount, groupCount-i));
 		if (input)
 		{
-			setInputData(input, i);
+			getFirstLayer()->OutputMatrix->shareData(input, 0, i);
 		}
 		if (expect)
 		{
-			setExpectData(expect, i);
+			getLastLayer()->ExpectMatrix->shareData(expect, 0, i);
 		}
 
 		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
@@ -162,16 +162,6 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 	}
 }
 
-void NeuralNet::setInputData(d_matrix* input, int groupid)
-{
-	getFirstLayer()->getOutputMatrix()->shareData(input, 0, groupid);
-}
-
-void NeuralNet::setExpectData(d_matrix* expect, int groupid)
-{
-	getLastLayer()->getExpectMatrix()->shareData(expect, 0, groupid);
-}
-
 
 void NeuralNet::getOutputData(d_matrix* output, int groupCount, int col/*=0*/)
 {
@@ -186,6 +176,8 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	//这里计算初始的误差，如果足够小就不训练了
 	//这个误差是总体误差，与批量误差有区别，故有时首次训练会出现误差增加
 	double e = 0;
+	_train_inputData->tryUploadToCuda();
+	_train_expectData->tryUploadToCuda();
 	active(_train_inputData, _train_expectData, nullptr, _train_groupCount, MiniBatchCount, false, &e);	
 	fprintf(stdout, "step = %e, mse = %e\n", 0.0, e);
 	if (e < tol) return;
@@ -209,8 +201,6 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	}
 
 	//训练过程
-	_train_inputData->tryLoadToCuda();
-	_train_expectData->tryLoadToCuda();
 	for (int count = 1; count <= times; count++)
 	{
 		//getFirstLayer()->step = count;
@@ -447,7 +437,7 @@ void NeuralNet::selectTest()
 //输出拟合的结果和测试集的结果
 void NeuralNet::test()
 {
-	_train_expectData->tryLoadFromCuda();
+	_train_expectData->tryDownloadFromCuda();
 	if (_train_groupCount > 0)
 	{		
 		auto train_output = new d_matrix(OutputNodeCount, _train_groupCount, 1, 0);

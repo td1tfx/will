@@ -20,7 +20,7 @@ void NeuralLayerFull::initData(int nodeCount, int groupCount, NeuralLayerType ty
 
 	if (type == Input)
 	{
-		OutputMatrix = new d_matrix(nodeCount, groupCount, false);
+		OutputMatrix = new d_matrix(nodeCount, groupCount, 0);
 	}
 	else
 	{
@@ -29,7 +29,7 @@ void NeuralLayerFull::initData(int nodeCount, int groupCount, NeuralLayerType ty
 	}
 	if (type == Output)
 	{
-		ExpectMatrix = new d_matrix(nodeCount, groupCount, false);
+		ExpectMatrix = new d_matrix(nodeCount, groupCount, 0);
 	}
 
 	DeltaMatrix = new d_matrix(nodeCount, groupCount);
@@ -65,6 +65,7 @@ void NeuralLayerFull::activeOutputValue()
 	d_matrix::cpyData(InputMatrix, BiasVector);
 	InputMatrix->expand();
 	d_matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
+	//d_matrix::productVector2(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
 	d_matrix::activeFunction(InputMatrix, OutputMatrix, _activeMode);
 }
 

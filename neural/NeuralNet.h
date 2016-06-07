@@ -83,8 +83,8 @@ public:
 	void active(d_matrix* input, d_matrix* expect, d_matrix* output, int groupCount, int batchCount,
 		bool learn = false, double* error = nullptr);  //计算一组输出
 
-	void setInputData(d_matrix* input, int groupid);
-	void setExpectData(d_matrix* expect, int groupid);
+	//void setInputData(d_matrix* input, int groupid);
+	//void setExpectData(d_matrix* expect, int groupid);
 
 	void getOutputData(d_matrix* output, int groupCount, int col=0);
 

@@ -9,7 +9,7 @@ d_matrix::d_matrix(int x, int y, int tryInsideData /*= 1*/, int tryUseCublas /*=
 {
 	insideData = tryInsideData;
 	UseCuda = tryUseCublas && globalUseCuda;
-	if (insideData || UseCuda)
+	if (insideData)
 		insideData = 1;
 
 	row = x;
@@ -260,7 +260,7 @@ void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 	}
 }
 
-void d_matrix::tryLoadToCuda()
+void d_matrix::tryUploadToCuda()
 {
 	if (globalUseCuda)
 	{
@@ -278,7 +278,7 @@ void d_matrix::tryLoadToCuda()
 	}
 }
 
-void d_matrix::tryLoadFromCuda()
+void d_matrix::tryDownloadFromCuda()
 {
 	if (UseCuda = 1)
 	{
@@ -294,9 +294,11 @@ void d_matrix::tryLoadFromCuda()
 
 void d_matrix::shareData(d_matrix* A, int m, int n)
 {
-	if ((UseCuda && A->UseCuda)
-		|| (!UseCuda && !A->UseCuda))
+	if (!insideData && 
+		((UseCuda && A->UseCuda)
+		|| (!UseCuda && !A->UseCuda)))
 	this->data = A->getDataPointer(m, n);
+	/*
 	else if (UseCuda && !A->UseCuda)
 	{
 		memcpyDataIn(A->getDataPointer(m, n), max_script);
@@ -304,6 +306,7 @@ void d_matrix::shareData(d_matrix* A, int m, int n)
 	else
 	{
 	}
+	*/
 }
 
 void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
@@ -343,6 +346,25 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 	{
 		auto ta1 = get_cblas_trans(ta); 
 		cblas_dgemv(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
+	}
+}
+
+void d_matrix::productVector2(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, d_matrixTrans ta /*= NoTrans*/)
+{
+	int m = A->row, n = A->col;
+	if (ta == Trans) { std::swap(m, n); };
+
+	if (globalUseCuda)
+	{
+		auto ta1 = get_cublas_trans(ta);
+		for (int i = 0; i <= R->col; i++)
+			cublasDgemv(handle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1);
+	}
+	else
+	{
+		auto ta1 = get_cblas_trans(ta);
+		for (int i = 0; i <= R->col; i++)
+			cblas_dgemv(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->getDataPointer(0, i), 1);
 	}
 }
 
