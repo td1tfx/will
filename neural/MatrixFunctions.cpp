@@ -264,16 +264,19 @@ void d_matrix::tryUploadToCuda()
 {
 	if (globalUseCuda)
 	{
-		UseCuda = 1;
-		auto temp = mallocData(data_size);
-		if (temp)
+		if (UseCuda == 0)
 		{
-			std::swap(temp, data);
-			set_freeDataToDevice(temp);
-		}
-		else
-		{
-			UseCuda = 0;
+			UseCuda = 1;
+			auto temp = mallocData(data_size);
+			if (temp)
+			{
+				std::swap(temp, data);
+				set_freeDataToDevice(temp);
+			}
+			else
+			{
+				UseCuda = 0;
+			}
 		}
 	}
 }

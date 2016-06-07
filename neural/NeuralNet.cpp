@@ -441,6 +441,7 @@ void NeuralNet::test()
 	if (_train_groupCount > 0)
 	{		
 		auto train_output = new d_matrix(OutputNodeCount, _train_groupCount, 1, 0);
+		_train_inputData->tryUploadToCuda();
 		active(_train_inputData, nullptr, train_output, _train_groupCount, resetGroupCount(_train_groupCount));
 		fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", _train_groupCount);
 		printResult(OutputNodeCount, _train_groupCount, train_output, _train_expectData);
@@ -449,6 +450,7 @@ void NeuralNet::test()
 	if (_test_groupCount > 0)
 	{
 		auto test_output = new d_matrix(OutputNodeCount, _test_groupCount, 1, 0);
+		_test_inputData->tryUploadToCuda();
 		active(_test_inputData, nullptr, test_output, _test_groupCount, resetGroupCount(_test_groupCount));
 		fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", _test_groupCount);
 		printResult(OutputNodeCount, _test_groupCount, test_output, _test_expectData);
