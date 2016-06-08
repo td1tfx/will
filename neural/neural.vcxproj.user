@@ -11,7 +11,7 @@
     <LocalDebuggerCommandArguments>p.ini</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>mnist.ini</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>p.ini</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)\work</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>

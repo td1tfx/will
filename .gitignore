@@ -18,3 +18,4 @@
 *.exp
 *.vspx
 *.diagsession
+neural/work/openblas_haswell_lib/
