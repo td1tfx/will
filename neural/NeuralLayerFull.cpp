@@ -103,7 +103,7 @@ int NeuralLayerFull::saveInfo(FILE* fout)
 	return 3 + WeightMatrix->getDataCount() + BiasVector->getDataCount();
 }
 
-int NeuralLayerFull::readInfo(double* v, int n)
+int NeuralLayerFull::loadInfo(double* v, int n)
 {
 	int k = 0;
 	k += 2;

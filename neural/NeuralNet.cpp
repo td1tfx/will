@@ -362,7 +362,7 @@ void NeuralNet::createByLoad(const char* filename)
 		auto& layer1 = Layers[i_layer];
 		auto& layer2 = Layers[i_layer + 1];
 		layer2->connetPrevlayer(layer1);
-		int readcount = layer2->readInfo(v + k, n - k);
+		int readcount = layer2->loadInfo(v + k, n - k);
 		k += readcount;
 	}
 }

@@ -17,6 +17,6 @@ public:
 	virtual void backPropagate(double learnSpeed, double lambda);
 
 	virtual int saveInfo(FILE* fout);
-	virtual int readInfo(double* v, int n);
+	virtual int loadInfo(double* v, int n);
 };
 

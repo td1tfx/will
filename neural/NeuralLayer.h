@@ -66,7 +66,7 @@ public:
 	virtual void updateDelta() {}
 	virtual void backPropagate(double learnSpeed, double lambda) {}
 	virtual int saveInfo(FILE* fout) { return 0; }
-	virtual int readInfo(double* v, int n) { return 0; }
+	virtual int loadInfo(double* v, int n) { return 0; }
 
 	//以下函数仅建议使用在输入和输出层，隐藏层不建议使用！
 	d_matrix* getOutputMatrix() { return OutputMatrix; }
