@@ -114,11 +114,11 @@ void d_matrix::memcpyDataIn(double* src, int size)
 {
 	if (UseCuda)
 	{
-		cudaMemcpy(data, src, int(sizeof(double)*MyMath::min(size, max_script)), cudaMemcpyHostToDevice);
+		cudaMemcpy(data, src, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyHostToDevice);
 	}
 	else
 	{
-		memcpy(data, src, int(sizeof(double)*MyMath::min(size, max_script)));
+		memcpy(data, src, int(sizeof(double)*std::min(size, max_script)));
 	}
 }
 
@@ -127,11 +127,11 @@ void d_matrix::memcpyDataOut(double* dst, int size)
 {
 	if (UseCuda)
 	{
-		cudaMemcpy(dst, data, int(sizeof(double)*MyMath::min(size, max_script)), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dst, data, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyDeviceToHost);
 	}
 	else
 	{
-		memcpy(dst, data, int(sizeof(double)*MyMath::min(size, max_script)));
+		memcpy(dst, data, int(sizeof(double)*std::min(size, max_script)));
 	}
 }
 
@@ -144,7 +144,7 @@ void d_matrix::expand()
 		for (int i = 1; i < col; i*=2)
 		{
 			cudaMemcpy(getDataPointer(0, i), getDataPointer(0, 0), 
-				sizeof(double)*row*MyMath::min(i, col - i), cudaMemcpyDeviceToDevice);
+				sizeof(double)*row*std::min(i, col - i), cudaMemcpyDeviceToDevice);
 		}
 	}
 	else
@@ -152,7 +152,7 @@ void d_matrix::expand()
 		//#pragma loop(hint_parallel(8))
 		for (int i = 1; i < col; i*=2)
 		{
-			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row*MyMath::min(i, col-i));
+			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row*std::min(i, col-i));
 		}
 	}
 }
@@ -253,11 +253,11 @@ void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 {
 	if (dst->UseCuda)
 	{
-		cudaMemcpy(dst->data, src->data, sizeof(double)*MyMath::min(dst->row*dst->col, src->row*src->col), cudaMemcpyDeviceToDevice);
+		cudaMemcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col), cudaMemcpyDeviceToDevice);
 	}
 	else
 	{
-		memcpy(dst->data, src->data, sizeof(double)*MyMath::min(dst->row*dst->col, src->row*src->col));
+		memcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col));
 	}
 }
 

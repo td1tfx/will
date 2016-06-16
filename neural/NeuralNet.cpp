@@ -27,7 +27,7 @@ NeuralNet::~NeuralNet()
 void NeuralNet::run()
 {
 	BatchMode = NeuralNetBatchMode(_option.BatchMode);
-	MiniBatchCount = MyMath::max(1, _option.MiniBatch);
+	MiniBatchCount = std::max(1, _option.MiniBatch);
 	WorkMode = NeuralNetWorkMode(_option.WorkMode);
 
 	LearnSpeed = _option.LearnSpeed;
@@ -126,7 +126,7 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 	if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)
 	{
-		int n = resetGroupCount(MyMath::min(batchCount, groupCount-i));
+		int n = resetGroupCount(std::min(batchCount, groupCount-i));
 		if (input)
 		{
 			getFirstLayer()->OutputMatrix->shareData(input, 0, i);

@@ -6,9 +6,6 @@
 #define dexp_v exp_v 
 namespace MyMath
 {
-	static int min(int a, int b) { return a > b ? b : a; }
-	static int max(int a, int b) { return a > b ? a : b; }
-
 	static double sigmoid(double x) { return 1.0 / (1 + exp(-x)); }
 	static double dsigmoid(double x) { double a = 1 + exp(-x); return (a - 1) / (a*a); }
 	static double constant(double x) { return 1; }
@@ -26,8 +23,6 @@ namespace MyMath
 	static int tanh_v(double* x, double* y, int size) { MyMathFor(tanh); }
 	static int dtanh_v(double* x, double* y, int size) { MyMathFor(dtanh); }
 
-	//static int min(int a, int b) { return (a < b) ? a : b; }
 	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
-
 };
 
