@@ -8,10 +8,11 @@ NeuralNet::NeuralNet()
 
 NeuralNet::~NeuralNet()
 {
-	for (auto& layer : getLayerVector())
+	for (int i = 0; i < LayerCount; i++)
 	{
-		delete layer;
+		delete Layers[i];
 	}
+	delete[] Layers;
 	if (_train_inputData) 
 		delete _train_inputData;
 	if (_train_expectData)	
@@ -107,7 +108,8 @@ void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
 //创建神经层
 void NeuralNet::createLayers(int layerCount)
 {
-	Layers.resize(layerCount);
+	Layers = new NeuralLayer*[layerCount];
+	LayerCount = layerCount;
 	for (int i = 0; i < layerCount; i++)
 	{
 		auto layer = NeuralLayerFactory::createLayer(FullConnection);
@@ -279,9 +281,9 @@ int NeuralNet::resetGroupCount(int n)
 	if (n == NeuralLayer::GroupCount) return n;
 	if (n > MaxGroup)
 		n = MaxGroup;
-	for (auto l : Layers)
+	for (int i = 0; i < LayerCount; i++)
 	{
-		l->resetData(n);
+		Layers[i]->resetData(n);
 	}
 	return n;
 }
@@ -316,7 +318,7 @@ void NeuralNet::saveInfo(const char* filename)
 		fout = fopen(filename, "w+t");
 
 	fprintf(fout, "Net information:\n");
-	fprintf(fout, "%d\tlayers\n", Layers.size());
+	fprintf(fout, "%d\tlayers\n", LayerCount);
 	for (int i_layer = 0; i_layer < getLayerCount(); i_layer++)
 	{
 		fprintf(fout, "layer %d has %d nodes\n", i_layer, Layers[i_layer]->OutputCount);

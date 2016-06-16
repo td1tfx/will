@@ -53,12 +53,13 @@ public:
 	void run();
 
 	//Éñ¾­²ã
-	std::vector<NeuralLayer*> Layers;
-	std::vector<NeuralLayer*>& getLayerVector() { return Layers; }
+	NeuralLayer** Layers;
+	int LayerCount = 0;
+	//std::vector<NeuralLayer*>& getLayerVector() { return Layers; }
 	NeuralLayer*& getLayer(int number) { return Layers[number]; }
 	NeuralLayer*& getFirstLayer() { return Layers[0]; }
-	NeuralLayer*& getLastLayer() { return Layers.back(); }
-	int getLayerCount() { return Layers.size(); };
+	NeuralLayer*& getLastLayer() { return Layers[LayerCount - 1]; }
+	int getLayerCount() { return LayerCount; };
 
 	int InputNodeCount;
 	int OutputNodeCount;
