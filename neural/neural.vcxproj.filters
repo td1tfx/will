@@ -9,7 +9,7 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="lib">
+    <Filter Include="ext-source">
       <UniqueIdentifier>{858ff5f1-e19f-4412-a57e-20e9aaa09a83}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -21,7 +21,7 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="lib\libconvert.cpp">
-      <Filter>lib</Filter>
+      <Filter>ext-source</Filter>
     </ClCompile>
     <ClCompile Include="MatrixFunctions.cpp">
       <Filter>源文件</Filter>
@@ -36,10 +36,10 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="lib\Timer.cpp">
-      <Filter>lib</Filter>
+      <Filter>ext-source</Filter>
     </ClCompile>
     <ClCompile Include="lib\INIReader.cpp">
-      <Filter>lib</Filter>
+      <Filter>ext-source</Filter>
     </ClCompile>
     <ClCompile Include="NeuralLayerFull.cpp">
       <Filter>源文件</Filter>
@@ -62,10 +62,10 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="lib\libconvert.h">
-      <Filter>lib</Filter>
+      <Filter>ext-source</Filter>
     </ClInclude>
     <ClInclude Include="lib\cblas.h">
-      <Filter>lib</Filter>
+      <Filter>ext-source</Filter>
     </ClInclude>
     <ClInclude Include="MatrixFunctions.h">
       <Filter>头文件</Filter>
@@ -80,10 +80,10 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="lib\Timer.h">
-      <Filter>lib</Filter>
+      <Filter>ext-source</Filter>
     </ClInclude>
     <ClInclude Include="lib\INIReader.h">
-      <Filter>lib</Filter>
+      <Filter>ext-source</Filter>
     </ClInclude>
     <ClInclude Include="Option.h">
       <Filter>头文件</Filter>
