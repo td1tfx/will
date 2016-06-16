@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <cstring>
 #include <cstdlib>
-#include <algorithm>
+//#include <algorithm>
 #include <functional>
 #include "lib/cblas.h"
 #include "MyMath.h"
@@ -96,6 +96,7 @@ private:
 	int insideData = 1;
 	DataPosition dataIsWhere = DataInHost;
 	int data_size = -1;
+
 public:
 	d_matrix(int x, int y, int tryInsideData = 1, int tryUseCuda = 1);
 	~d_matrix() { if (insideData) freeData(); }
@@ -103,8 +104,8 @@ public:
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
 	int xy2i(int m, int n) { return m + n*row; }
-	double& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }
-	double& getData(int i) { return data[std::min(i, max_script - 1)]; }
+	double& getData(int m, int n) { return data[MyMath::min(xy2i(m, n), max_script - 1)]; }
+	double& getData(int i) { return data[MyMath::min(i, max_script - 1)]; }
 	double* getDataPointer(int m, int n) { return &getData(m, n); }
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
