@@ -9,43 +9,45 @@ NeuralLayerFull::NeuralLayerFull()
 
 NeuralLayerFull::~NeuralLayerFull()
 {
+	if (WeightMatrix) { delete WeightMatrix; }
+	if (BiasVector) { delete BiasVector; }
+	if (_asBiasVector) { delete _asBiasVector; }
 }
 
-void NeuralLayerFull::initData(int nodeCount, int groupCount, NeuralLayerType type /*= Hidden*/)
+//全连接层中，x1是本层输出数
+void NeuralLayerFull::initData(NeuralLayerType type, int x1, int x2)
 {
-	deleteData();
+	//deleteData();
 	this->Type = type;
-	this->OutputCount = nodeCount;
-	this->GroupCount = groupCount;
+	this->OutputCount = x1;
 
 	if (type == Input)
 	{
-		OutputMatrix = new d_matrix(nodeCount, groupCount, 0);
+		OutputMatrix = new d_matrix(x1, GroupCount, 0);
 	}
 	else
 	{
-		OutputMatrix = new d_matrix(nodeCount, groupCount);
-		InputMatrix = new d_matrix(nodeCount, groupCount);
+		OutputMatrix = new d_matrix(x1, GroupCount);
+		UnactivedMatrix = new d_matrix(x1, GroupCount);
 	}
 	if (type == Output)
 	{
-		ExpectMatrix = new d_matrix(nodeCount, groupCount, 0);
+		ExpectMatrix = new d_matrix(x1, GroupCount, 0);
 	}
 
-	DeltaMatrix = new d_matrix(nodeCount, groupCount);
-	_asBiasVector = new d_matrix(groupCount, 1);
+	DeltaMatrix = new d_matrix(x1, GroupCount);
+	_asBiasVector = new d_matrix(GroupCount, 1);
 	_asBiasVector->initData(1);
 	//output->print();
 }
 
-void NeuralLayerFull::resetData(int groupCount)
+void NeuralLayerFull::resetGroupCount()
 {
-	this->GroupCount = groupCount;
-	InputMatrix->resize(OutputCount, groupCount);
-	OutputMatrix->resize(OutputCount, groupCount);
-	DeltaMatrix->resize(OutputCount, groupCount);
-	ExpectMatrix->resize(OutputCount, groupCount);
-	if (_asBiasVector->resize(groupCount, 1) > 0) 
+	UnactivedMatrix->resize(OutputCount, GroupCount);
+	OutputMatrix->resize(OutputCount, GroupCount);
+	DeltaMatrix->resize(OutputCount, GroupCount);
+	ExpectMatrix->resize(OutputCount, GroupCount);
+	if (_asBiasVector->resize(GroupCount, 1) > 0)
 		_asBiasVector->initData(1);
 }
 
@@ -62,11 +64,11 @@ void NeuralLayerFull::connetPrevlayer(NeuralLayer* prevLayer)
 
 void NeuralLayerFull::activeOutputValue()
 {
-	d_matrix::cpyData(InputMatrix, BiasVector);
-	InputMatrix->expand();
-	d_matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
+	d_matrix::cpyData(UnactivedMatrix, BiasVector);
+	UnactivedMatrix->expand();
+	d_matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->UnactivedMatrix, 1, 1);
 	//d_matrix::productVector2(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
-	d_matrix::activeFunction(InputMatrix, OutputMatrix, _activeMode);
+	d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, ActiveMode);
 }
 
 void NeuralLayerFull::updateDelta()
@@ -79,10 +81,15 @@ void NeuralLayerFull::updateDelta()
 	}
 	else
 	{
-		d_matrix::product(NextLayer->WeightMatrix, NextLayer->DeltaMatrix, DeltaMatrix, 1, 0, Trans, NoTrans);
-		InputMatrix->dactiveFunction(_activeMode);
-		d_matrix::hadamardProduct(DeltaMatrix, InputMatrix, DeltaMatrix);
+		NextLayer->spreadDeltaToPrevLayer();
+		UnactivedMatrix->dactiveFunction(ActiveMode);
+		d_matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
 	}
+}
+
+void NeuralLayerFull::spreadDeltaToPrevLayer()
+{
+	d_matrix::product(WeightMatrix, DeltaMatrix, PrevLayer->DeltaMatrix, 1, 0, Trans, NoTrans);
 }
 
 void NeuralLayerFull::backPropagate(double learnSpeed, double lambda)

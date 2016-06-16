@@ -4,16 +4,22 @@ class NeuralLayerFull :
 	public NeuralLayer
 {
 public:
-	int hitls;
-
 	NeuralLayerFull();
 	virtual ~NeuralLayerFull();
 
-	virtual void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden);
-	virtual void resetData(int groupCount);
+	//weight矩阵，对于全连接层，行数是本层的节点数，列数是上一层的节点数
+	d_matrix* WeightMatrix = nullptr;
+	//偏移向量，维度为本层节点数
+	d_matrix* BiasVector = nullptr;
+	//更新偏移向量的辅助向量，所有值为1，维度为数据组数
+	d_matrix* _asBiasVector = nullptr;
+
+	virtual void initData(NeuralLayerType type, int x1, int x2);
+	virtual void resetGroupCount();
 	virtual void connetPrevlayer(NeuralLayer* prevLayer);
 	virtual void activeOutputValue();
 	virtual void updateDelta();
+	virtual void spreadDeltaToPrevLayer();
 	virtual void backPropagate(double learnSpeed, double lambda);
 
 	virtual int saveInfo(FILE* fout);

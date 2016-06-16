@@ -97,9 +97,14 @@ private:
 	DataPosition dataIsWhere = DataInHost;
 	int data_size = -1;
 
+	//一列的数据作为一个或一组图像，矩阵本身是列优先
+	//但是在图片处理，包含卷积核默认是行优先，也就是说图片和卷积核可以认为是转置保存的！！
+	int col_image_count;
+	d_matrix* image = nullptr;
+
 public:
-	d_matrix(int x, int y, int tryInsideData = 1, int tryUseCuda = 1);
-	~d_matrix() { if (insideData) freeData(); }
+	d_matrix(int m, int n, int tryInsideData = 1, int tryUseCuda = 1);
+	~d_matrix();
 	int getRow() { return row; }
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
@@ -110,6 +115,14 @@ public:
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
 	int resize(int m, int n, int force = 0);
+
+	void initColImage(int width, int height, int count);
+	void setColImage(int i, int col);
+	d_matrix* getColImage();
+	
+	//这两个不推荐使用，比较乱
+	double& getImageData(int m, int n) { return getData(n, m); }
+	double* getImageDataPointer(int m, int n) { return &getData(n, m); }
 
 	//这个函数可能不安全，慎用！！
 	void resetDataPointer(double* d, int d_in_cuda=0);
@@ -154,6 +167,11 @@ public:
 		double a = 1, double c = 0, d_matrixTrans ta = NoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
+
+	static void resample(d_matrix* A, d_matrix* R, int mode = 0);
+	static void resample2(d_matrix* A, d_matrix* R, int m, int n, int count, int mode = 0);
+	static void convolution(d_matrix* A, d_matrix* CORE, d_matrix* R);
+	static void convolution2(d_matrix* A, d_matrix* R);
 
 private:
 	static cublasHandle_t handle;

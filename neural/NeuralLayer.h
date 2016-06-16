@@ -31,8 +31,10 @@ public:
 	int Id;
 
 	int OutputCount;  //对于全连接层，输出数等于节点数，对于其他形式定义不同
+	
 	static int GroupCount;   //对于所有层数据量都一样
-	static int EffectiveGroupCount;  //必须小于数据组数，表示其后的是废数据
+	static void setGroupCount(int gc) { GroupCount = gc; } 
+
 	static int Step;  //仅调试用
 
 	NeuralLayerType Type = Hidden;
@@ -43,27 +45,25 @@ public:
 
 	//对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数
 	//Expect仅输出层使用，输入层需要直接设置Output
-	d_matrix *InputMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
-	//weight矩阵，对于全连接层，行数是本层的节点数，列数是上一层的节点数
-	d_matrix* WeightMatrix = nullptr;
-	//偏移向量，维度为本层节点数
-	d_matrix* BiasVector = nullptr;
-	//更新偏移向量的辅助向量，所有值为1，维度为数据组数
-	d_matrix* _asBiasVector = nullptr;
+	//UnactivedMatrix收集上一层的输出，激活函数作用之后就是本层输出
+	d_matrix *UnactivedMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
+
+	int imageRow, imageCol, imageCount;
 
 	NeuralLayer *PrevLayer, *NextLayer;
 
 	void deleteData();
 
 	//dactive是active的导数
-	ActiveFunctionMode _activeMode = Sigmoid;
-	void setActiveFunction(ActiveFunctionMode afm) { _activeMode = afm; }
+	ActiveFunctionMode ActiveMode = Sigmoid;
+	void setActiveFunction(ActiveFunctionMode afm) { ActiveMode = afm; }
 
-	virtual void initData(int nodeCount, int groupCount, NeuralLayerType type = Hidden) {}
-	virtual void resetData(int groupCount) {}
+	virtual void initData(NeuralLayerType type, int x1, int x2) {}
+	virtual void resetGroupCount() {}
 	virtual void connetPrevlayer(NeuralLayer* prevLayer) {}
 	virtual void activeOutputValue() {}
 	virtual void updateDelta() {}
+	virtual void spreadDeltaToPrevLayer() {}
 	virtual void backPropagate(double learnSpeed, double lambda) {}
 	virtual int saveInfo(FILE* fout) { return 0; }
 	virtual int loadInfo(double* v, int n) { return 0; }

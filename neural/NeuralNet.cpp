@@ -281,9 +281,10 @@ int NeuralNet::resetGroupCount(int n)
 	if (n == NeuralLayer::GroupCount) return n;
 	if (n > MaxGroup)
 		n = MaxGroup;
+	NeuralLayer::setGroupCount(n);
 	for (int i = 0; i < LayerCount; i++)
 	{
-		Layers[i]->resetData(n);
+		Layers[i]->resetGroupCount();
 	}
 	return n;
 }
@@ -292,16 +293,18 @@ int NeuralNet::resetGroupCount(int n)
 //此处是具体的网络结构
 void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
+	NeuralLayer::setGroupCount(MiniBatchCount);
+
 	this->createLayers(layerCount);
 
-	getFirstLayer()->initData(InputNodeCount, MiniBatchCount, Input);
+	getFirstLayer()->initData(Input, InputNodeCount, 0);
 	fprintf(stdout, "Layer %d has %d nodes.\n", 0, InputNodeCount);
 	for (int i = 1; i < layerCount - 1; i++)
 	{
-		getLayer(i)->initData(nodesPerLayer, MiniBatchCount, Hidden);
+		getLayer(i)->initData(Hidden, nodesPerLayer, 0);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i, nodesPerLayer);
 	}
-	getLastLayer()->initData(OutputNodeCount, MiniBatchCount, Output);
+	getLastLayer()->initData(Output, OutputNodeCount, 0);
 	fprintf(stdout, "Layer %d has %d nodes.\n", layerCount - 1, OutputNodeCount);
 
 	for (int i = 1; i < layerCount; i++)
@@ -354,7 +357,7 @@ void NeuralNet::createByLoad(const char* filename)
 	k++;
 	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{
-		getLayer(i_layer)->initData(int(v[k]), MiniBatchCount, getLayer(i_layer)->Type);
+		getLayer(i_layer)->initData(getLayer(i_layer)->Type, int(v[k]), 0);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i_layer, int(v[k]));
 		k += 2;
 	}

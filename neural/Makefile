@@ -1,6 +1,6 @@
 CXX=g++
-CPPFLAGS=-I. -I./lib -O3 -std=c++11 -floop-parallelize-all -ftree-vectorize -flto
-LDFLAGS=-L. -lopenblas -lpthread -flto -fwhole-program
+CPPFLAGS=-I. -I./lib -O3 -std=c++11 $(EXCPPFLAGS)
+LDFLAGS=-L. -lopenblas $(EXLDFLAGS)
 SOURCES=$(wildcard *.cpp) $(wildcard lib/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=neural
@@ -16,12 +16,18 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
 clean:
-	rm $(OBJECTS)
+	rm *.o lib/*.o
 
-icpc: CXX=icpc
-icpc: all
+gcc: EXCPPFLAGS=-floop-parallelize-all -ftree-vectorize -flto
+gcc: EXLDFLAGS=-lpthread -flto -fwhole-program
+gcc: all
+
+icc: CXX=icpc
+icc: EXCPPFLAGS=-xHost -ipo -finline-functions -no-inline-factor
+icc: LDFLAGS=-ipo -mkl
+icc: all
 
 clang: CXX=clang++
-clang: CPPFLAGS=-I. -I./lib -O3 -std=c++11
-clang: LDFLAGS=-L. -lopenblas
+clang: EXCPPFLAGS=
+clang: EXLDFLAGS=
 clang: all

@@ -5,19 +5,25 @@ cublasHandle_t d_matrix::handle;
 int d_matrix::globalUseCuda = 0;
 bool d_matrix::inited = false;
 
-d_matrix::d_matrix(int x, int y, int tryInsideData /*= 1*/, int tryUseCuda /*= 1*/)
+d_matrix::d_matrix(int m, int n, int tryInsideData /*= 1*/, int tryUseCuda /*= 1*/)
 {
 	insideData = tryInsideData;
 	UseCuda = tryUseCuda && globalUseCuda;
 
-	row = x;
-	col = y;
+	row = m;
+	col = n;
 	max_script = row*col;
 	if (insideData)
 	{
 		data = mallocData(max_script);
 		data_size = max_script;
 	}
+}
+
+d_matrix::~d_matrix()
+{
+	if (insideData) freeData();
+	if (image) { delete image; }
 }
 
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
@@ -41,6 +47,25 @@ int d_matrix::resize(int m, int n, int force /*= 0*/)
 		return 1;
 	}
 	return 0;
+}
+
+//内部用于将一列当成一组图访问的小矩阵
+void d_matrix::initColImage(int width, int height, int count)
+{
+	//image矩阵的数据必须是外置，否则后果自负！
+	image = new d_matrix(height, width, 0, 1);
+	col_image_count = count;
+}
+
+void d_matrix::setColImage(int i, int col)
+{
+	image->data = getDataPointer(image->max_script*i, col);
+}
+
+//移动image的数据指针
+d_matrix* d_matrix::getColImage()
+{	
+	return image;
 }
 
 //注意，比较危险
@@ -421,6 +446,86 @@ void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 // 	}
 }
 
+
+void d_matrix::resample(d_matrix* A, d_matrix* R, int mode /*= 0*/)
+{
+	int scalem = (A->row + R->row - 1) / R->row;
+	int scalen = (A->col + R->col - 1) / R->col;
+	if (globalUseCuda)
+	{
+	}
+	else
+	{
+		for (int i1 = 0; i1 < A->row; i1+=scalem)
+		{
+			for (int j1 = 0; j1 < A->col; j1+=scalen)
+			{
+				double v = 0;
+				for (int i2 = i1*scalem; i2 < std::min(i1*scalem + scalem, A->row); i2++)
+				{
+					for (int j2 = j1*scalen; j2 < std::min(j1*scalen + scalen, A->col); j2++)
+					{
+						double d = A->getData(i2, j2);
+						if (mode == 0)
+						{
+							v = d > v ? d : v;
+						}
+						else
+						{
+							v += d;
+						}
+					}
+				}
+				if (mode == 1)
+				{
+					v /= scalem*scalen;
+				}
+				R->getData(i1 / scalem, j1 / scalen) = v;
+			}
+		}
+	}
+}
+
+void d_matrix::resample2(d_matrix* A, d_matrix* R, int m, int n, int count, int mode /*= 0*/)
+{
+	auto subA = new d_matrix(m, n, 0, 1);
+	auto subR = new d_matrix(m, n, 0, 1);
+	for (int i = 0; i < count; i++)
+	{
+		for (int j = 0; j < A->col; j++)
+		{
+			subA->data = A->getDataPointer(i*subA->max_script, j);
+			subR->data = R->getDataPointer(i*subR->max_script, j);
+			resample(subA, subR, mode);
+		}
+	}
+}
+
+void d_matrix::convolution(d_matrix* A, d_matrix* CORE, d_matrix* R)
+{
+	if (globalUseCuda)
+	{
+	}
+	else
+	{
+		for (int i1 = 0; i1 < A->row + 1 - CORE->row; i1++)
+		{
+			for (int j1 = 0; j1 < A->col + 1 - CORE->col; j1++)
+			{
+				double v = 0;
+				for (int i2 = 0; i2 < CORE->row; i2++)
+				{
+					for (int j2 = 0; j2 < CORE->col; j2++)
+					{
+						double d = A->getData(i1, j1)*CORE->getData(i2, j2);
+						v += d;
+					}
+				}
+				R->getData(i1, j1) = v;
+			}
+		}
+	}
+}
 
 double* d_matrix::mallocData(int size)
 {

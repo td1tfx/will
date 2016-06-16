@@ -2,7 +2,7 @@
 #include <math.h>
 #include <string.h>
 
-#define MyMathFor(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}return 0;}while(0)
+#define MyMathFor(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
 #define dexp_v exp_v 
 namespace MyMath
 {
@@ -15,13 +15,13 @@ namespace MyMath
 	static double is(double x) { return x > 0.5 ? 1 : 0; }
 	static double dis(double x) { return 1; }
 
-	static int sigmoid_v(double* x, double* y, int size) { MyMathFor(sigmoid); }
-	static int dsigmoid_v(double* x, double* y, int size) { MyMathFor(dsigmoid); }
-	static int linear_v(double* x, double* y, int size) { memcpy(y, x, sizeof(double)*size); }
-	static int dlinear_v(double* x, double* y, int size) { MyMathFor(constant); }
-	static int exp_v(double* x, double* y, int size) { MyMathFor(exp); }
-	static int tanh_v(double* x, double* y, int size) { MyMathFor(tanh); }
-	static int dtanh_v(double* x, double* y, int size) { MyMathFor(dtanh); }
+	static void sigmoid_v(double* x, double* y, int size) { MyMathFor(sigmoid); }
+	static void dsigmoid_v(double* x, double* y, int size) { MyMathFor(dsigmoid); }
+	static void linear_v(double* x, double* y, int size) { memcpy(y, x, sizeof(double)*size); }
+	static void dlinear_v(double* x, double* y, int size) { MyMathFor(constant); }
+	static void exp_v(double* x, double* y, int size) { MyMathFor(exp); }
+	static void tanh_v(double* x, double* y, int size) { MyMathFor(tanh); }
+	static void dtanh_v(double* x, double* y, int size) { MyMathFor(dtanh); }
 
 	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 };
