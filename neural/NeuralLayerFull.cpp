@@ -63,20 +63,11 @@ void NeuralLayerFull::activeOutputValue()
 	d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, ActiveMode);
 }
 
-void NeuralLayerFull::updateDelta()
+void NeuralLayerFull::updateDelta2()
 {
-	if (this->Type == Output)
-	{
-		d_matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
-		//deltas[i] *= dactiveFunction(inputValues[i]);
-		//这里如果去掉这个乘法，是使用交叉熵作为代价函数，但是在隐藏层的传播不可以去掉
-	}
-	else
-	{
-		NextLayer->spreadDeltaToPrevLayer();
-		UnactivedMatrix->dactiveFunction(ActiveMode);
-		d_matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
-	}
+	NextLayer->spreadDeltaToPrevLayer();
+	UnactivedMatrix->dactiveFunction(ActiveMode);
+	d_matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
 }
 
 void NeuralLayerFull::spreadDeltaToPrevLayer()

@@ -18,7 +18,7 @@ public:
 	virtual void resetGroupCount2();
 	virtual void connetPrevlayer2();
 	virtual void activeOutputValue();
-	virtual void updateDelta();
+	virtual void updateDelta2();
 	virtual void spreadDeltaToPrevLayer();
 	virtual void backPropagate(double learnSpeed, double lambda);
 

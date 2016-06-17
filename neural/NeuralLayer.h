@@ -60,17 +60,20 @@ public:
 	//dactive是active的导数
 	ActiveFunctionMode ActiveMode = Sigmoid;
 	void setActiveFunction(ActiveFunctionMode afm) { ActiveMode = afm; }
-	void connetPrevlayer(NeuralLayer* prevLayer);
+
+	//下面凡是有两个函数的，在无后缀函数中有公共部分，在带后缀函数中是各自子类的功能
 	void resetGroupCount();
+	void connetPrevlayer(NeuralLayer* prevLayer);
 	void initData(NeuralLayerType type, int x1, int x2) { this->Type = type; initData2(x1, x2); }
+	void updateDelta();
 
 protected:
 	virtual void resetGroupCount2() {}
 	virtual void connetPrevlayer2() {}
 	virtual void initData2(int x1, int x2) {}
+	virtual void updateDelta2();
 public:	
 	virtual void activeOutputValue() {}
-	virtual void updateDelta() {}
 	virtual void spreadDeltaToPrevLayer() {}
 	virtual void backPropagate(double learnSpeed, double lambda) {}
 	virtual int saveInfo(FILE* fout) { return 0; }

@@ -48,4 +48,18 @@ void NeuralLayer::resetGroupCount()
 	resetGroupCount2();
 }
 
+void NeuralLayer::updateDelta()
+{
+	if (this->Type == Output)
+	{
+		//代价函数由这里决定！
+		d_matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
+		//deltas[i] *= dactiveFunction(inputValues[i]);
+		//这里如果去掉这个乘法，是使用交叉熵作为代价函数，但是在隐藏层的传播不可以去掉！具体方程自己推导！
+	}
+	else
+	{
+		updateDelta2();
+	}
+}
 
