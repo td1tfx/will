@@ -48,7 +48,10 @@ public:
 	//UnactivedMatrix收集上一层的输出，激活函数作用之后就是本层输出
 	d_matrix *UnactivedMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
 
-	int imageRow, imageCol, imageCount;
+	int ImageRow=1, ImageCol=1, ImageCount;
+
+	//只有输入层有必要调用这个函数，其他层均计算得到对应的值
+	void setImageMode(int w, int h, int count);
 
 	NeuralLayer *PrevLayer, *NextLayer;
 
@@ -57,10 +60,15 @@ public:
 	//dactive是active的导数
 	ActiveFunctionMode ActiveMode = Sigmoid;
 	void setActiveFunction(ActiveFunctionMode afm) { ActiveMode = afm; }
+	void connetPrevlayer(NeuralLayer* prevLayer);
+	void resetGroupCount();
+	void initData(NeuralLayerType type, int x1, int x2) { this->Type = type; initData2(x1, x2); }
 
-	virtual void initData(NeuralLayerType type, int x1, int x2) {}
-	virtual void resetGroupCount() {}
-	virtual void connetPrevlayer(NeuralLayer* prevLayer) {}
+protected:
+	virtual void resetGroupCount2() {}
+	virtual void connetPrevlayer2() {}
+	virtual void initData2(int x1, int x2) {}
+public:	
 	virtual void activeOutputValue() {}
 	virtual void updateDelta() {}
 	virtual void spreadDeltaToPrevLayer() {}

@@ -14,9 +14,9 @@ public:
 	//更新偏移向量的辅助向量，所有值为1，维度为数据组数
 	d_matrix* _asBiasVector = nullptr;
 
-	virtual void initData(NeuralLayerType type, int x1, int x2);
-	virtual void resetGroupCount();
-	virtual void connetPrevlayer(NeuralLayer* prevLayer);
+	virtual void initData2(int x1, int x2);
+	virtual void resetGroupCount2();
+	virtual void connetPrevlayer2();
 	virtual void activeOutputValue();
 	virtual void updateDelta();
 	virtual void spreadDeltaToPrevLayer();

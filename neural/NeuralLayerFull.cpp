@@ -15,13 +15,12 @@ NeuralLayerFull::~NeuralLayerFull()
 }
 
 //全连接层中，x1是本层输出数
-void NeuralLayerFull::initData(NeuralLayerType type, int x1, int x2)
+void NeuralLayerFull::initData2(int x1, int x2)
 {
 	//deleteData();
-	this->Type = type;
 	this->OutputCount = x1;
 
-	if (type == Input)
+	if (Type == Input)
 	{
 		OutputMatrix = new d_matrix(x1, GroupCount, 0);
 	}
@@ -30,7 +29,7 @@ void NeuralLayerFull::initData(NeuralLayerType type, int x1, int x2)
 		OutputMatrix = new d_matrix(x1, GroupCount);
 		UnactivedMatrix = new d_matrix(x1, GroupCount);
 	}
-	if (type == Output)
+	if (Type == Output)
 	{
 		ExpectMatrix = new d_matrix(x1, GroupCount, 0);
 	}
@@ -41,25 +40,18 @@ void NeuralLayerFull::initData(NeuralLayerType type, int x1, int x2)
 	//output->print();
 }
 
-void NeuralLayerFull::resetGroupCount()
+void NeuralLayerFull::resetGroupCount2()
 {
-	UnactivedMatrix->resize(OutputCount, GroupCount);
-	OutputMatrix->resize(OutputCount, GroupCount);
-	DeltaMatrix->resize(OutputCount, GroupCount);
-	ExpectMatrix->resize(OutputCount, GroupCount);
 	if (_asBiasVector->resize(GroupCount, 1) > 0)
 		_asBiasVector->initData(1);
 }
 
-void NeuralLayerFull::connetPrevlayer(NeuralLayer* prevLayer)
+void NeuralLayerFull::connetPrevlayer2()
 {
-	int n = this->OutputCount*this->OutputCount;
-	this->WeightMatrix = new d_matrix(this->OutputCount, prevLayer->OutputCount);
+	this->WeightMatrix = new d_matrix(this->OutputCount, PrevLayer->OutputCount);
 	this->WeightMatrix->initRandom();
 	this->BiasVector = new d_matrix(this->OutputCount, 1);
 	this->BiasVector->initRandom();
-	this->PrevLayer = prevLayer;
-	prevLayer->NextLayer = this;
 }
 
 void NeuralLayerFull::activeOutputValue()
