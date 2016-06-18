@@ -320,14 +320,14 @@ void d_matrix::shareData(d_matrix* A, int m, int n)
 }
 
 void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
-	double a /*= 1*/, double c /*= 0*/, d_matrixTransType ta /*= NoTrans*/, d_matrixTransType tb /*= NoTrans*/)
+	double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/, MatrixTransType tb /*= NoTrans*/)
 {
 	int m = R->row;
 	int n = R->col;
 	int lda = A->row;
 	int k = A->col;
 	int ldb = B->row;
-	if (ta == ma_Trans) { k = A->row; }
+	if (ta == mt_Trans) { k = A->row; }
 	if (globalUseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
@@ -342,10 +342,10 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	}
 }
 
-void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, d_matrixTransType ta /*= NoTrans*/)
+void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
-	if (ta == ma_Trans) { std::swap(m, n); };
+	if (ta == mt_Trans) { std::swap(m, n); };
 
 	if (globalUseCuda)
 	{
@@ -359,10 +359,10 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 	}
 }
 
-void d_matrix::productVector2(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, d_matrixTransType ta /*= NoTrans*/)
+void d_matrix::productVector2(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
-	if (ta == ma_Trans) { std::swap(m, n); };
+	if (ta == mt_Trans) { std::swap(m, n); };
 
 	if (globalUseCuda)
 	{

@@ -61,9 +61,15 @@
 
 typedef enum
 {
-	ma_NoTrans,
-	ma_Trans,
-} d_matrixTransType;
+	ms_ColMajor, 
+	ms_RowMajor,
+} MatrixStoreType;
+
+typedef enum
+{
+	mt_NoTrans,
+	mt_Trans,
+} MatrixTransType;
 
 typedef enum
 {
@@ -131,9 +137,9 @@ public:
 	{
 		return data[i];
 	}
-	static CBLAS_TRANSPOSE get_cblas_trans(d_matrixTransType t)
+	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t)
 	{
-		return t == ma_NoTrans ? CblasNoTrans : CblasTrans;
+		return t == mt_NoTrans ? CblasNoTrans : CblasTrans;
 	}
 
 	static void initCublas();
@@ -158,11 +164,11 @@ public:
 	void shareData(d_matrix* A, int m, int n);
 
 	static void product(d_matrix* A, d_matrix* B, d_matrix* R,
-		double a = 1, double c = 0, d_matrixTransType ta = ma_NoTrans, d_matrixTransType tb = ma_NoTrans);
+		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
 	static void productVector(d_matrix* A, d_matrix* B, d_matrix* R,
-		double a = 1, double c = 0, d_matrixTransType ta = ma_NoTrans);
+		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
 	static void productVector2(d_matrix* A, d_matrix* B, d_matrix* R,
-		double a = 1, double c = 0, d_matrixTransType ta = ma_NoTrans);
+		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
 
@@ -173,9 +179,9 @@ public:
 
 private:
 	static cublasHandle_t handle;
-	static cublasOperation_t get_cublas_trans(d_matrixTransType t)
+	static cublasOperation_t get_cublas_trans(MatrixTransType t)
 	{
-		return t == ma_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T;
+		return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T;
 	}
 public:
 

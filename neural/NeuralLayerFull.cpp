@@ -71,15 +71,15 @@ void NeuralLayerFull::updateDelta2()
 
 void NeuralLayerFull::spreadDeltaToPrevLayer()
 {
-	d_matrix::product(WeightMatrix, DeltaMatrix, PrevLayer->DeltaMatrix, 1, 0, ma_Trans, ma_NoTrans);
+	d_matrix::product(WeightMatrix, DeltaMatrix, PrevLayer->DeltaMatrix, 1, 0, mt_Trans, mt_NoTrans);
 }
 
 void NeuralLayerFull::backPropagate(double learnSpeed, double lambda)
 {
 	updateDelta();
 	d_matrix::product(DeltaMatrix, PrevLayer->OutputMatrix, WeightMatrix,
-		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, ma_NoTrans, ma_Trans);
-	d_matrix::productVector(DeltaMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, ma_NoTrans);
+		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, mt_NoTrans, mt_Trans);
+	d_matrix::productVector(DeltaMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, mt_NoTrans);
 }
 
 int NeuralLayerFull::saveInfo(FILE* fout)
