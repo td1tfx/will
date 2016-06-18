@@ -23,7 +23,6 @@ d_matrix::d_matrix(int m, int n, int tryInsideData /*= 1*/, int tryUseCuda /*= 1
 d_matrix::~d_matrix()
 {
 	if (insideData) freeData();
-	if (image) { delete image; }
 }
 
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
@@ -49,24 +48,6 @@ int d_matrix::resize(int m, int n, int force /*= 0*/)
 	return 0;
 }
 
-//内部用于将一列当成一组图访问的小矩阵
-void d_matrix::initColImage(int width, int height, int count)
-{
-	//image矩阵的数据必须是外置，否则后果自负！
-	image = new d_matrix(height, width, 0, 1);
-	col_image_count = count;
-}
-
-void d_matrix::setColImage(int i, int col)
-{
-	image->data = getDataPointer(image->max_script*i, col);
-}
-
-//移动image的数据指针
-d_matrix* d_matrix::getColImage()
-{	
-	return image;
-}
 
 //注意，比较危险
 void d_matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
@@ -339,14 +320,14 @@ void d_matrix::shareData(d_matrix* A, int m, int n)
 }
 
 void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
-	double a /*= 1*/, double c /*= 0*/, d_matrixTrans ta /*= NoTrans*/, d_matrixTrans tb /*= NoTrans*/)
+	double a /*= 1*/, double c /*= 0*/, d_matrixTransType ta /*= NoTrans*/, d_matrixTransType tb /*= NoTrans*/)
 {
 	int m = R->row;
 	int n = R->col;
 	int lda = A->row;
 	int k = A->col;
 	int ldb = B->row;
-	if (ta == Trans) { k = A->row; }
+	if (ta == ma_Trans) { k = A->row; }
 	if (globalUseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
@@ -361,10 +342,10 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	}
 }
 
-void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, d_matrixTrans ta /*= NoTrans*/)
+void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, d_matrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
-	if (ta == Trans) { std::swap(m, n); };
+	if (ta == ma_Trans) { std::swap(m, n); };
 
 	if (globalUseCuda)
 	{
@@ -378,10 +359,10 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 	}
 }
 
-void d_matrix::productVector2(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, d_matrixTrans ta /*= NoTrans*/)
+void d_matrix::productVector2(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, d_matrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
-	if (ta == Trans) { std::swap(m, n); };
+	if (ta == ma_Trans) { std::swap(m, n); };
 
 	if (globalUseCuda)
 	{
@@ -447,7 +428,7 @@ void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 }
 
 
-void d_matrix::resample(d_matrix* A, d_matrix* R, int mode /*= 0*/)
+void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re /*= re_Findmax*/)
 {
 	int scalem = (A->row + R->row - 1) / R->row;
 	int scalen = (A->col + R->col - 1) / R->col;
@@ -460,13 +441,13 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, int mode /*= 0*/)
 		{
 			for (int j1 = 0; j1 < A->col; j1+=scalen)
 			{
-				double v = 0;
-				for (int i2 = i1*scalem; i2 < std::min(i1*scalem + scalem, A->row); i2++)
+				double v = -1;
+				for (int i2 = i1; i2 < std::min(i1 + scalem, A->row); i2++)
 				{
-					for (int j2 = j1*scalen; j2 < std::min(j1*scalen + scalen, A->col); j2++)
+					for (int j2 = j1; j2 < std::min(j1 + scalen, A->col); j2++)
 					{
 						double d = A->getData(i2, j2);
-						if (mode == 0)
+						if (re == 0)
 						{
 							v = d > v ? d : v;
 						}
@@ -476,7 +457,7 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, int mode /*= 0*/)
 						}
 					}
 				}
-				if (mode == 1)
+				if (re == 1)
 				{
 					v /= scalem*scalen;
 				}
@@ -486,19 +467,21 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, int mode /*= 0*/)
 	}
 }
 
-void d_matrix::resample2(d_matrix* A, d_matrix* R, int m, int n, int count, int mode /*= 0*/)
+void d_matrix::resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count, ResampleType re /*= re_Findmax*/)
 {
-	auto subA = new d_matrix(m, n, 0, 1);
-	auto subR = new d_matrix(m, n, 0, 1);
+	auto subA = new d_matrix(m_subA, n_subA, 0, 1);
+	auto subR = new d_matrix(m_subR, n_subR, 0, 1);
 	for (int i = 0; i < count; i++)
 	{
 		for (int j = 0; j < A->col; j++)
 		{
 			subA->data = A->getDataPointer(i*subA->max_script, j);
 			subR->data = R->getDataPointer(i*subR->max_script, j);
-			resample(subA, subR, mode);
+			resample(subA, subR, re);
 		}
 	}
+	delete subA;
+	delete subR;
 }
 
 void d_matrix::convolution(d_matrix* A, d_matrix* CORE, d_matrix* R)
@@ -603,11 +586,11 @@ void d_matrix::set_freeDataToDevice(double* temp)
 	}
 }
 
-void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
+void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 {
-	switch (afm)
+	switch (af)
 	{
-	case Sigmoid:
+	case af_Sigmoid:
 		if (globalUseCuda)
 		{
 			cuda_sigmoid(A->data, R->data, R->max_script);
@@ -617,7 +600,10 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 			MyMath::sigmoid_v(A->data, R->data, R->max_script);
 		}		
 		break;
-	case Softmax:
+	case af_Linear:
+		d_matrix::cpyData(R, A);
+		break;
+	case af_Softmax:
 		if (globalUseCuda)
 		{
 			cuda_exp(A->data, R->data, R->max_script);
@@ -633,7 +619,7 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 			R->colMultiply(1 / sum, i);
 		}
 		break;
-	case Tanh:
+	case af_Tanh:
 		if (globalUseCuda)
 		{
 
@@ -643,7 +629,7 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 			MyMath::tanh_v(A->data, R->data, R->max_script);
 		}
 		break;
-	case Findmax:
+	case af_Findmax:
 		if (globalUseCuda)
 		{
 
@@ -665,11 +651,11 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 	}
 }
 
-void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
+void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 {
-	switch (afm)
+	switch (af)
 	{
-	case Sigmoid:
+	case af_Sigmoid:
 		if (globalUseCuda)
 		{
 			cuda_dsigmoid(A->data, R->data, R->max_script);
@@ -679,7 +665,11 @@ void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 			MyMath::dsigmoid_v(A->data, R->data, R->max_script);
 		}
 		break;
-	case Softmax:
+	case af_Linear:
+		//这里好像不够优化
+		R->initData(1);
+		break;
+	case af_Softmax:
 		//softmax一般是最后一层，可能无用
 		if (globalUseCuda)
 		{
@@ -690,7 +680,7 @@ void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 			MyMath::exp_v(A->data, R->data, R->max_script);
 		}
 		break;
-	case Tanh:
+	case af_Tanh:
 		if (globalUseCuda)
 		{
 
@@ -700,7 +690,7 @@ void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm)
 			MyMath::dtanh_v(A->data, R->data, R->max_script);
 		}
 		break;
-	case Findmax:
+	case af_Findmax:
 		if (globalUseCuda)
 		{
 

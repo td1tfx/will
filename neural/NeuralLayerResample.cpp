@@ -4,6 +4,7 @@
 
 NeuralLayerResample::NeuralLayerResample()
 {
+	_activeFunctionType = af_Linear;
 }
 
 
@@ -33,7 +34,29 @@ void NeuralLayerResample::connetPrevlayer2()
 //直接硬上
 void NeuralLayerResample::activeOutputValue()
 {
-	auto image = new d_matrix(ImageRow, ImageCol, 0, 1);
-	auto imageP = new d_matrix(PrevLayer->ImageRow, ImageCol, 0, 1);
-	//d_matrix::resample();
+	d_matrix::resample_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix, 
+		PrevLayer->ImageRow, PrevLayer->ImageCol,PrevLayer->ImageCount,
+		ImageRow, ImageRow, _resample);
+	d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
+}
+
+//回传被选中的位置，非常麻烦，可能需要一个东西记录
+void NeuralLayerResample::spreadDeltaToPrevLayer()
+{
+	//这里要仔细推导一下
+}
+
+
+int NeuralLayerResample::saveInfo(FILE* fout)
+{
+	fprintf(fout, "Resample\n%d %d %d", region_m, region_n, int(_resample));
+	return 3;
+}
+
+int NeuralLayerResample::loadInfo(double* v, int n)
+{
+	region_m = v[0];
+	region_n = v[1];
+	_resample = ResampleType(int(v[2]));
+	return 3;
 }

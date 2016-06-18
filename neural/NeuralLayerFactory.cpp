@@ -11,18 +11,18 @@ NeuralLayerFactory::~NeuralLayerFactory()
 {
 }
 
-NeuralLayer* NeuralLayerFactory::createLayer(NeuralLayerConnectionMode mode)
+NeuralLayer* NeuralLayerFactory::createLayer(NeuralLayerConnectionType mode)
 {
 	NeuralLayer* layer = nullptr;
 	switch (mode)
 	{
-	case FullConnection:
+	case lc_Full:
 		layer = new NeuralLayerFull();
 		break;
-	case Convolution:
-		layer = new NeuralLayerConv();
+	case lc_Convolution:
+		layer = new NeuralLayerConvolution();
 		break;
-	case Resample:
+	case lc_Resample:
 		layer = new NeuralLayerResample();
 		break;
 	default:

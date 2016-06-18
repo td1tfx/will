@@ -26,9 +26,9 @@ NeuralNet::~NeuralNet()
 //运行，注意容错保护较弱
 void NeuralNet::run()
 {
-	BatchMode = NeuralNetBatchMode(_option.BatchMode);
+	BatchMode = NeuralNetLearnType(_option.BatchMode);
 	MiniBatchCount = std::max(1, _option.MiniBatch);
-	WorkMode = NeuralNetWorkMode(_option.WorkMode);
+	WorkMode = NeuralNetWorkType(_option.WorkMode);
 
 	LearnSpeed = _option.LearnSpeed;
 	Lambda = _option.Regular;
@@ -77,31 +77,31 @@ void NeuralNet::run()
 }
 
 //设置学习模式
-void NeuralNet::setLearnMode(NeuralNetBatchMode lm, int lb /*= -1*/)
+void NeuralNet::setLearnMode(NeuralNetLearnType lm, int lb /*= -1*/)
 {
 	BatchMode = lm;
 	//批量学习时，节点数据量等于实际数据量
-	if (BatchMode == Online)
+	if (BatchMode == nl_Online)
 	{
 		MiniBatchCount = 1;
 	}
 	//这里最好是能整除的
-	if (BatchMode == MiniBatch)
+	if (BatchMode == nl_MiniBatch)
 	{
 		MiniBatchCount = lb;
 	}
 }
 
-void NeuralNet::setWorkMode(NeuralNetWorkMode wm)
+void NeuralNet::setWorkMode(NeuralNetWorkType wm)
 {
 	 WorkMode = wm; 
-	 if (wm == Probability)
+	 if (wm == nw_Probability)
 	 {
-		 getLastLayer()->setActiveFunction(Softmax);
+		 getLastLayer()->setActiveFunction(af_Softmax);
 	 }
-	 if (wm == Classify)
+	 if (wm == nw_Classify)
 	 {
-		 getLastLayer()->setActiveFunction(Findmax);
+		 getLastLayer()->setActiveFunction(af_Findmax);
 	 }
 }
 
@@ -112,7 +112,7 @@ void NeuralNet::createLayers(int layerCount)
 	LayerCount = layerCount;
 	for (int i = 0; i < layerCount; i++)
 	{
-		auto layer = NeuralLayerFactory::createLayer(FullConnection);
+		auto layer = NeuralLayerFactory::createLayer(lc_Full);
 		layer->Id = i;
 		Layers[i] = layer;
 	}
@@ -187,14 +187,14 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	
 	switch (BatchMode)
 	{
-	case Batch:
+	case nl_Whole:
 		MiniBatchCount = resetGroupCount(_train_groupCount);
 		break;
-	case Online:
+	case nl_Online:
 		resetGroupCount(1);
 		MiniBatchCount = 1;
 		break;
-	case MiniBatch:
+	case nl_MiniBatch:
 		if (MiniBatchCount > 0)
 			resetGroupCount(MiniBatchCount);
 		break;
@@ -297,14 +297,14 @@ void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 
 	this->createLayers(layerCount);
 
-	getFirstLayer()->initData(Input, InputNodeCount, 0);
+	getFirstLayer()->initData(lt_Input, InputNodeCount, 0);
 	fprintf(stdout, "Layer %d has %d nodes.\n", 0, InputNodeCount);
 	for (int i = 1; i < layerCount - 1; i++)
 	{
-		getLayer(i)->initData(Hidden, nodesPerLayer, 0);
+		getLayer(i)->initData(lt_Hidden, nodesPerLayer, 0);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i, nodesPerLayer);
 	}
-	getLastLayer()->initData(Output, OutputNodeCount, 0);
+	getLastLayer()->initData(lt_Output, OutputNodeCount, 0);
 	fprintf(stdout, "Layer %d has %d nodes.\n", layerCount - 1, OutputNodeCount);
 
 	for (int i = 1; i < layerCount; i++)
@@ -352,8 +352,8 @@ void NeuralNet::createByLoad(const char* filename)
 	int k = 0;
 	int layerCount = int(v[k++]);
 	this->createLayers(layerCount);
-	getFirstLayer()->Type = Input;
-	getLastLayer()->Type = Output;
+	getFirstLayer()->Type = lt_Input;
+	getLastLayer()->Type = lt_Output;
 	k++;
 	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{

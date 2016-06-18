@@ -9,17 +9,17 @@
 //隐藏，输入，输出
 typedef enum
 {
-	Hidden,
-	Input,
-	Output,
+	lt_Hidden,
+	lt_Input,
+	lt_Output,
 } NeuralLayerType;
 
 typedef enum
 {
-	FullConnection,
-	Convolution,
-	Resample,
-} NeuralLayerConnectionMode;
+	lc_Full,
+	lc_Convolution,
+	lc_Resample,
+} NeuralLayerConnectionType;
 
 //神经层
 class NeuralLayer
@@ -37,8 +37,8 @@ public:
 
 	static int Step;  //仅调试用
 
-	NeuralLayerType Type = Hidden;
-	NeuralLayerConnectionMode WorkMode = FullConnection;
+	NeuralLayerType Type = lt_Hidden;
+	NeuralLayerConnectionType ConnetionType = lc_Full;
 
 	bool NeedTrain = true;   //如果不需要训练那么也无需反向传播，在训练的时候也只需激活一次
 	void setNeedTrain(bool nt) { NeedTrain = nt; }
@@ -58,8 +58,8 @@ public:
 	void deleteData();
 
 	//dactive是active的导数
-	ActiveFunctionMode ActiveMode = Sigmoid;
-	void setActiveFunction(ActiveFunctionMode afm) { ActiveMode = afm; }
+	ActiveFunctionType _activeFunctionType = af_Sigmoid;
+	void setActiveFunction(ActiveFunctionType afm) { _activeFunctionType = afm; }
 
 	//下面凡是有两个函数的，在无后缀函数中有公共部分，在带后缀函数中是各自子类的功能
 	void resetGroupCount();

@@ -1,7 +1,7 @@
 #pragma once
 #include "NeuralLayer.h"
 #include "NeuralLayerFull.h"
-#include "NeuralLayerConv.h"
+#include "NeuralLayerConvolution.h"
 #include "NeuralLayerResample.h"
 
 class NeuralLayerFactory
@@ -9,9 +9,8 @@ class NeuralLayerFactory
 public:
 	NeuralLayerFactory();
 	virtual ~NeuralLayerFactory();
-
 public:
-	static NeuralLayer* createLayer(NeuralLayerConnectionMode mode);
+	static NeuralLayer* createLayer(NeuralLayerConnectionType mode);
 	static void destroyLayer(NeuralLayer* layer) { delete layer; };
 };
 

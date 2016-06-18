@@ -12,30 +12,19 @@
 //学习模式
 typedef enum 
 {
-	Batch = 0,
-	Online = 1,
-	MiniBatch = 2,
-	//在线学习一般会比较快
-	//通常情况下批量学习会考虑全局优先，应为首选
-	//在线学习每次都更新所有键结值，批量学习每一批数据更新一次键结值
-} NeuralNetBatchMode;
+	nl_Whole = 0,          //全部数据一起学习，数据多的时候收敛会很慢
+	nl_Online = 1,         //每次学习一个，其实可以用下面的代替
+	nl_MiniBatch = 2,      //每次学习一小批，但是最后一批的影响可能会比较大
+} NeuralNetLearnType;
 
-//计算模式（no use）
-/*
-typedef enum 
-{
-	ByLayer,
-	ByNode,
-} NeuralNetCalMode;
-*/
 
 //工作模式
 typedef enum
 {
-	Fit = 0,            //拟合
-	Classify = 1,       //分类，会筛选最大值设为1，其他设为0
-	Probability = 2,    //几率，结果会归一化	
-} NeuralNetWorkMode;
+	nw_Fit = 0,            //拟合
+	nw_Classify = 1,       //分类，会筛选最大值设为1，其他设为0
+	nw_Probability = 2,    //几率，结果会归一化	
+} NeuralNetWorkType;
 
 
 //神经网
@@ -64,9 +53,9 @@ public:
 	int InputNodeCount;
 	int OutputNodeCount;
 
-	NeuralNetBatchMode BatchMode = Batch;
+	NeuralNetLearnType BatchMode = nl_Whole;
 	int MiniBatchCount = -1;
-	void setLearnMode(NeuralNetBatchMode lm, int lb = -1);
+	void setLearnMode(NeuralNetLearnType lm, int lb = -1);
 
 	double LearnSpeed = 0.5;  //学习速度
 	void setLearnSpeed(double s) { LearnSpeed = s; }
@@ -74,8 +63,8 @@ public:
 	double Lambda = 0.0;      //正则化参数，防止过拟合
 	void setRegular(double l) { Lambda = l; }
 
-	NeuralNetWorkMode WorkMode = Fit;
-	void setWorkMode(NeuralNetWorkMode wm);
+	NeuralNetWorkType WorkMode = nw_Fit;
+	void setWorkMode(NeuralNetWorkType wm);
 
 	void createLayers(int layerCount);  //包含输入和输出层
 

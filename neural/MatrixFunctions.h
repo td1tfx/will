@@ -61,25 +61,24 @@
 
 typedef enum
 {
-	NoTrans,
-	Trans,
-} d_matrixTrans;
+	ma_NoTrans,
+	ma_Trans,
+} d_matrixTransType;
 
 typedef enum
 {
-	DataInHost,
-	DataInDevice,
-	DataInBoth,
-	DataInNowhere,
-} DataPosition;
+	af_Sigmoid = 0,
+	af_Linear,
+	af_Softmax,
+	af_Tanh,
+	af_Findmax,
+} ActiveFunctionType;
 
 typedef enum
 {
-	Sigmoid = 0,
-	Softmax,
-	Tanh,
-	Findmax,
-} ActiveFunctionMode;
+	re_Findmax = 0,
+	re_Average,
+} ResampleType;
 
 struct d_matrix
 {
@@ -99,8 +98,6 @@ private:
 
 	//一列的数据作为一个或一组图像，矩阵本身是列优先
 	//但是在图片处理，包含卷积核默认是行优先，也就是说图片和卷积核可以认为是转置保存的！！
-	int col_image_count;
-	d_matrix* image = nullptr;
 
 public:
 	d_matrix(int m, int n, int tryInsideData = 1, int tryUseCuda = 1);
@@ -115,10 +112,6 @@ public:
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
 	int resize(int m, int n, int force = 0);
-
-	void initColImage(int width, int height, int count);
-	void setColImage(int i, int col);
-	d_matrix* getColImage();
 	
 	//这两个不推荐使用，比较乱
 	double& getImageData(int m, int n) { return getData(n, m); }
@@ -133,9 +126,9 @@ public:
 	{
 		return data[i];
 	}
-	static CBLAS_TRANSPOSE get_cblas_trans(d_matrixTrans t)
+	static CBLAS_TRANSPOSE get_cblas_trans(d_matrixTransType t)
 	{
-		return t == NoTrans ? CblasNoTrans : CblasTrans;
+		return t == ma_NoTrans ? CblasNoTrans : CblasTrans;
 	}
 
 	static void initCublas();
@@ -160,24 +153,24 @@ public:
 	void shareData(d_matrix* A, int m, int n);
 
 	static void product(d_matrix* A, d_matrix* B, d_matrix* R,
-		double a = 1, double c = 0, d_matrixTrans ta = NoTrans, d_matrixTrans tb = NoTrans);
+		double a = 1, double c = 0, d_matrixTransType ta = ma_NoTrans, d_matrixTransType tb = ma_NoTrans);
 	static void productVector(d_matrix* A, d_matrix* B, d_matrix* R,
-		double a = 1, double c = 0, d_matrixTrans ta = NoTrans);
+		double a = 1, double c = 0, d_matrixTransType ta = ma_NoTrans);
 	static void productVector2(d_matrix* A, d_matrix* B, d_matrix* R,
-		double a = 1, double c = 0, d_matrixTrans ta = NoTrans);
+		double a = 1, double c = 0, d_matrixTransType ta = ma_NoTrans);
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
 
-	static void resample(d_matrix* A, d_matrix* R, int mode = 0);
-	static void resample2(d_matrix* A, d_matrix* R, int m, int n, int count, int mode = 0);
+	static void resample(d_matrix* A, d_matrix* R, ResampleType re = re_Findmax);
+	static void resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count, ResampleType re = re_Findmax);
 	static void convolution(d_matrix* A, d_matrix* CORE, d_matrix* R);
 	static void convolution2(d_matrix* A, d_matrix* R);
 
 private:
 	static cublasHandle_t handle;
-	static cublasOperation_t get_cublas_trans(d_matrixTrans t)
+	static cublasOperation_t get_cublas_trans(d_matrixTransType t)
 	{
-		return t == NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T;
+		return t == ma_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T;
 	}
 public:
 
@@ -193,10 +186,10 @@ public:
 	void set_freeDataToDevice(double* temp);
 
 public:
-	void activeFunction(ActiveFunctionMode afm) { activeFunction(this, this, afm); }
-	void dactiveFunction(ActiveFunctionMode afm) { dactiveFunction(this, this, afm); }
-	static void activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm);
-	static void dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionMode afm);
+	void activeFunction(ActiveFunctionType af) { activeFunction(this, this, af); }
+	void dactiveFunction(ActiveFunctionType af) { dactiveFunction(this, this, af); }
+	static void activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af);
+	static void dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af);
 
 };
 

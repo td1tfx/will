@@ -50,7 +50,7 @@ void NeuralLayer::resetGroupCount()
 
 void NeuralLayer::updateDelta()
 {
-	if (this->Type == Output)
+	if (this->Type == lt_Output)
 	{
 		//代价函数由这里决定！
 		d_matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
@@ -59,7 +59,10 @@ void NeuralLayer::updateDelta()
 	}
 	else
 	{
-		updateDelta2();
+		NextLayer->spreadDeltaToPrevLayer();
+		UnactivedMatrix->dactiveFunction(_activeFunctionType);
+		d_matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
+		//updateDelta2();
 	}
 }
 

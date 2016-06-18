@@ -44,13 +44,13 @@
     <ClCompile Include="NeuralLayerFull.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralLayerConv.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="NeuralLayerResample.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="NeuralLayerFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="NeuralLayerConvolution.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -94,9 +94,6 @@
     <ClInclude Include="NeuralLayerFull.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="NeuralLayerConv.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="NeuralLayerResample.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -104,6 +101,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="myth_cuda.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="NeuralLayerConvolution.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

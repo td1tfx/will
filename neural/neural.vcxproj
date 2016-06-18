@@ -180,7 +180,7 @@
     <ClCompile Include="MNISTFunctions.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralLayer.cpp" />
-    <ClCompile Include="NeuralLayerConv.cpp" />
+    <ClCompile Include="NeuralLayerConvolution.cpp" />
     <ClCompile Include="NeuralLayerFactory.cpp" />
     <ClCompile Include="NeuralLayerFull.cpp" />
     <ClCompile Include="NeuralLayerResample.cpp" />
@@ -195,7 +195,7 @@
     <ClInclude Include="MatrixFunctions.h" />
     <ClInclude Include="MNISTFunctions.h" />
     <ClInclude Include="myth_cuda.h" />
-    <ClInclude Include="NeuralLayerConv.h" />
+    <ClInclude Include="NeuralLayerConvolution.h" />
     <ClInclude Include="NeuralLayerFactory.h" />
     <ClInclude Include="NeuralLayerFull.h" />
     <ClInclude Include="NeuralLayerResample.h" />

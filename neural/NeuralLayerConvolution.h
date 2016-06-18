@@ -1,11 +1,14 @@
 #pragma once
 #include "NeuralLayer.h"
-class NeuralLayerConv :
+class NeuralLayerConvolution :
 	public NeuralLayer
 {
 public:
-	NeuralLayerConv();
-	virtual ~NeuralLayerConv();
+	NeuralLayerConvolution();
+	virtual ~NeuralLayerConvolution();
+
+
+	int _coreCount;
 
 	virtual void initData2(int x1, int x2) {}
 	virtual void resetGroupCount2() {}
