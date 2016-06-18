@@ -80,6 +80,12 @@ typedef enum
 	re_Average,
 } ResampleType;
 
+typedef enum
+{
+	cv_1toN = 0,
+	cv_NtoN,
+} ConvolutionType;
+
 struct d_matrix
 {
 private:
@@ -93,7 +99,6 @@ private:
 	int col = 0;
 	int max_script;
 	int insideData = 1;
-	DataPosition dataIsWhere = DataInHost;
 	int data_size = -1;
 
 	//一列的数据作为一个或一组图像，矩阵本身是列优先
@@ -164,7 +169,7 @@ public:
 	static void resample(d_matrix* A, d_matrix* R, ResampleType re = re_Findmax);
 	static void resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count, ResampleType re = re_Findmax);
 	static void convolution(d_matrix* A, d_matrix* CORE, d_matrix* R);
-	static void convolution2(d_matrix* A, d_matrix* R);
+	static void convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count);
 
 private:
 	static cublasHandle_t handle;

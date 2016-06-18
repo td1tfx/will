@@ -392,19 +392,6 @@ void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
 			R->data[i] = A->data[i] * B->data[i];
 		}
 	}
-	/*
-	auto tempA = A->malloc_getDataFromDevice();
-	auto tempB = B->malloc_getDataFromDevice();
-	auto tempR = R->mallocDataForDevice();
-#pragma loop(hint_parallel(8))
-	for (int i = 0; i < R->max_script; i++)
-	{
-		tempR[i] = tempA[i] * tempB[i];
-	}
-	A->freeDataForDevice(tempA);
-	B->freeDataForDevice(tempB);
-	R->set_freeDataToDevice(tempR);
-	*/
 }
 
 void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
@@ -510,6 +497,23 @@ void d_matrix::convolution(d_matrix* A, d_matrix* CORE, d_matrix* R)
 	}
 }
 
+void d_matrix::convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count)
+{
+	auto subA = new d_matrix(m_subA, n_subA, 0, 1);
+	auto subR = new d_matrix(m_subR, n_subR, 0, 1);
+	for (int i = 0; i < count; i++)
+	{
+		for (int j = 0; j < A->col; j++)
+		{
+			subA->data = A->getDataPointer(i*subA->max_script, j);
+			subR->data = R->getDataPointer(i*subR->max_script, j);
+			convolution(subA, conv_kernel, subR);
+		}
+	}
+	delete subA;
+	delete subR;
+}
+
 double* d_matrix::mallocData(int size)
 {
 	if (UseCuda)
@@ -517,7 +521,7 @@ double* d_matrix::mallocData(int size)
 		double* d = nullptr;
 		if (cudaMalloc((void **)&d, size * sizeof(double)) == cudaSuccess)
 		{
-			dataIsWhere = DataInDevice;
+			//dataIsWhere = DataInDevice;
 		}
 		return d;
 	}
