@@ -26,24 +26,24 @@ NeuralNet::~NeuralNet()
 //运行，注意容错保护较弱
 void NeuralNet::run()
 {
-	BatchMode = NeuralNetLearnType(_option.BatchMode);
-	MiniBatchCount = std::max(1, _option.MiniBatch);
-	WorkType = NeuralNetWorkType(_option.WorkMode);
+	BatchMode = NeuralNetLearnType(_option.getInt("BatchMode"));
+	MiniBatchCount = std::max(1, _option.getInt("MiniBatch"));
+	WorkType = NeuralNetWorkType(_option.getInt("WorkMode"));
 
-	LearnSpeed = _option.LearnSpeed;
-	Lambda = _option.Regular;
+	LearnSpeed = _option.getDouble("LearnSpeed", 0.5);
+	Lambda = _option.getDouble("Regular");
 
-	MaxGroup = _option.MaxGroup;
+	MaxGroup = _option.getInt("MaxGroup", 1e5);
 
-	if (_option.UseCUDA)
+	if (_option.getInt("UseCUDA"))
 	{
 		d_matrix::initCublas();
 	}
-	if (_option.UseMNIST == 0)
+	if (_option.getInt("UseMNIST") == 0)
 	{
-		if (_option.TrainDataFile != "")
+		if (_option.getString("TrainDataFile") != "")
 		{
-			readData(_option.TrainDataFile.c_str(), da_Train);
+			readData(_option.getString("TrainDataFile").c_str(), da_Train);
 		}
 	}
 	else
@@ -56,22 +56,23 @@ void NeuralNet::run()
 	//	_option.LoadNet == 0;
 
 	std::vector<double> v;
-	int n = findNumbers(_option.NodePerLayer, v);
+	int n = findNumbers(_option.getString("NodePerLayer"), v);
 
-	if (_option.LoadNet == 0)
-		createByData(_option.Layer, int(v[0]));
+	if (_option.getInt("LoadNet") == 0)
+		createByData(_option.getInt("Layer", 3), int(v[0]));
 	else
-		createByLoad(_option.LoadFile.c_str());
+		createByLoad(_option.getString("LoadFile").c_str());
 
 	//net->selectTest();
-	train(int(_option.TrainTimes), int(_option.OutputInterval), _option.Tol, _option.Dtol);
+	train(_option.getInt("TrainTimes", 1000), _option.getInt("OutputInterval", 1000), 
+		_option.getDouble("Tol", 1e-3), _option.getDouble("Dtol", 0));
 	test();
 
-	if (_option.SaveFile != "")
-		saveInfo(_option.SaveFile.c_str());
-	if (_option.TestDataFile != "")
+	if (_option.getString("SaveFile") != "")
+		saveInfo(_option.getString("SaveFile").c_str());
+	if (_option.getString("TestDataFile") != "")
 	{
-		readData(_option.TestDataFile.c_str(), da_Test);
+		readData(_option.getString("TestDataFile").c_str(), da_Test);
 		test();
 	}
 }
@@ -393,7 +394,7 @@ void NeuralNet::readMNIST()
 	MNISTFunctions::readLabelFile("t10k-labels.idx1-ubyte", _test_expectData->getDataPointer());
 }
 
-void NeuralNet::loadOptoin(const char* filename)
+void NeuralNet::loadOption(const char* filename)
 {
 	_option.loadIni(filename);
 }
@@ -466,7 +467,7 @@ void NeuralNet::test()
 
 void NeuralNet::printResult(int nodeCount, int groupCount, d_matrix* output, d_matrix* expect)
 {
-	if (_option.ForceOutput || groupCount <= 100)
+	if (_option.getInt("ForceOutput") || groupCount <= 100)
 	{
 		for (int i = 0; i < groupCount; i++)
 		{
@@ -483,7 +484,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, d_matrix* output, d_m
 		}
 	}
 
-	if (_option.TestMax)
+	if (_option.getInt("TestMax"))
 	{
 		auto outputMax = new d_matrix(nodeCount, groupCount, 1, 0);
 		outputMax->initData(0);
@@ -509,7 +510,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, d_matrix* output, d_m
 					em[i] = j;
 			}
 		}
-		if (_option.ForceOutput || groupCount <= 100)
+		if (_option.getInt("ForceOutput") || groupCount <= 100)
 		{
 			for (int i = 0; i < groupCount; i++)
 			{

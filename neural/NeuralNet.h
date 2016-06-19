@@ -36,7 +36,7 @@ public:
 	int Id;
 
 	Option _option;
-	void loadOptoin(const char* filename);
+	void loadOption(const char* filename);
 	int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
 
 	void run();

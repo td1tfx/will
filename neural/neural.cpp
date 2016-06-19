@@ -10,11 +10,11 @@ int main(int argc, char* argv[])
 
 	if (argc > 1)
 	{
-		net.loadOptoin(argv[1]);
+		net.loadOption(argv[1]);
 	}
 	else
 	{
-		net.loadOptoin("p.ini");
+		net.loadOption("p.ini");
 	}
 
 	test();

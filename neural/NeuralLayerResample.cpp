@@ -50,6 +50,7 @@ void NeuralLayerResample::activeOutputValue()
 	d_matrix::resample_colasImage(PrevLayer->OutputMatrix, OutputMatrix,
 		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCountPerGroup,
 		ImageRow, ImageRow, _resampleType, &maxPos);
+	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说
 	//d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
 }
 
@@ -69,7 +70,7 @@ void NeuralLayerResample::spreadDeltaToPrevLayer()
 
 void NeuralLayerResample::backPropagate(double learnSpeed, double lambda)
 {
-	//采样层没什么好练的
+	//最大值采样没什么好练的
 }
 
 int NeuralLayerResample::saveInfo(FILE* fout)

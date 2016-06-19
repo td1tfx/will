@@ -14,6 +14,9 @@ public:
 	int* maxPos = nullptr;   //记录最大值的位置，待以后看看能不能改成用cuda
 
 	ResampleType _resampleType = re_Findmax;
+	double Weight, Bias;
+	//所有值为1
+	d_matrix* _asBiasMatrix = nullptr;
 
 protected:
 	void initData2(int x1, int x2) override;
