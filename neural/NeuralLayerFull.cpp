@@ -19,7 +19,7 @@ NeuralLayerFull::~NeuralLayerFull()
 void NeuralLayerFull::initData2(int x1, int x2)
 {
 	//deleteData();
-	this->OutputCount = x1;
+	this->OutputCountPerGroup = x1;
 
 	if (Type == lt_Input)
 	{
@@ -49,9 +49,9 @@ void NeuralLayerFull::resetGroupCount2()
 
 void NeuralLayerFull::connetPrevlayer2()
 {
-	this->WeightMatrix = new d_matrix(this->OutputCount, PrevLayer->OutputCount);
+	this->WeightMatrix = new d_matrix(this->OutputCountPerGroup, PrevLayer->OutputCountPerGroup);
 	this->WeightMatrix->initRandom();
-	this->BiasVector = new d_matrix(this->OutputCount, 1);
+	this->BiasVector = new d_matrix(this->OutputCountPerGroup, 1);
 	this->BiasVector->initRandom();
 }
 

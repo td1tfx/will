@@ -108,8 +108,32 @@ int d_matrix::load(double* v, int n)
 		for (int j = 0; j < col; j++)
 		{
 			temp[xy2i(i, j)] = v[k++];
-			if (k >= n) return k;
+			if (k >= n) break;
 		}
+	}
+	set_freeDataToDevice(temp);
+	return k;
+}
+
+void d_matrix::printAsVector(FILE* fout /*= stdout*/)
+{
+	auto temp = malloc_getDataFromDevice();
+	for (int i = 0; i < max_script; i++)
+	{
+		fprintf(fout, "%14.11lf ", temp[i]);
+	}
+	fprintf(fout, "\n");
+	freeDataForDevice(temp);
+}
+
+int d_matrix::loadAsVector(double* v, int n)
+{
+	auto temp = mallocDataForDevice();
+	int k = 0;
+	for (int i = 0; i < row; i++)
+	{
+		temp[i] = v[k++];
+		if (k >= n) break;
 	}
 	set_freeDataToDevice(temp);
 	return k;
@@ -426,7 +450,7 @@ void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 }
 
 
-void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re /*= re_Findmax*/)
+void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re, int** maxPos, int basePos)
 {
 	int scalem = (A->row + R->row - 1) / R->row;
 	int scalen = (A->col + R->col - 1) / R->col;
@@ -447,7 +471,12 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re /*= re_Findmax
 						double d = A->getData(i2, j2);
 						if (re == 0)
 						{
-							v = d > v ? d : v;
+							if (d > v)
+							{
+								v = d;
+								if (maxPos)
+									*maxPos[R->xy2i(i1, j1)] = A->xy2i(i2, j2) + basePos;
+							}
 						}
 						else
 						{
@@ -465,17 +494,18 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re /*= re_Findmax
 	}
 }
 
-void d_matrix::resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count, ResampleType re /*= re_Findmax*/)
+void d_matrix::resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
+	int countPerGroup, ResampleType re, int** maxPos /*= nullptr*/)
 {
 	auto subA = new d_matrix(m_subA, n_subA, 0, 1);
 	auto subR = new d_matrix(m_subR, n_subR, 0, 1);
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < countPerGroup; i++)
 	{
 		for (int j = 0; j < A->col; j++)
 		{
 			subA->shareData(A, i*subA->max_script, j);
 			subR->shareData(R, i*subR->max_script, j);
-			resample(subA, subR, re);
+			resample(subA, subR, re, maxPos ? maxPos + i*subA->max_script : nullptr, i*subA->max_script);
 		}
 	}
 	delete subA;
@@ -508,11 +538,11 @@ void d_matrix::convolution(d_matrix* A, d_matrix* conv_kernel, d_matrix* R)
 	}
 }
 
-void d_matrix::convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count)
+void d_matrix::convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
 {
 	auto subA = new d_matrix(m_subA, n_subA, 0, 1);
 	auto subR = new d_matrix(m_subR, n_subR, 0, 1);
-	for (int i = 0; i < count; i++)
+	for (int i = 0; i < countPerGroup; i++)
 	{
 		for (int j = 0; j < A->col; j++)
 		{

@@ -324,7 +324,7 @@ void NeuralNet::saveInfo(const char* filename)
 	fprintf(fout, "%d\tlayers\n", LayerCount);
 	for (int i_layer = 0; i_layer < getLayerCount(); i_layer++)
 	{
-		fprintf(fout, "layer %d has %d nodes\n", i_layer, Layers[i_layer]->OutputCount);
+		fprintf(fout, "layer %d has %d nodes\n", i_layer, Layers[i_layer]->OutputCountPerGroup);
 	}
 
 	fprintf(fout, "---------------------------------------\n");

@@ -30,9 +30,9 @@ public:
 
 	int Id;
 
-	int OutputCount;  //对于全连接层，输出数等于节点数，对于其他形式定义不同
+	int OutputCountPerGroup;  //对于全连接层，输出数等于节点数，对于其他形式定义不同
 	
-	static int GroupCount;   //对于所有层数据量都一样
+	static int GroupCount;    //对于所有层数据量都一样
 	static void setGroupCount(int gc) { GroupCount = gc; } 
 
 	static int Step;  //仅调试用
@@ -48,7 +48,7 @@ public:
 	//UnactivedMatrix收集上一层的输出，激活函数作用之后就是本层输出
 	d_matrix *UnactivedMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
 
-	int ImageRow=1, ImageCol=1, ImageCount;
+	int ImageRow=1, ImageCol=1, ImageCountPerGroup;
 
 	//只有输入层有必要调用这个函数，其他层均计算得到对应的值
 	void setImageMode(int w, int h, int count);

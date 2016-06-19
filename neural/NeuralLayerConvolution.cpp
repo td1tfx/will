@@ -21,28 +21,24 @@ void NeuralLayerConvolution::activeOutputValue()
 
 int NeuralLayerConvolution::saveInfo(FILE* fout)
 {
-	int k = 2;
-	fprintf(fout, "Convolution\n%d %d", int(_convolutionType), _kernelCount);
-	for (int i = 0; i < _kernelCount; i++)
-	{
-		fprintf(fout, "%d, %d\n", kernels[i]->getRow(), kernels[i]->getCol());
-		kernels[i]->print(fout);
-		k += 2 + kernels[i]->getRow()*kernels[i]->getCol();
-	}
-	return k;
+	fprintf(fout, "Convolution\n%d %d %d %d\n", int(_convolutionType), kernelCount, kernelRow, kernelCol);
+	kernelData->printAsVector(fout);
+	return 4 + kernelCount*kernelRow*kernelCol;
 }
 
 int NeuralLayerConvolution::loadInfo(double* v, int n)
 {
 	int k = 0;
 	_convolutionType = ConvolutionType(int(v[k++]));
-	_kernelCount = v[k++];
-	for (int i = 0; i < _kernelCount; i++)
+	kernelCount = v[k++];
+	kernelRow = v[k++];
+	kernelCol = v[k++];
+	kernelData = new d_matrix(kernelRow*kernelCol, kernelCount);
+	k += kernelData->loadAsVector(v + k, n - k);
+	for (int i = 0; i < kernelCount; i++)
 	{
-		int m = v[k++];
-		int n = v[k++];
-		kernels[i] = new d_matrix(m, n, 1, 1);
-		k += kernels[i]->load(&v[k], n - k);
+		kernels[i] = new d_matrix(kernelRow, kernelCol, 0, 1);
+		kernels[i]->shareData(kernelData, 0, i);
 	}
 	return k;
 }

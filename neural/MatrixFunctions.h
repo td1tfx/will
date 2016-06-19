@@ -92,6 +92,11 @@ typedef enum
 	cv_NtoN,
 } ConvolutionType;
 
+struct Position
+{
+	int m, n;
+};
+
 struct d_matrix
 {
 private:
@@ -146,6 +151,9 @@ public:
 
 	void print(FILE* fout = stdout);
 	int load(double* v, int n);
+	void printAsVector(FILE* fout = stdout);
+	int loadAsVector(double* v, int n);
+
 	void memcpyDataIn(double* src, int size);
 	void memcpyDataOut(double* dst, int size);
 	void expand();
@@ -173,10 +181,11 @@ public:
 	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
 	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
 
-	static void resample(d_matrix* A, d_matrix* R, ResampleType re = re_Findmax);
-	static void resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count, ResampleType re = re_Findmax);
+	static void resample(d_matrix* A, d_matrix* R, ResampleType re, int** maxPos, int basePos);
+	static void resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
+		int countPerGroup, ResampleType re, int** maxPos = nullptr);
 	static void convolution(d_matrix* A, d_matrix* conv_kernel, d_matrix* R);
-	static void convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count);
+	static void convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
 
 private:
 	static cublasHandle_t handle;

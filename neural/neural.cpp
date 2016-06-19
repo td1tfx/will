@@ -34,15 +34,20 @@ int main(int argc, char* argv[])
 
 void test()
 {
-	// 	auto A = new d_matrix(16, 2);
-	// 	//A->initRandom();
-	// 	A->print(stdout);
-	// 	auto B = new d_matrix(4, 2);
-	// 	d_matrix::resample_colasImage(A, B, 2, 4, 1, 2, 2, re_Findmax);
-	// 	printf("\n");
-	// 	B->print(stdout);
+	auto A = new d_matrix(16, 2);
+	auto m = new int[8];
+	A->initRandom();
+	A->print(stdout);
+	auto B = new d_matrix(4, 2);
+	d_matrix::resample_colasImage(A, B, 4, 4, 2, 2, 1, re_Findmax, &m);
+	printf("\n");
+	B->print(stdout);
+	for (int i = 0; i < 8; i++)
+	{
+		printf("%d ", m[i]);
+	}
 
-	auto A = new d_matrix(32, 2);
+	A = new d_matrix(32, 2);
 	auto a = new d_matrix(4, 4, 0);
 	A->initInt();
 
@@ -51,7 +56,7 @@ void test()
 	printf("\n");
 	auto R = new d_matrix(18, 2);
 	auto r = new d_matrix(3, 3, 0);
-	
+
 	d_matrix::convolution_colasImage(A, K, R, 4, 4, 3, 3, 2);
 	//A->print(stdout);
 	a->resetDataPointer(A->getDataPointer(0, 0));

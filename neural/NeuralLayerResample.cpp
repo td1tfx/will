@@ -10,6 +10,7 @@ NeuralLayerResample::NeuralLayerResample()
 
 NeuralLayerResample::~NeuralLayerResample()
 {
+	if (maxPos) delete maxPos;
 }
 
 //采样层，参数为本层横向和纵向的采样像素个数
@@ -22,21 +23,22 @@ void NeuralLayerResample::initData2(int x1, int x2)
 //连接的时候才能知道本层的输出数
 void NeuralLayerResample::connetPrevlayer2()
 {
-	ImageCount = PrevLayer->ImageCount;
+	ImageCountPerGroup = PrevLayer->ImageCountPerGroup;
 	ImageRow = (PrevLayer->ImageRow + region_m - 1) / region_m;
 	ImageCol = (PrevLayer->ImageCol + region_n - 1) / region_n;
-	OutputCount = ImageCount*ImageRow*ImageCount;
+	OutputCountPerGroup = ImageCountPerGroup*ImageRow*ImageCol;
 	//UnactivedMatrix = new d_matrix(OutputCount, GroupCount);
-	DeltaMatrix = new d_matrix(OutputCount, GroupCount);
-	OutputMatrix = new d_matrix(OutputCount, GroupCount);
+	DeltaMatrix = new d_matrix(OutputCountPerGroup, GroupCount);
+	OutputMatrix = new d_matrix(OutputCountPerGroup, GroupCount);
+	maxPos = new int[OutputCountPerGroup*GroupCount];
 }
 
 //直接硬上
 void NeuralLayerResample::activeOutputValue()
 {
 	d_matrix::resample_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix, 
-		PrevLayer->ImageRow, PrevLayer->ImageCol,PrevLayer->ImageCount,
-		ImageRow, ImageRow, _resampleType);
+		PrevLayer->ImageRow, PrevLayer->ImageCol,PrevLayer->ImageCountPerGroup,
+		ImageRow, ImageRow, _resampleType, &maxPos);
 	d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
 }
 

@@ -7,7 +7,8 @@ public:
 	NeuralLayerConvolution();
 	virtual ~NeuralLayerConvolution();
 
-	int _kernelCount = 0;
+	int kernelCount = 0;
+	int kernelRow, kernelCol;
 
 	d_matrix* kernelData = nullptr;
 	d_matrix** kernels = nullptr;

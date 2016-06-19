@@ -19,9 +19,9 @@ void NeuralLayer::setImageMode(int w, int h, int count)
 {
 	ImageRow = h; 
 	ImageCol = w; 
-	ImageCount = count;
+	ImageCountPerGroup = count;
 	if (count <= 0)
-		ImageCount = OutputCount / w / h;
+		ImageCountPerGroup = OutputCountPerGroup / w / h;
 }
 
 void NeuralLayer::deleteData()
@@ -41,10 +41,10 @@ void NeuralLayer::connetPrevlayer(NeuralLayer* prevLayer)
 
 void NeuralLayer::resetGroupCount()
 {
-	UnactivedMatrix->resize(OutputCount, GroupCount);
-	OutputMatrix->resize(OutputCount, GroupCount);
-	DeltaMatrix->resize(OutputCount, GroupCount);
-	ExpectMatrix->resize(OutputCount, GroupCount);
+	UnactivedMatrix->resize(OutputCountPerGroup, GroupCount);
+	OutputMatrix->resize(OutputCountPerGroup, GroupCount);
+	DeltaMatrix->resize(OutputCountPerGroup, GroupCount);
+	ExpectMatrix->resize(OutputCountPerGroup, GroupCount);
 	resetGroupCount2();
 }
 
