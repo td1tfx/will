@@ -475,7 +475,9 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re, int** maxPos,
 							{
 								v = d;
 								if (maxPos)
-									*maxPos[R->xy2i(i1, j1)] = A->xy2i(i2, j2) + basePos;
+								{
+									(*maxPos)[R->xy2i(i1 / scalem, j1 / scalen)] = A->xy2i(i2, j2) + basePos;
+								}
 							}
 						}
 						else

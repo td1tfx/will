@@ -34,15 +34,16 @@ int main(int argc, char* argv[])
 
 void test()
 {
-	auto A = new d_matrix(16, 2);
-	auto m = new int[8];
+	auto A = new d_matrix(4, 4);
+	auto m = new int[4];
 	A->initRandom();
 	A->print(stdout);
-	auto B = new d_matrix(4, 2);
-	d_matrix::resample_colasImage(A, B, 4, 4, 2, 2, 1, re_Findmax, &m);
+	auto B = new d_matrix(2, 2);
+	d_matrix::resample(A, B, re_Findmax, &m, 0);
+	//d_matrix::resample_colasImage(A, B, 4, 4, 2, 2, 1, re_Findmax, &m);
 	printf("\n");
 	B->print(stdout);
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		printf("%d ", m[i]);
 	}

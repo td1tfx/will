@@ -22,6 +22,7 @@ typedef enum
 } NeuralLayerConnectionType;
 
 //神经层
+//基类的实现里只处理公共部分，不处理任何算法，即使算法有重复的部分仍然在子类处理！！
 class NeuralLayer
 {
 public:
@@ -31,9 +32,9 @@ public:
 	int Id;
 
 	int OutputCountPerGroup;  //对于全连接层，输出数等于节点数，对于其他形式定义不同
-	
+
 	static int GroupCount;    //对于所有层数据量都一样
-	static void setGroupCount(int gc) { GroupCount = gc; } 
+	static void setGroupCount(int gc) { GroupCount = gc; }
 
 	static int Step;  //仅调试用
 
@@ -48,7 +49,7 @@ public:
 	//UnactivedMatrix收集上一层的输出，激活函数作用之后就是本层输出
 	d_matrix *UnactivedMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
 
-	int ImageRow=1, ImageCol=1, ImageCountPerGroup;
+	int ImageRow = 1, ImageCol = 1, ImageCountPerGroup;
 
 	//只有输入层有必要调用这个函数，其他层均计算得到对应的值
 	void setImageMode(int w, int h, int count);
@@ -61,24 +62,6 @@ public:
 	ActiveFunctionType _activeFunctionType = af_Sigmoid;
 	void setActiveFunction(ActiveFunctionType afm) { _activeFunctionType = afm; }
 
-	//下面凡是有两个函数的，在无后缀函数中有公共部分，在带后缀函数中是各自子类的功能
-	void resetGroupCount();
-	void connetPrevlayer(NeuralLayer* prevLayer);
-	void initData(NeuralLayerType type, int x1, int x2) { this->Type = type; initData2(x1, x2); }
-	void updateDelta();
-
-protected:
-	virtual void resetGroupCount2() {}
-	virtual void connetPrevlayer2() {}
-	virtual void initData2(int x1, int x2) {}
-	virtual void updateDelta2() {}
-public:	
-	virtual void activeOutputValue() {}
-	virtual void spreadDeltaToPrevLayer() {}
-	virtual void backPropagate(double learnSpeed, double lambda) {}
-	virtual int saveInfo(FILE* fout) { return 0; }
-	virtual int loadInfo(double* v, int n) { return 0; }
-
 	//以下函数仅建议使用在输入和输出层，隐藏层不建议使用！
 	d_matrix* getOutputMatrix() { return OutputMatrix; }
 	d_matrix* getExpectMatrix() { return ExpectMatrix; }
@@ -87,6 +70,24 @@ public:
 
 	virtual void setSubType(ResampleType re) {}
 	virtual void setSubType(ConvolutionType cv) {}
+
+	//下面凡是有两个函数的，在无后缀函数中有公共部分，在带后缀函数中是各自子类的功能
+	void resetGroupCount();
+	void connetPrevlayer(NeuralLayer* prevLayer);
+	void initData(NeuralLayerType type, int x1, int x2) { this->Type = type; initData2(x1, x2); }
+	void updateDelta();  //这里实际只包含了作为输出层的实现，即代价函数的形式，其他层交给各自的子类
+
+protected:
+	virtual void initData2(int x1, int x2) {}
+	virtual void resetGroupCount2() {}
+	virtual void connetPrevlayer2() {}
+	virtual void updateDelta2() {}
+public:
+	virtual void activeOutputValue() {}
+	virtual void spreadDeltaToPrevLayer() {}
+	virtual void backPropagate(double learnSpeed, double lambda) {}
+	virtual int saveInfo(FILE* fout) { return 0; }
+	virtual int loadInfo(double* v, int n) { return 0; }
 
 };
 

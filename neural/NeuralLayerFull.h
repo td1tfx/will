@@ -14,14 +14,15 @@ public:
 	//更新偏移向量的辅助向量，所有值为1，维度为数据组数
 	d_matrix* _asBiasVector = nullptr;
 
+protected:
 	void initData2(int x1, int x2) override;
 	void resetGroupCount2() override;
 	void connetPrevlayer2() override;
-	void activeOutputValue() override;
 	void updateDelta2() override;
+public:
+	void activeOutputValue() override;
 	void spreadDeltaToPrevLayer() override;
 	void backPropagate(double learnSpeed, double lambda) override;
-
 	int saveInfo(FILE* fout) override;
 	int loadInfo(double* v, int n) override;
 };

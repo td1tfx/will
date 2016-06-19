@@ -4,6 +4,7 @@
 
 NeuralLayerConvolution::NeuralLayerConvolution()
 {
+
 }
 
 

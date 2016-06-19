@@ -145,6 +145,7 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 		{
 			for (int i_layer = getLayerCount() - 1; i_layer > 0; i_layer--)
 			{
+				Layers[i_layer]->updateDelta();
 				Layers[i_layer]->backPropagate(LearnSpeed, Lambda);
 			}
 		}

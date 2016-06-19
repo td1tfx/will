@@ -59,10 +59,7 @@ void NeuralLayer::updateDelta()
 	}
 	else
 	{
-		NextLayer->spreadDeltaToPrevLayer();
-		UnactivedMatrix->dactiveFunction(_activeFunctionType);
-		d_matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
-		//updateDelta2();
+		updateDelta2();
 	}
 }
 

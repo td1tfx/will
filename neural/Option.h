@@ -35,6 +35,7 @@ OPTION_DOUBLE(Dtol, 0);\
 \
 OPTION_INT(UseCUDA, 0);\
 OPTION_INT(MaxGroup, 60000);\
+
 /* define end */
 
 struct Option
@@ -47,7 +48,7 @@ struct Option
 #undef OPTION_INT
 #undef OPTION_DOUBLE
 
-		void loadIni(const char* filename)
+	void loadIni(const char* filename)
 	{
 		INIReader ini(filename);
 #define OPTION_STRING(a, b) a = ini.Get("will", #a, (b))
