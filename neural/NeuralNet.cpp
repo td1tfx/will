@@ -13,13 +13,13 @@ NeuralNet::~NeuralNet()
 		delete Layers[i];
 	}
 	delete[] Layers;
-	if (_train_inputData) 
+	if (_train_inputData)
 		delete _train_inputData;
-	if (_train_expectData)	
+	if (_train_expectData)
 		delete _train_expectData;
-	if (_test_inputData) 
+	if (_test_inputData)
 		delete _test_inputData;
-	if (_test_expectData) 
+	if (_test_expectData)
 		delete _test_expectData;
 }
 
@@ -28,7 +28,7 @@ void NeuralNet::run()
 {
 	BatchMode = NeuralNetLearnType(_option.BatchMode);
 	MiniBatchCount = std::max(1, _option.MiniBatch);
-	WorkMode = NeuralNetWorkType(_option.WorkMode);
+	WorkType = NeuralNetWorkType(_option.WorkMode);
 
 	LearnSpeed = _option.LearnSpeed;
 	Lambda = _option.Regular;
@@ -43,7 +43,7 @@ void NeuralNet::run()
 	{
 		if (_option.TrainDataFile != "")
 		{
-			readData(_option.TrainDataFile.c_str(), Train);
+			readData(_option.TrainDataFile.c_str(), da_Train);
 		}
 	}
 	else
@@ -71,13 +71,13 @@ void NeuralNet::run()
 		saveInfo(_option.SaveFile.c_str());
 	if (_option.TestDataFile != "")
 	{
-		readData(_option.TestDataFile.c_str(), Test);
+		readData(_option.TestDataFile.c_str(), da_Test);
 		test();
 	}
 }
 
 //设置学习模式
-void NeuralNet::setLearnMode(NeuralNetLearnType lm, int lb /*= -1*/)
+void NeuralNet::setLearnType(NeuralNetLearnType lm, int lb /*= -1*/)
 {
 	BatchMode = lm;
 	//批量学习时，节点数据量等于实际数据量
@@ -92,17 +92,17 @@ void NeuralNet::setLearnMode(NeuralNetLearnType lm, int lb /*= -1*/)
 	}
 }
 
-void NeuralNet::setWorkMode(NeuralNetWorkType wm)
+void NeuralNet::setWorkType(NeuralNetWorkType wm)
 {
-	 WorkMode = wm; 
-	 if (wm == nw_Probability)
-	 {
-		 getLastLayer()->setActiveFunction(af_Softmax);
-	 }
-	 if (wm == nw_Classify)
-	 {
-		 getLastLayer()->setActiveFunction(af_Findmax);
-	 }
+	WorkType = wm;
+	if (wm == nw_Probability)
+	{
+		getLastLayer()->setActiveFunction(af_Softmax);
+	}
+	if (wm == nw_Classify)
+	{
+		getLastLayer()->setActiveFunction(af_Findmax);
+	}
 }
 
 //创建神经层
@@ -126,7 +126,7 @@ void NeuralNet::active(d_matrix* input, d_matrix* expect, d_matrix* output, int 
 	if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)
 	{
-		int n = resetGroupCount(std::min(batchCount, groupCount-i));
+		int n = resetGroupCount(std::min(batchCount, groupCount - i));
 		if (input)
 		{
 			getFirstLayer()->OutputMatrix->shareData(input, 0, i);
@@ -180,11 +180,11 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	double e = 0;
 	_train_inputData->tryUploadToCuda();
 	_train_expectData->tryUploadToCuda();
-	active(_train_inputData, _train_expectData, nullptr, _train_groupCount, MiniBatchCount, false, &e);	
+	active(_train_inputData, _train_expectData, nullptr, _train_groupCount, MiniBatchCount, false, &e);
 	fprintf(stdout, "step = %e, mse = %e\n", 0.0, e);
 	if (e < tol) return;
 	double e0 = e;
-	
+
 	switch (BatchMode)
 	{
 	case nl_Whole:
@@ -206,7 +206,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 	for (int count = 1; count <= times; count++)
 	{
 		//getFirstLayer()->step = count;
-		active(_train_inputData, _train_expectData, nullptr, _train_groupCount, MiniBatchCount, true, count % interval == 0?&e:nullptr);
+		active(_train_inputData, _train_expectData, nullptr, _train_groupCount, MiniBatchCount, true, count % interval == 0 ? &e : nullptr);
 		if (count % interval == 0 || count == times)
 		{
 			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
@@ -218,7 +218,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 
 //读取数据
 //这里的处理可能不是很好
-void NeuralNet::readData(const char* filename, DateMode dm/*= Train*/)
+void NeuralNet::readData(const char* filename, DateType dm/*= Train*/)
 {
 	_train_groupCount = 0;
 	_test_groupCount = 0;
@@ -237,7 +237,7 @@ void NeuralNet::readData(const char* filename, DateMode dm/*= Train*/)
 	auto groupCount = &_train_groupCount;
 	auto inputData = &_train_inputData;
 	auto expectData = &_train_expectData;
-	if (dm == Test)
+	if (dm == da_Test)
 	{
 		groupCount = &_test_groupCount;
 		inputData = &_test_inputData;
@@ -444,7 +444,7 @@ void NeuralNet::test()
 {
 	_train_expectData->tryDownloadFromCuda();
 	if (_train_groupCount > 0)
-	{		
+	{
 		auto train_output = new d_matrix(OutputNodeCount, _train_groupCount, 1, 0);
 		_train_inputData->tryUploadToCuda();
 		active(_train_inputData, nullptr, train_output, _train_groupCount, resetGroupCount(_train_groupCount));

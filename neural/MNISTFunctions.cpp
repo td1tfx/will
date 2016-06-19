@@ -43,19 +43,19 @@ int MNISTFunctions::readImageFile(const char* filename, double* input)
 	for (int i = 0; i < size; i++)
 	{
 		auto v = *(content + 16 + i);
-		input[i] = v/255.0;
+		input[i] = v / 255.0;
 	}
 
-// 	int check = 59990;
-//  	for (int i = 784 * check; i < 784*(check+10); i++)
-// 	{
-// 		if (input[i] != 0)
-// 			printf("1", input[i]);
-// 		else
-// 			printf(" ");
-// 		if (i % 28 == 27)
-// 			printf("\n");
-// 	}
+	// 	int check = 59990;
+	//  	for (int i = 784 * check; i < 784*(check+10); i++)
+	// 	{
+	// 		if (input[i] != 0)
+	// 			printf("1", input[i]);
+	// 		else
+	// 			printf(" ");
+	// 		if (i % 28 == 27)
+	// 			printf("\n");
+	// 	}
 
 	delete[] content;
 	return w*h;
@@ -68,7 +68,7 @@ int MNISTFunctions::readLabelFile(const char* filename, double* expect)
 	int count = *(int*)(content + 4);
 	//fprintf(stderr, "%-30s%d groups data\n", filename, count);
 	//expect = new double[count*10];
-	memset(expect, 0, sizeof(double)*count*10);
+	memset(expect, 0, sizeof(double)*count * 10);
 	for (int i = 0; i < count; i++)
 	{
 		int pos = *(content + 8 + i);
@@ -85,7 +85,7 @@ void MNISTFunctions::BE2LE(unsigned char* c, int n)
 		auto& a = *(c + i);
 		auto& b = *(c + n - 1 - i);
 		auto t = b;
-		b = a;		
+		b = a;
 		a = t;
 	}
 }

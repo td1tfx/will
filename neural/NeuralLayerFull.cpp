@@ -66,7 +66,7 @@ void NeuralLayerFull::activeOutputValue()
 
 void NeuralLayerFull::updateDelta2()
 {
-	
+
 }
 
 void NeuralLayerFull::spreadDeltaToPrevLayer()

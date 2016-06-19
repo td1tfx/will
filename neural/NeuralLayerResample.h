@@ -11,17 +11,19 @@ public:
 	NeuralLayerResample();
 	virtual ~NeuralLayerResample();
 
-	ResampleType _resample = re_Findmax;
+	ResampleType _resampleType = re_Findmax;
 
-	virtual void initData2(int x1, int x2);
-	virtual void resetGroupCount2() {}
-	virtual void connetPrevlayer2();
-	virtual void updateDelta2() {}
+	void initData2(int x1, int x2) override;
+	void resetGroupCount2() override {}
+	void connetPrevlayer2() override;
+	void updateDelta2() override {}
 
-	virtual void activeOutputValue();
-	virtual void spreadDeltaToPrevLayer();
-	virtual void backPropagate(double learnSpeed, double lambda) {}
-	virtual int saveInfo(FILE* fout);
-	virtual int loadInfo(double* v, int n);
+	void activeOutputValue() override;
+	void spreadDeltaToPrevLayer() override;
+	void backPropagate(double learnSpeed, double lambda) override {}
+	int saveInfo(FILE* fout) override;
+	int loadInfo(double* v, int n) override;
+
+	void setSubType(ResampleType re) override { _resampleType = re; }
 };
 

@@ -10,7 +10,7 @@
 #include "lib/libconvert.h"
 
 //学习模式
-typedef enum 
+typedef enum
 {
 	nl_Whole = 0,          //全部数据一起学习，数据多的时候收敛会很慢
 	nl_Online = 1,         //每次学习一个，其实可以用下面的代替
@@ -55,7 +55,7 @@ public:
 
 	NeuralNetLearnType BatchMode = nl_Whole;
 	int MiniBatchCount = -1;
-	void setLearnMode(NeuralNetLearnType lm, int lb = -1);
+	void setLearnType(NeuralNetLearnType lm, int lb = -1);
 
 	double LearnSpeed = 0.5;  //学习速度
 	void setLearnSpeed(double s) { LearnSpeed = s; }
@@ -63,28 +63,28 @@ public:
 	double Lambda = 0.0;      //正则化参数，防止过拟合
 	void setRegular(double l) { Lambda = l; }
 
-	NeuralNetWorkType WorkMode = nw_Fit;
-	void setWorkMode(NeuralNetWorkType wm);
+	NeuralNetWorkType WorkType = nw_Fit;
+	void setWorkType(NeuralNetWorkType wm);
 
 	void createLayers(int layerCount);  //包含输入和输出层
 
 	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 0);  //训练过程
-	
+
 	void active(d_matrix* input, d_matrix* expect, d_matrix* output, int groupCount, int batchCount,
 		bool learn = false, double* error = nullptr);  //计算一组输出
 
 	//void setInputData(d_matrix* input, int groupid);
 	//void setExpectData(d_matrix* expect, int groupid);
 
-	void getOutputData(d_matrix* output, int groupCount, int col=0);
+	void getOutputData(d_matrix* output, int groupCount, int col = 0);
 
 	//数据
 	d_matrix* _train_inputData = nullptr;
 	d_matrix* _train_expectData = nullptr;
 	int _train_groupCount = 0;   //实际的数据量
-	
-	typedef enum { Train, Test } DateMode;
-	void readData(const char* filename, DateMode dm = Train);
+
+	typedef enum { da_Train, da_Test } DateType;
+	void readData(const char* filename, DateType dm = da_Train);
 	int resetGroupCount(int n);
 
 	d_matrix* _test_inputData = nullptr;
@@ -93,7 +93,7 @@ public:
 
 	//具体设置
 	virtual void createByData(int layerCount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
-	void saveInfo(const char* filename = nullptr); 
+	void saveInfo(const char* filename = nullptr);
 	void createByLoad(const char* filename);
 
 	//NeuralNetCalMode activeMode = ByNode;

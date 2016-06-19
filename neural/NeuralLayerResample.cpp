@@ -36,7 +36,7 @@ void NeuralLayerResample::activeOutputValue()
 {
 	d_matrix::resample_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix, 
 		PrevLayer->ImageRow, PrevLayer->ImageCol,PrevLayer->ImageCount,
-		ImageRow, ImageRow, _resample);
+		ImageRow, ImageRow, _resampleType);
 	d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
 }
 
@@ -49,14 +49,14 @@ void NeuralLayerResample::spreadDeltaToPrevLayer()
 
 int NeuralLayerResample::saveInfo(FILE* fout)
 {
-	fprintf(fout, "Resample\n%d %d %d", region_m, region_n, int(_resample));
+	fprintf(fout, "Resample\n%d %d %d", int(_resampleType), region_m, region_n);
 	return 3;
 }
 
 int NeuralLayerResample::loadInfo(double* v, int n)
 {
-	region_m = v[0];
-	region_n = v[1];
-	_resample = ResampleType(int(v[2]));
+	_resampleType = ResampleType(int(v[0])); 
+	region_m = v[1];
+	region_n = v[2];
 	return 3;
 }

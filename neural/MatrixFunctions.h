@@ -61,7 +61,7 @@
 
 typedef enum
 {
-	ms_ColMajor, 
+	ms_ColMajor,
 	ms_RowMajor,
 } MatrixStoreType;
 
@@ -123,13 +123,13 @@ public:
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
 	int resize(int m, int n, int force = 0);
-	
+
 	//这两个不推荐使用，比较乱
 	double& getImageData(int m, int n) { return getData(n, m); }
 	double* getImageDataPointer(int m, int n) { return &getData(n, m); }
 
 	//这个函数可能不安全，慎用！！
-	void resetDataPointer(double* d, int d_in_cuda=0);
+	void resetDataPointer(double* d, int d_in_cuda = 0);
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
 	void setInsideData(int id) { insideData = id; }
 
@@ -144,7 +144,7 @@ public:
 
 	static void initCublas();
 
-	void print(FILE* fout);
+	void print(FILE* fout = stdout);
 	int load(double* v, int n);
 	void memcpyDataIn(double* src, int size);
 	void memcpyDataOut(double* dst, int size);
@@ -155,6 +155,7 @@ public:
 
 	void initData(double v);
 	void initRandom();
+	void initInt();
 	void multiply(double v);
 	void colMultiply(double v, int c);
 
@@ -174,7 +175,7 @@ public:
 
 	static void resample(d_matrix* A, d_matrix* R, ResampleType re = re_Findmax);
 	static void resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count, ResampleType re = re_Findmax);
-	static void convolution(d_matrix* A, d_matrix* CORE, d_matrix* R);
+	static void convolution(d_matrix* A, d_matrix* conv_kernel, d_matrix* R);
 	static void convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int count);
 
 private:
@@ -183,7 +184,6 @@ private:
 	{
 		return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T;
 	}
-public:
 
 	//必须配对！
 	double* mallocData(int size);

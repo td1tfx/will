@@ -12,5 +12,6 @@ public:
 public:
 	static NeuralLayer* createLayer(NeuralLayerConnectionType mode);
 	static void destroyLayer(NeuralLayer* layer) { delete layer; };
+
 };
 

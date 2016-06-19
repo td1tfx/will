@@ -28,7 +28,7 @@ d_matrix::~d_matrix()
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
 int d_matrix::resize(int m, int n, int force /*= 0*/)
 {
-	if (!this) 
+	if (!this)
 		return -1;
 	row = m;
 	col = n;
@@ -147,18 +147,18 @@ void d_matrix::expand()
 {
 	if (UseCuda)
 	{
-		for (int i = 1; i < col; i*=2)
+		for (int i = 1; i < col; i *= 2)
 		{
-			cudaMemcpy(getDataPointer(0, i), getDataPointer(0, 0), 
+			cudaMemcpy(getDataPointer(0, i), getDataPointer(0, 0),
 				sizeof(double)*row*std::min(i, col - i), cudaMemcpyDeviceToDevice);
 		}
 	}
 	else
 	{
 		//#pragma loop(hint_parallel(8))
-		for (int i = 1; i < col; i*=2)
+		for (int i = 1; i < col; i *= 2)
 		{
-			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row*std::min(i, col-i));
+			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row*std::min(i, col - i));
 		}
 	}
 }
@@ -228,6 +228,17 @@ void d_matrix::initRandom()
 	set_freeDataToDevice(temp);
 }
 
+//用连续整数初始化，用于测试
+void d_matrix::initInt()
+{
+	auto temp = mallocDataForDevice();
+	//#pragma loop(hint_parallel(8))
+	for (int i = 0; i < max_script; i++)
+	{
+		temp[i] = i;
+	}
+	set_freeDataToDevice(temp);
+}
 
 void d_matrix::multiply(double v)
 {
@@ -304,10 +315,10 @@ void d_matrix::tryDownloadFromCuda()
 
 void d_matrix::shareData(d_matrix* A, int m, int n)
 {
-	if (!insideData && 
+	if (!insideData &&
 		((UseCuda && A->UseCuda)
-		|| (!UseCuda && !A->UseCuda)))
-	this->data = A->getDataPointer(m, n);
+			|| (!UseCuda && !A->UseCuda)))
+		this->data = A->getDataPointer(m, n);
 	/*
 	else if (UseCuda && !A->UseCuda)
 	{
@@ -331,12 +342,12 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	if (globalUseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
-		auto tb1 = get_cublas_trans(tb); 
+		auto tb1 = get_cublas_trans(tb);
 		cublasDgemm(handle, ta1, tb1, m, n, k, &a, A->data, lda, B->data, ldb, &c, R->data, m);
 	}
 	else
 	{
-		auto ta1 = get_cblas_trans(ta); 
+		auto ta1 = get_cblas_trans(ta);
 		auto tb1 = get_cblas_trans(tb);
 		cblas_dgemm(CblasColMajor, ta1, tb1, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
 	}
@@ -354,7 +365,7 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 	}
 	else
 	{
-		auto ta1 = get_cblas_trans(ta); 
+		auto ta1 = get_cblas_trans(ta);
 		cblas_dgemv(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
 	}
 }
@@ -407,11 +418,11 @@ void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 		cblas_dcopy(R->max_script, A->data, 1, R->data, 1);
 		cblas_daxpy(R->max_script, -1, B->data, 1, R->data, 1);
 	}
-// #pragma loop(hint_parallel(8))
-// 	for (int i = 0; i < R->max_script; i++)
-// 	{
-// 		R->data[i] = A->data[i] - B->data[i];
-// 	}
+	// #pragma loop(hint_parallel(8))
+	// 	for (int i = 0; i < R->max_script; i++)
+	// 	{
+	// 		R->data[i] = A->data[i] - B->data[i];
+	// 	}
 }
 
 
@@ -424,9 +435,9 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re /*= re_Findmax
 	}
 	else
 	{
-		for (int i1 = 0; i1 < A->row; i1+=scalem)
+		for (int i1 = 0; i1 < A->row; i1 += scalem)
 		{
-			for (int j1 = 0; j1 < A->col; j1+=scalen)
+			for (int j1 = 0; j1 < A->col; j1 += scalen)
 			{
 				double v = -1;
 				for (int i2 = i1; i2 < std::min(i1 + scalem, A->row); i2++)
@@ -462,8 +473,8 @@ void d_matrix::resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_s
 	{
 		for (int j = 0; j < A->col; j++)
 		{
-			subA->data = A->getDataPointer(i*subA->max_script, j);
-			subR->data = R->getDataPointer(i*subR->max_script, j);
+			subA->shareData(A, i*subA->max_script, j);
+			subR->shareData(R, i*subR->max_script, j);
 			resample(subA, subR, re);
 		}
 	}
@@ -471,23 +482,23 @@ void d_matrix::resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_s
 	delete subR;
 }
 
-void d_matrix::convolution(d_matrix* A, d_matrix* CORE, d_matrix* R)
+void d_matrix::convolution(d_matrix* A, d_matrix* conv_kernel, d_matrix* R)
 {
 	if (globalUseCuda)
 	{
 	}
 	else
 	{
-		for (int i1 = 0; i1 < A->row + 1 - CORE->row; i1++)
+		for (int i1 = 0; i1 < A->row + 1 - conv_kernel->row; i1++)
 		{
-			for (int j1 = 0; j1 < A->col + 1 - CORE->col; j1++)
+			for (int j1 = 0; j1 < A->col + 1 - conv_kernel->col; j1++)
 			{
 				double v = 0;
-				for (int i2 = 0; i2 < CORE->row; i2++)
+				for (int i2 = 0; i2 < conv_kernel->row; i2++)
 				{
-					for (int j2 = 0; j2 < CORE->col; j2++)
+					for (int j2 = 0; j2 < conv_kernel->col; j2++)
 					{
-						double d = A->getData(i1, j1)*CORE->getData(i2, j2);
+						double d = A->getData(i1 + i2, j1 + j2)*conv_kernel->getData(i2, j2);
 						v += d;
 					}
 				}
@@ -505,8 +516,8 @@ void d_matrix::convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matr
 	{
 		for (int j = 0; j < A->col; j++)
 		{
-			subA->data = A->getDataPointer(i*subA->max_script, j);
-			subR->data = R->getDataPointer(i*subR->max_script, j);
+			subA->shareData(A, i*subA->max_script, j);
+			subR->shareData(R, i*subR->max_script, j);
 			convolution(subA, conv_kernel, subR);
 		}
 	}
@@ -602,7 +613,7 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 		else
 		{
 			MyMath::sigmoid_v(A->data, R->data, R->max_script);
-		}		
+		}
 		break;
 	case af_Linear:
 		d_matrix::cpyData(R, A);
@@ -615,7 +626,7 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 		else
 		{
 			MyMath::exp_v(A->data, R->data, R->max_script);
-		}	
+		}
 		for (int i = 0; i < R->col; i++)
 		{
 			double sum = R->sumColAbs(i);

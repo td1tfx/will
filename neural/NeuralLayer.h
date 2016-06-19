@@ -71,7 +71,7 @@ protected:
 	virtual void resetGroupCount2() {}
 	virtual void connetPrevlayer2() {}
 	virtual void initData2(int x1, int x2) {}
-	virtual void updateDelta2();
+	virtual void updateDelta2() {}
 public:	
 	virtual void activeOutputValue() {}
 	virtual void spreadDeltaToPrevLayer() {}
@@ -84,6 +84,9 @@ public:
 	d_matrix* getExpectMatrix() { return ExpectMatrix; }
 	d_matrix* getDeltaMatrix() { return DeltaMatrix; }
 	double& getOutputValue(int x, int y) { return OutputMatrix->getData(x, y); }
+
+	virtual void setSubType(ResampleType re) {}
+	virtual void setSubType(ConvolutionType cv) {}
 
 };
 
