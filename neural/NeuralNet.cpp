@@ -321,6 +321,11 @@ void NeuralNet::saveInfo(const char* filename)
 	FILE *fout = stdout;
 	if (filename)
 		fout = fopen(filename, "w+t");
+	if (!fout)
+	{
+		fprintf(stderr, "Can not open file %s\n", filename);
+		return;
+	}
 
 	fprintf(fout, "Net information:\n");
 	fprintf(fout, "%d\tlayers\n", LayerCount);
