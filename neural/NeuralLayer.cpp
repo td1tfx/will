@@ -53,8 +53,19 @@ void NeuralLayer::updateDelta()
 	if (this->Type == lt_Output)
 	{
 		//代价函数由这里决定！
-		d_matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
-		//deltas[i] *= dactiveFunction(inputValues[i]);
+		switch (_costFunctionType)
+		{
+		case cf_RMSE:
+			d_matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
+			UnactivedMatrix->dactiveFunction(_activeFunctionType);
+			d_matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
+			break;
+		case cf_CrossEntropy:
+			d_matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
+			break;
+		default:
+			break;
+		}
 		//这里如果去掉这个乘法，是使用交叉熵作为代价函数，但是在隐藏层的传播不可以去掉！具体方程自己推导！
 	}
 	else

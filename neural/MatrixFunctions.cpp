@@ -695,6 +695,16 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 			}
 		}
 		break;
+	case af_Softplus:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
+			MyMath::softplus_v(A->data, R->data, R->max_script);
+		}
+		break;
 	}
 }
 
@@ -745,6 +755,16 @@ void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 		else
 		{
 
+		}
+		break;
+	case af_Softplus:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
+			MyMath::dsoftplus_v(A->data, R->data, R->max_script);
 		}
 		break;
 	}

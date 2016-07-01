@@ -71,27 +71,6 @@ typedef enum
 	mt_Trans,
 } MatrixTransType;
 
-typedef enum
-{
-	af_Sigmoid = 0,
-	af_Linear,
-	af_Softmax,
-	af_Tanh,
-	af_Findmax,
-} ActiveFunctionType;
-
-typedef enum
-{
-	re_Findmax = 0,
-	re_Average,
-} ResampleType;
-
-typedef enum
-{
-	cv_1toN = 0,
-	cv_NtoN,
-} ConvolutionType;
-
 struct Position
 {
 	int m, n;

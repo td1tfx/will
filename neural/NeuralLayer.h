@@ -59,7 +59,10 @@ public:
 
 	//dactive是active的导数
 	ActiveFunctionType _activeFunctionType = af_Sigmoid;
-	void setActiveFunction(ActiveFunctionType afm) { _activeFunctionType = afm; }
+	void setActiveFunction(ActiveFunctionType af) { _activeFunctionType = af; }
+
+	CostFunctionType _costFunctionType = cf_CrossEntropy;
+	void setCostFunction(CostFunctionType cf) { _costFunctionType = cf; }
 
 	//以下函数仅建议使用在输入和输出层，隐藏层不建议使用！
 	d_matrix* getOutputMatrix() { return OutputMatrix; }
