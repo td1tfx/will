@@ -3,7 +3,7 @@
 #include <functional>
 #include <string>
 #include "MyMath.h"
-#include "MatrixFunctions.h"
+#include "Matrix.h"
 
 
 //隐藏，输入，输出
@@ -46,7 +46,7 @@ public:
 	//对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数
 	//Expect仅输出层使用，输入层需要直接设置Output
 	//UnactivedMatrix收集上一层的输出，激活函数作用之后就是本层输出
-	d_matrix *UnactivedMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
+	Matrix *UnactivedMatrix = nullptr, *OutputMatrix = nullptr, *DeltaMatrix = nullptr, *ExpectMatrix = nullptr;
 
 	int ImageRow = 1, ImageCol = 1, ImageCountPerGroup;
 
@@ -65,9 +65,9 @@ public:
 	void setCostFunction(CostFunctionType cf) { _costFunctionType = cf; }
 
 	//以下函数仅建议使用在输入和输出层，隐藏层不建议使用！
-	d_matrix* getOutputMatrix() { return OutputMatrix; }
-	d_matrix* getExpectMatrix() { return ExpectMatrix; }
-	d_matrix* getDeltaMatrix() { return DeltaMatrix; }
+	Matrix* getOutputMatrix() { return OutputMatrix; }
+	Matrix* getExpectMatrix() { return ExpectMatrix; }
+	Matrix* getDeltaMatrix() { return DeltaMatrix; }
 	double& getOutputValue(int x, int y) { return OutputMatrix->getData(x, y); }
 
 	virtual void setSubType(ResampleType re) {}

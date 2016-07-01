@@ -10,8 +10,8 @@ public:
 	int kernelCount = 0;
 	int kernelRow, kernelCol;
 
-	d_matrix* kernelData = nullptr;
-	d_matrix** kernels = nullptr;
+	Matrix* kernelData = nullptr;
+	Matrix** kernels = nullptr;
 	ConvolutionType _convolutionType = cv_1toN;
 	//需要一个连接方式矩阵，看起来很麻烦
 	//应该是从卷积核和计算方式算出一个矩阵，这个矩阵应该是比较稀疏的

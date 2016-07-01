@@ -176,7 +176,7 @@
     <ClCompile Include="lib\Timer.cpp" />
     <ClCompile Include="MyMath.cpp" />
     <ClCompile Include="lib\libconvert.cpp" />
-    <ClCompile Include="MatrixFunctions.cpp" />
+    <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="MNISTFunctions.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralLayer.cpp" />
@@ -187,12 +187,14 @@
     <ClCompile Include="NeuralNet.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\cudnn.h" />
     <ClInclude Include="lib\INIReader.h" />
     <ClInclude Include="lib\Timer.h" />
+    <ClInclude Include="MyCudaMath.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="lib\cblas.h" />
     <ClInclude Include="lib\libconvert.h" />
-    <ClInclude Include="MatrixFunctions.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="MNISTFunctions.h" />
     <ClInclude Include="myth_cuda.h" />
     <ClInclude Include="NeuralLayerConvolution.h" />
@@ -202,7 +204,7 @@
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralLayer.h" />
     <ClInclude Include="Option.h" />
-    <ClInclude Include="config.h" />
+    <ClInclude Include="types.h" />
     <ClInclude Include="win.h" />
   </ItemGroup>
   <ItemGroup>

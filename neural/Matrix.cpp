@@ -1,11 +1,11 @@
-#include "MatrixFunctions.h"
+#include "Matrix.h"
 
 
-cublasHandle_t d_matrix::handle;
-int d_matrix::globalUseCuda = 0;
-bool d_matrix::inited = false;
+cublasHandle_t Matrix::handle;
+int Matrix::globalUseCuda = 0;
+bool Matrix::inited = false;
 
-d_matrix::d_matrix(int m, int n, int tryInsideData /*= 1*/, int tryUseCuda /*= 1*/)
+Matrix::Matrix(int m, int n, int tryInsideData /*= 1*/, int tryUseCuda /*= 1*/)
 {
 	insideData = tryInsideData;
 	UseCuda = tryUseCuda && globalUseCuda;
@@ -20,13 +20,13 @@ d_matrix::d_matrix(int m, int n, int tryInsideData /*= 1*/, int tryUseCuda /*= 1
 	}
 }
 
-d_matrix::~d_matrix()
+Matrix::~Matrix()
 {
 	if (insideData) freeData();
 }
 
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
-int d_matrix::resize(int m, int n, int force /*= 0*/)
+int Matrix::resize(int m, int n, int force /*= 0*/)
 {
 	if (!this)
 		return -1;
@@ -50,7 +50,7 @@ int d_matrix::resize(int m, int n, int force /*= 0*/)
 
 
 //注意，比较危险
-void d_matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
+void Matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
 {
 	if (UseCuda)
 	{
@@ -69,7 +69,7 @@ void d_matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
 	}
 }
 
-void d_matrix::initCublas()
+void Matrix::initCublas()
 {
 	if (inited) { return; }
 	inited = true;
@@ -85,7 +85,7 @@ void d_matrix::initCublas()
 #endif	
 }
 
-void d_matrix::print(FILE* fout)
+void Matrix::print(FILE* fout)
 {
 	auto temp = malloc_getDataFromDevice();
 	for (int i = 0; i < row; i++)
@@ -99,7 +99,7 @@ void d_matrix::print(FILE* fout)
 	freeDataForDevice(temp);
 }
 
-int d_matrix::load(double* v, int n)
+int Matrix::load(double* v, int n)
 {
 	auto temp = mallocDataForDevice();
 	int k = 0;
@@ -115,7 +115,7 @@ int d_matrix::load(double* v, int n)
 	return k;
 }
 
-void d_matrix::printAsVector(FILE* fout /*= stdout*/)
+void Matrix::printAsVector(FILE* fout /*= stdout*/)
 {
 	auto temp = malloc_getDataFromDevice();
 	for (int i = 0; i < max_script; i++)
@@ -126,7 +126,7 @@ void d_matrix::printAsVector(FILE* fout /*= stdout*/)
 	freeDataForDevice(temp);
 }
 
-int d_matrix::loadAsVector(double* v, int n)
+int Matrix::loadAsVector(double* v, int n)
 {
 	auto temp = mallocDataForDevice();
 	int k = 0;
@@ -140,7 +140,7 @@ int d_matrix::loadAsVector(double* v, int n)
 }
 
 //参数指针必须指向Host内存！
-void d_matrix::memcpyDataIn(double* src, int size)
+void Matrix::memcpyDataIn(double* src, int size)
 {
 	if (UseCuda)
 	{
@@ -153,7 +153,7 @@ void d_matrix::memcpyDataIn(double* src, int size)
 }
 
 //参数指针必须指向Host内存！
-void d_matrix::memcpyDataOut(double* dst, int size)
+void Matrix::memcpyDataOut(double* dst, int size)
 {
 	if (UseCuda)
 	{
@@ -167,7 +167,7 @@ void d_matrix::memcpyDataOut(double* dst, int size)
 
 //这两个的操作没有数学道理
 //将第一列复制到整个矩阵
-void d_matrix::expand()
+void Matrix::expand()
 {
 	if (UseCuda)
 	{
@@ -187,7 +187,7 @@ void d_matrix::expand()
 	}
 }
 
-int d_matrix::indexColMaxAbs(int c)
+int Matrix::indexColMaxAbs(int c)
 {
 	if (UseCuda)
 	{
@@ -201,7 +201,7 @@ int d_matrix::indexColMaxAbs(int c)
 	}
 }
 
-double d_matrix::sumColAbs(int c)
+double Matrix::sumColAbs(int c)
 {
 	if (UseCuda)
 	{
@@ -215,7 +215,7 @@ double d_matrix::sumColAbs(int c)
 	}
 }
 
-double d_matrix::ddot()
+double Matrix::ddot()
 {
 	if (UseCuda)
 	{
@@ -229,7 +229,7 @@ double d_matrix::ddot()
 	}
 }
 
-void d_matrix::initData(double v)
+void Matrix::initData(double v)
 {
 	auto temp = mallocDataForDevice();
 #pragma loop(hint_parallel(8))
@@ -241,7 +241,7 @@ void d_matrix::initData(double v)
 }
 
 //注意这个函数调用次数很少
-void d_matrix::initRandom()
+void Matrix::initRandom()
 {
 	auto temp = mallocDataForDevice();
 	//#pragma loop(hint_parallel(8))
@@ -253,7 +253,7 @@ void d_matrix::initRandom()
 }
 
 //用连续整数初始化，用于测试
-void d_matrix::initInt()
+void Matrix::initInt()
 {
 	auto temp = mallocDataForDevice();
 	//#pragma loop(hint_parallel(8))
@@ -264,7 +264,7 @@ void d_matrix::initInt()
 	set_freeDataToDevice(temp);
 }
 
-void d_matrix::multiply(double v)
+void Matrix::multiply(double v)
 {
 	if (UseCuda)
 	{
@@ -276,7 +276,7 @@ void d_matrix::multiply(double v)
 	}
 }
 
-void d_matrix::colMultiply(double v, int c)
+void Matrix::colMultiply(double v, int c)
 {
 	if (UseCuda)
 	{
@@ -290,7 +290,7 @@ void d_matrix::colMultiply(double v, int c)
 
 
 //复制数据，只处理较少的
-void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
+void Matrix::cpyData(Matrix* dst, Matrix* src)
 {
 	if (dst->UseCuda)
 	{
@@ -302,7 +302,7 @@ void d_matrix::cpyData(d_matrix* dst, d_matrix* src)
 	}
 }
 
-void d_matrix::tryUploadToCuda()
+void Matrix::tryUploadToCuda()
 {
 	if (globalUseCuda)
 	{
@@ -323,7 +323,7 @@ void d_matrix::tryUploadToCuda()
 	}
 }
 
-void d_matrix::tryDownloadFromCuda()
+void Matrix::tryDownloadFromCuda()
 {
 	if (UseCuda == 1)
 	{
@@ -337,7 +337,7 @@ void d_matrix::tryDownloadFromCuda()
 	}
 }
 
-void d_matrix::shareData(d_matrix* A, int m, int n)
+void Matrix::shareData(Matrix* A, int m, int n)
 {
 	if (!insideData &&
 		((UseCuda && A->UseCuda)
@@ -354,7 +354,7 @@ void d_matrix::shareData(d_matrix* A, int m, int n)
 	*/
 }
 
-void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
+void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/, MatrixTransType tb /*= NoTrans*/)
 {
 	int m = R->row;
@@ -377,7 +377,7 @@ void d_matrix::product(d_matrix* A, d_matrix* B, d_matrix* R,
 	}
 }
 
-void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
+void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
@@ -394,7 +394,7 @@ void d_matrix::productVector(d_matrix* A, d_matrix* B, d_matrix* R, double a /*=
 	}
 }
 
-void d_matrix::productVector2(d_matrix* A, d_matrix* B, d_matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
+void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
@@ -413,7 +413,7 @@ void d_matrix::productVector2(d_matrix* A, d_matrix* B, d_matrix* R, double a /*
 	}
 }
 
-void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
+void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (globalUseCuda)
 	{
@@ -429,7 +429,7 @@ void d_matrix::hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R)
 	}
 }
 
-void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
+void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (globalUseCuda)
 	{
@@ -450,7 +450,7 @@ void d_matrix::minus(d_matrix* A, d_matrix* B, d_matrix* R)
 }
 
 
-void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re, int** maxPos, int basePos)
+void Matrix::resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int basePos)
 {
 	int scalem = (A->row + R->row - 1) / R->row;
 	int scalen = (A->col + R->col - 1) / R->col;
@@ -496,11 +496,11 @@ void d_matrix::resample(d_matrix* A, d_matrix* R, ResampleType re, int** maxPos,
 	}
 }
 
-void d_matrix::resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
+void Matrix::resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
 	int countPerGroup, ResampleType re, int** maxPos /*= nullptr*/)
 {
-	auto subA = new d_matrix(m_subA, n_subA, 0, 1);
-	auto subR = new d_matrix(m_subR, n_subR, 0, 1);
+	auto subA = new Matrix(m_subA, n_subA, 0, 1);
+	auto subR = new Matrix(m_subR, n_subR, 0, 1);
 	for (int i = 0; i < countPerGroup; i++)
 	{
 		for (int j = 0; j < A->col; j++)
@@ -514,7 +514,7 @@ void d_matrix::resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_s
 	delete subR;
 }
 
-void d_matrix::convolution(d_matrix* A, d_matrix* conv_kernel, d_matrix* R)
+void Matrix::convolution(Matrix* A, Matrix* conv_kernel, Matrix* R)
 {
 	if (globalUseCuda)
 	{
@@ -540,10 +540,10 @@ void d_matrix::convolution(d_matrix* A, d_matrix* conv_kernel, d_matrix* R)
 	}
 }
 
-void d_matrix::convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
+void Matrix::convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
 {
-	auto subA = new d_matrix(m_subA, n_subA, 0, 1);
-	auto subR = new d_matrix(m_subR, n_subR, 0, 1);
+	auto subA = new Matrix(m_subA, n_subA, 0, 1);
+	auto subR = new Matrix(m_subR, n_subR, 0, 1);
 	for (int i = 0; i < countPerGroup; i++)
 	{
 		for (int j = 0; j < A->col; j++)
@@ -557,7 +557,7 @@ void d_matrix::convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matr
 	delete subR;
 }
 
-double* d_matrix::mallocData(int size)
+double* Matrix::mallocData(int size)
 {
 	if (UseCuda)
 	{
@@ -574,7 +574,7 @@ double* d_matrix::mallocData(int size)
 	}
 }
 
-void d_matrix::freeData()
+void Matrix::freeData()
 {
 	if (!data)
 		return;
@@ -590,7 +590,7 @@ void d_matrix::freeData()
 	data = nullptr;
 }
 
-double* d_matrix::malloc_getDataFromDevice()
+double* Matrix::malloc_getDataFromDevice()
 {
 	if (UseCuda)
 	{
@@ -604,7 +604,7 @@ double* d_matrix::malloc_getDataFromDevice()
 	}
 }
 
-void d_matrix::freeDataForDevice(double* temp)
+void Matrix::freeDataForDevice(double* temp)
 {
 	if (UseCuda)
 	{
@@ -612,7 +612,7 @@ void d_matrix::freeDataForDevice(double* temp)
 	}
 }
 
-double* d_matrix::mallocDataForDevice()
+double* Matrix::mallocDataForDevice()
 {
 	if (UseCuda)
 	{
@@ -624,7 +624,7 @@ double* d_matrix::mallocDataForDevice()
 	}
 }
 
-void d_matrix::set_freeDataToDevice(double* temp)
+void Matrix::set_freeDataToDevice(double* temp)
 {
 	if (UseCuda)
 	{
@@ -633,7 +633,7 @@ void d_matrix::set_freeDataToDevice(double* temp)
 	}
 }
 
-void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
+void Matrix::activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 {
 	switch (af)
 	{
@@ -648,7 +648,7 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 		}
 		break;
 	case af_Linear:
-		d_matrix::cpyData(R, A);
+		Matrix::cpyData(R, A);
 		break;
 	case af_Softmax:
 		if (globalUseCuda)
@@ -708,7 +708,7 @@ void d_matrix::activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
 	}
 }
 
-void d_matrix::dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af)
+void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 {
 	switch (af)
 	{

@@ -5,59 +5,9 @@
 #include <algorithm>
 #include <functional>
 #include "lib/cblas.h"
+#include "types.h"
 #include "MyMath.h"
-
-#ifdef _MSC_VER
-#define _USE_CUDA
-#endif
-
-#ifdef _USE_CUDA
-#include "lib/cublas/cuda_runtime.h"
-#include "lib/cublas/cublas_v2.h"
-#include "lib/cublas/helper_cuda.h"
-#include "myth_cuda.h"
-
-#pragma comment (lib, "cublas.lib")
-#pragma comment (lib, "cudart_static.lib")
-#ifdef _DEBUG
-#pragma comment (lib, "neural-cuda.lib")
-#else
-#pragma comment (lib, "neural-cuda.lib")
-#endif
-
-#else
-
-//屏蔽所有cuda函数
-
-#define cublasHandle_t int
-
-#define cublasOperation_t CBLAS_TRANSPOSE
-#define CUBLAS_OP_N CblasNoTrans
-#define CUBLAS_OP_T CblasTrans
-#define cudaMemcpyDeviceToDevice 0
-#define cudaMemcpyDeviceToHost 0
-#define cudaMemcpyHostToDevice 0
-#define cudaSuccess 0
-
-#define cudaMalloc
-#define cudaFree
-#define cudaMemcpy
-
-#define cublasIdamax
-#define cublasDasum
-#define cublasDdot
-#define cublasDscal
-#define cublasDgemm
-#define cublasDgemv
-#define cublasDcopy
-#define cublasDaxpy
-
-#define cuda_exp
-#define cuda_sigmoid
-#define cuda_dsigmoid
-#define cuda_hadamardProduct
-
-#endif
+#include "MyCudaMath.h"
 
 typedef enum
 {
@@ -71,12 +21,7 @@ typedef enum
 	mt_Trans,
 } MatrixTransType;
 
-struct Position
-{
-	int m, n;
-};
-
-struct d_matrix
+struct Matrix
 {
 private:
 	static bool inited;
@@ -95,8 +40,8 @@ private:
 	//但是在图片处理，包含卷积核默认是行优先，也就是说图片和卷积核可以认为是转置保存的！！
 
 public:
-	d_matrix(int m, int n, int tryInsideData = 1, int tryUseCuda = 1);
-	~d_matrix();
+	Matrix(int m, int n, int tryInsideData = 1, int tryUseCuda = 1);
+	~Matrix();
 	int getRow() { return row; }
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
@@ -146,25 +91,25 @@ public:
 	void multiply(double v);
 	void colMultiply(double v, int c);
 
-	static void cpyData(d_matrix* dst, d_matrix* src);
+	static void cpyData(Matrix* dst, Matrix* src);
 	void tryUploadToCuda();
 	void tryDownloadFromCuda();
-	void shareData(d_matrix* A, int m, int n);
+	void shareData(Matrix* A, int m, int n);
 
-	static void product(d_matrix* A, d_matrix* B, d_matrix* R,
+	static void product(Matrix* A, Matrix* B, Matrix* R,
 		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
-	static void productVector(d_matrix* A, d_matrix* B, d_matrix* R,
+	static void productVector(Matrix* A, Matrix* B, Matrix* R,
 		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
-	static void productVector2(d_matrix* A, d_matrix* B, d_matrix* R,
+	static void productVector2(Matrix* A, Matrix* B, Matrix* R,
 		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
-	static void hadamardProduct(d_matrix* A, d_matrix* B, d_matrix* R);
-	static void minus(d_matrix* A, d_matrix* B, d_matrix* R);
+	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
+	static void minus(Matrix* A, Matrix* B, Matrix* R);
 
-	static void resample(d_matrix* A, d_matrix* R, ResampleType re, int** maxPos, int basePos);
-	static void resample_colasImage(d_matrix* A, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
+	static void resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int basePos);
+	static void resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
 		int countPerGroup, ResampleType re, int** maxPos = nullptr);
-	static void convolution(d_matrix* A, d_matrix* conv_kernel, d_matrix* R);
-	static void convolution_colasImage(d_matrix* A, d_matrix* conv_kernel, d_matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
+	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R);
+	static void convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
 
 private:
 	static cublasHandle_t handle;
@@ -187,9 +132,10 @@ private:
 public:
 	void activeFunction(ActiveFunctionType af) { activeFunction(this, this, af); }
 	void dactiveFunction(ActiveFunctionType af) { dactiveFunction(this, this, af); }
-	static void activeFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af);
-	static void dactiveFunction(d_matrix* A, d_matrix* R, ActiveFunctionType af);
+	static void activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af);
+	static void dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af);
 
 };
 
-
+class Tensor : private Matrix
+{};

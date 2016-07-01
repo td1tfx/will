@@ -70,25 +70,25 @@ public:
 
 	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 0);  //训练过程
 
-	void active(d_matrix* input, d_matrix* expect, d_matrix* output, int groupCount, int batchCount,
+	void active(Matrix* input, Matrix* expect, Matrix* output, int groupCount, int batchCount,
 		bool learn = false, double* error = nullptr);  //计算一组输出
 
 	//void setInputData(d_matrix* input, int groupid);
 	//void setExpectData(d_matrix* expect, int groupid);
 
-	void getOutputData(d_matrix* output, int groupCount, int col = 0);
+	void getOutputData(Matrix* output, int groupCount, int col = 0);
 
 	//数据
-	d_matrix* _train_inputData = nullptr;
-	d_matrix* _train_expectData = nullptr;
+	Matrix* _train_inputData = nullptr;
+	Matrix* _train_expectData = nullptr;
 	int _train_groupCount = 0;   //实际的数据量
 
 	typedef enum { da_Train, da_Test } DateType;
 	void readData(const char* filename, DateType dm = da_Train);
 	int resetGroupCount(int n);
 
-	d_matrix* _test_inputData = nullptr;
-	d_matrix* _test_expectData = nullptr;
+	Matrix* _test_inputData = nullptr;
+	Matrix* _test_expectData = nullptr;
 	int _test_groupCount = 0;
 
 	//具体设置
@@ -103,6 +103,6 @@ public:
 
 	void selectTest();
 	void test();
-	void printResult(int nodeCount, int groupCount, d_matrix* output, d_matrix* expect);
+	void printResult(int nodeCount, int groupCount, Matrix* output, Matrix* expect);
 };
 

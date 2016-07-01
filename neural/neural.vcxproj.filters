@@ -23,9 +23,6 @@
     <ClCompile Include="lib\libconvert.cpp">
       <Filter>ext-source</Filter>
     </ClCompile>
-    <ClCompile Include="MatrixFunctions.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="NeuralNet.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -53,6 +50,9 @@
     <ClCompile Include="NeuralLayerConvolution.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Matrix.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNet.h">
@@ -67,16 +67,10 @@
     <ClInclude Include="lib\cblas.h">
       <Filter>ext-source</Filter>
     </ClInclude>
-    <ClInclude Include="MatrixFunctions.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MNISTFunctions.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MyMath.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="config.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="lib\Timer.h">
@@ -104,6 +98,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="NeuralLayerConvolution.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cudnn.h">
+      <Filter>ext-source</Filter>
+    </ClInclude>
+    <ClInclude Include="MyCudaMath.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="types.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

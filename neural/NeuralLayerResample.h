@@ -16,7 +16,7 @@ public:
 	ResampleType _resampleType = re_Findmax;
 	double Weight, Bias;
 	//所有值为1
-	d_matrix* _asBiasMatrix = nullptr;
+	Matrix* _asBiasMatrix = nullptr;
 
 protected:
 	void initData2(int x1, int x2) override;

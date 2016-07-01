@@ -34,8 +34,8 @@ void NeuralLayerResample::connetPrevlayer2()
 	ImageCol = (PrevLayer->ImageCol + region_n - 1) / region_n;
 	OutputCountPerGroup = ImageCountPerGroup*ImageRow*ImageCol;
 	//UnactivedMatrix = new d_matrix(OutputCount, GroupCount);
-	DeltaMatrix = new d_matrix(OutputCountPerGroup, GroupCount);
-	OutputMatrix = new d_matrix(OutputCountPerGroup, GroupCount);
+	DeltaMatrix = new Matrix(OutputCountPerGroup, GroupCount);
+	OutputMatrix = new Matrix(OutputCountPerGroup, GroupCount);
 	maxPos = new int[OutputCountPerGroup*GroupCount];
 }
 
@@ -47,7 +47,7 @@ void NeuralLayerResample::updateDelta2()
 //直接硬上
 void NeuralLayerResample::activeOutputValue()
 {
-	d_matrix::resample_colasImage(PrevLayer->OutputMatrix, OutputMatrix,
+	Matrix::resample_colasImage(PrevLayer->OutputMatrix, OutputMatrix,
 		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCountPerGroup,
 		ImageRow, ImageRow, _resampleType, &maxPos);
 	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说

@@ -17,7 +17,7 @@ void NeuralLayerConvolution::activeOutputValue()
 	// 	d_matrix::convolution_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix,
 	// 		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCount,
 	// 		ImageRow, ImageRow);
-	d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
+	Matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
 }
 
 int NeuralLayerConvolution::saveInfo(FILE* fout)
@@ -34,11 +34,11 @@ int NeuralLayerConvolution::loadInfo(double* v, int n)
 	kernelCount = v[k++];
 	kernelRow = v[k++];
 	kernelCol = v[k++];
-	kernelData = new d_matrix(kernelRow*kernelCol, kernelCount);
+	kernelData = new Matrix(kernelRow*kernelCol, kernelCount);
 	k += kernelData->loadAsVector(v + k, n - k);
 	for (int i = 0; i < kernelCount; i++)
 	{
-		kernels[i] = new d_matrix(kernelRow, kernelCol, 0, 1);
+		kernels[i] = new Matrix(kernelRow, kernelCol, 0, 1);
 		kernels[i]->shareData(kernelData, 0, i);
 	}
 	return k;
