@@ -8,19 +8,28 @@
 #include "lib/cublas/cuda_runtime.h"
 #include "lib/cublas/cublas_v2.h"
 #include "lib/cublas/helper_cuda.h"
-#include "myth_cuda.h"
 
 #pragma comment (lib, "cublas.lib")
 #pragma comment (lib, "cudart_static.lib")
-#ifdef _DEBUG
+#pragma comment (lib, "cudnn.lib")
 #pragma comment (lib, "neural-cuda.lib")
-#else
-#pragma comment (lib, "neural-cuda.lib")
-#endif
+
+#ifdef __cplusplus   
+#define HBAPI extern "C" __declspec (dllimport)   
+#else   
+#define HBAPI __declspec (dllimport)   
+#endif   
+
+int _stdcall cuda_hadamardProduct(const double *A, const double *B, double *R, unsigned int size);
+int _stdcall cuda_sigmoid(double *A, double *B, unsigned int size);
+int _stdcall cuda_dsigmoid(double *A, double *B, unsigned int size);
+int _stdcall cuda_exp(double *A, double *B, unsigned int size);
 
 #else
 
-//屏蔽所有cuda函数
+//在cuda不生效的时候，屏蔽所有使用过的cuda函数
+//这个方法不知道好不好
+
 #define cublasHandle_t int
 
 #define cublasOperation_t CBLAS_TRANSPOSE

@@ -187,16 +187,11 @@
     <ClCompile Include="NeuralNet.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lib\cudnn.h" />
     <ClInclude Include="lib\INIReader.h" />
-    <ClInclude Include="lib\Timer.h" />
     <ClInclude Include="MyCudaMath.h" />
     <ClInclude Include="MyMath.h" />
-    <ClInclude Include="lib\cblas.h" />
-    <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="MNISTFunctions.h" />
-    <ClInclude Include="myth_cuda.h" />
     <ClInclude Include="NeuralLayerConvolution.h" />
     <ClInclude Include="NeuralLayerFactory.h" />
     <ClInclude Include="NeuralLayerFull.h" />

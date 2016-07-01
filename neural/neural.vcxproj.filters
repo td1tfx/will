@@ -61,20 +61,11 @@
     <ClInclude Include="NeuralLayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="lib\libconvert.h">
-      <Filter>ext-source</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cblas.h">
-      <Filter>ext-source</Filter>
-    </ClInclude>
     <ClInclude Include="MNISTFunctions.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MyMath.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\Timer.h">
-      <Filter>ext-source</Filter>
     </ClInclude>
     <ClInclude Include="lib\INIReader.h">
       <Filter>ext-source</Filter>
@@ -94,14 +85,8 @@
     <ClInclude Include="NeuralLayerFactory.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="myth_cuda.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="NeuralLayerConvolution.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cudnn.h">
-      <Filter>ext-source</Filter>
     </ClInclude>
     <ClInclude Include="MyCudaMath.h">
       <Filter>头文件</Filter>
