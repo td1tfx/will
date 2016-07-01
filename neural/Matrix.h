@@ -63,9 +63,9 @@ public:
 	void setInsideData(int id) { insideData = id; }
 
 	double& operator [] (int i) { return data[i]; }
-	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t) { return t == mt_NoTrans ? CblasNoTrans : CblasTrans; }
 
-	static void initCublas();
+	static void initCuda();
+	static void destroyCuda();
 
 	void print(FILE* fout = stdout);
 	int load(double* v, int n);
@@ -107,8 +107,10 @@ public:
 		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
 
 private:
-	static cublasHandle_t handle;
+	static cublasHandle_t cublasHandle;
+	static cudnnHandle_t cudnnHandle;
 	static cublasOperation_t get_cublas_trans(MatrixTransType t) { return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T; }
+	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t) { return t == mt_NoTrans ? CblasNoTrans : CblasTrans; }
 
 	//±ÿ–Î≈‰∂‘£°
 	double* mallocData(int size);
@@ -122,6 +124,8 @@ private:
 	void set_freeDataToDevice(double* temp);
 
 public:
+	static void selectFunction(int useCuda, double* x, double* y, int size, 
+		std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2);
 	void activeFunction(ActiveFunctionType af) { activeFunction(this, this, af); }
 	void dactiveFunction(ActiveFunctionType af) { dactiveFunction(this, this, af); }
 	static void activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af);

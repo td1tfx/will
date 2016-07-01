@@ -1,7 +1,8 @@
 #include "Matrix.h"
 
 
-cublasHandle_t Matrix::handle;
+cublasHandle_t Matrix::cublasHandle;
+cudnnHandle_t Matrix::cudnnHandle;
 int Matrix::globalUseCuda = 0;
 bool Matrix::inited = false;
 
@@ -69,20 +70,31 @@ void Matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
 	}
 }
 
-void Matrix::initCublas()
+void Matrix::initCuda()
 {
 	if (inited) { return; }
 	inited = true;
 #ifdef _USE_CUDA
 	int dev = -1;
-	auto status = cublasCreate(&handle);
-	if (status != CUBLAS_STATUS_SUCCESS)
+	if (cublasCreate(&cublasHandle) != CUBLAS_STATUS_SUCCESS)
 	{
-		fprintf(stderr, "!!!! CUBLAS initialization error\n");
+		fprintf(stderr, "CUBLAS initialization error\n");
 	}
+
+	if (cudnnCreate(&cudnnHandle) != CUDNN_STATUS_SUCCESS)
+	{
+		fprintf(stderr, "CUDNN initialization error\n");
+	}
+
 	dev = findCudaDevice(0, nullptr);
 	globalUseCuda = (dev >= 0);
 #endif	
+}
+
+void Matrix::destroyCuda()
+{
+	cublasDestroy(cublasHandle);
+	cudnnDestroy(cudnnHandle);
 }
 
 void Matrix::print(FILE* fout)
@@ -192,7 +204,7 @@ int Matrix::indexColMaxAbs(int c)
 	if (UseCuda)
 	{
 		int r;
-		cublasIdamax(handle, row, getDataPointer(0, c), 1, &r);
+		cublasIdamax(cublasHandle, row, getDataPointer(0, c), 1, &r);
 		return r - 1;
 	}
 	else
@@ -206,7 +218,7 @@ double Matrix::sumColAbs(int c)
 	if (UseCuda)
 	{
 		double r;
-		cublasDasum(handle, row, getDataPointer(0, c), 1, &r);
+		cublasDasum(cublasHandle, row, getDataPointer(0, c), 1, &r);
 		return r;
 	}
 	else
@@ -220,7 +232,7 @@ double Matrix::ddot()
 	if (UseCuda)
 	{
 		double r;
-		cublasDdot(handle, max_script, data, 1, data, 1, &r);
+		cublasDdot(cublasHandle, max_script, data, 1, data, 1, &r);
 		return r;
 	}
 	else
@@ -268,7 +280,7 @@ void Matrix::multiply(double v)
 {
 	if (UseCuda)
 	{
-		cublasDscal(handle, row, &v, data, 1);
+		cublasDscal(cublasHandle, row, &v, data, 1);
 	}
 	else
 	{
@@ -280,7 +292,7 @@ void Matrix::colMultiply(double v, int c)
 {
 	if (UseCuda)
 	{
-		cublasDscal(handle, row, &v, getDataPointer(0, c), 1);
+		cublasDscal(cublasHandle, row, &v, getDataPointer(0, c), 1);
 	}
 	else
 	{
@@ -367,7 +379,7 @@ void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	{
 		auto ta1 = get_cublas_trans(ta);
 		auto tb1 = get_cublas_trans(tb);
-		cublasDgemm(handle, ta1, tb1, m, n, k, &a, A->data, lda, B->data, ldb, &c, R->data, m);
+		cublasDgemm(cublasHandle, ta1, tb1, m, n, k, &a, A->data, lda, B->data, ldb, &c, R->data, m);
 	}
 	else
 	{
@@ -385,7 +397,7 @@ void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, do
 	if (globalUseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
-		cublasDgemv(handle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
+		cublasDgemv(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
 	}
 	else
 	{
@@ -403,7 +415,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, d
 	{
 		auto ta1 = get_cublas_trans(ta);
 		for (int i = 0; i <= R->col; i++)
-			cublasDgemv(handle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1);
+			cublasDgemv(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1);
 	}
 	else
 	{
@@ -434,8 +446,8 @@ void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 	if (globalUseCuda)
 	{
 		double a = -1;
-		cublasDcopy(handle, R->max_script, A->data, 1, R->data, 1);
-		cublasDaxpy(handle, R->max_script, &a, B->data, 1, R->data, 1);
+		cublasDcopy(cublasHandle, R->max_script, A->data, 1, R->data, 1);
+		cublasDaxpy(cublasHandle, R->max_script, &a, B->data, 1, R->data, 1);
 	}
 	else
 	{
@@ -633,6 +645,22 @@ void Matrix::set_freeDataToDevice(double* temp)
 	}
 }
 
+//这里应该有优化的办法，再说
+
+
+void Matrix::selectFunction(int useCuda, double* x, double* y, int size,
+	std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2)
+{
+	if (useCuda)
+	{
+		f1(x, y, size);
+	}
+	else
+	{
+		f2(x, y, size);
+	}
+}
+
 void Matrix::activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 {
 	switch (af)
@@ -640,7 +668,17 @@ void Matrix::activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 	case af_Sigmoid:
 		if (globalUseCuda)
 		{
-			cuda_sigmoid(A->data, R->data, R->max_script);
+			//cuda_sigmoid(A->data, R->data, R->max_script);
+			cudnnTensorDescriptor_t td;
+			cudnnActivationDescriptor_t ad;
+			auto s = cudnnCreateTensorDescriptor(&td);
+			cudnnCreateActivationDescriptor(&ad);
+			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
+			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_SIGMOID, CUDNN_NOT_PROPAGATE_NAN, 1);
+			double alpha = 1, beta = 0;
+			cudnnActivationForward(cudnnHandle, ad, &alpha, td, A->data, &beta, td, R->data);
+			cudnnDestroyTensorDescriptor(td);
+			cudnnDestroyActivationDescriptor(ad);
 		}
 		else
 		{
@@ -705,6 +743,16 @@ void Matrix::activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 			MyMath::softplus_v(A->data, R->data, R->max_script);
 		}
 		break;
+	case af_ReLU:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
+			MyMath::relu_v(A->data, R->data, R->max_script);
+		}
+		break;
 	}
 }
 
@@ -715,7 +763,17 @@ void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 	case af_Sigmoid:
 		if (globalUseCuda)
 		{
-			cuda_dsigmoid(A->data, R->data, R->max_script);
+			//cuda_dsigmoid(A->data, R->data, R->max_script);
+			cudnnTensorDescriptor_t td;
+			cudnnActivationDescriptor_t ad;
+			auto s = cudnnCreateTensorDescriptor(&td);
+			cudnnCreateActivationDescriptor(&ad);
+			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
+			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_SIGMOID, CUDNN_NOT_PROPAGATE_NAN, 1);
+			double alpha = 1, beta = 0;
+			cudnnActivationBackward(cudnnHandle, ad, &alpha, td, A->data, ,,&beta, td, R->data,,);
+			cudnnDestroyTensorDescriptor(td);
+			cudnnDestroyActivationDescriptor(ad);
 		}
 		else
 		{
@@ -765,6 +823,16 @@ void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 		else
 		{
 			MyMath::dsoftplus_v(A->data, R->data, R->max_script);
+		}
+		break;
+	case af_ReLU:
+		if (globalUseCuda)
+		{
+
+		}
+		else
+		{
+			MyMath::drelu_v(A->data, R->data, R->max_script);
 		}
 		break;
 	}

@@ -5,7 +5,7 @@
 namespace MyMath
 {
 #define MyMathFor(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
-#define MyMathVector(fv, f) static void fv(double* x, double* y, int size) { MyMathFor(f); }
+#define MyMathVector(fv, f) static int fv(double* x, double* y, int size) { MyMathFor(f); return 0; }
 
 	static double sigmoid(double x) { return 1.0 / (1 + exp(-x)); }
 	static double dsigmoid(double x) { double a = 1 + exp(-x); return (a - 1) / (a*a); }
@@ -35,8 +35,10 @@ namespace MyMath
 	MyMathVector(relu_v, relu);
 	MyMathVector(drelu_v, drelu);
 
-	static void linear_v(double* x, double* y, int size) { memcpy(y, x, sizeof(double)*size); }
+	static int linear_v(double* x, double* y, int size) { memcpy(y, x, sizeof(double)*size); }
 	MyMathVector(dlinear_v, constant);
+
+	static int nullfunction(double* x, double* y, int size) { return 0; }
 
 	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 #undef MyMathFor

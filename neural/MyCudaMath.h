@@ -5,9 +5,10 @@
 #endif
 
 #ifdef _USE_CUDA
-#include "lib/cublas/cuda_runtime.h"
-#include "lib/cublas/cublas_v2.h"
-#include "lib/cublas/helper_cuda.h"
+#include "lib/cuda/cuda_runtime.h"
+#include "lib/cuda/cublas_v2.h"
+#include "lib/cuda/helper_cuda.h"
+#include "lib/cuda/cudnn.h"
 
 #pragma comment (lib, "cublas.lib")
 #pragma comment (lib, "cudart_static.lib")

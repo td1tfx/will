@@ -11,6 +11,7 @@ typedef enum
 	af_Tanh,
 	af_Findmax,
 	af_Softplus,
+	af_ReLU,
 } ActiveFunctionType;
 
 //采样种类

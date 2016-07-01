@@ -39,7 +39,7 @@ void NeuralNet::run()
 
 	if (Option->getInt("UseCUDA"))
 	{
-		Matrix::initCublas();
+		Matrix::initCuda();
 	}
 	if (Option->getInt("UseMNIST") == 0)
 	{
