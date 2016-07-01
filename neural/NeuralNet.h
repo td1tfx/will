@@ -83,8 +83,7 @@ public:
 	Matrix* _train_expectData = nullptr;
 	int _train_groupCount = 0;   //实际的数据量
 
-	typedef enum { da_Train, da_Test } DateType;
-	void readData(const char* filename, DateType dm = da_Train);
+	void readData(const char* filename, int* count, Matrix** input, Matrix** expect);
 	int resetGroupCount(int n);
 
 	Matrix* _test_inputData = nullptr;

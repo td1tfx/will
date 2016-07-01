@@ -33,7 +33,7 @@ void NeuralNet::run()
 	LearnSpeed = _option.getDouble("LearnSpeed", 0.5);
 	Lambda = _option.getDouble("Regular");
 
-	MaxGroup = _option.getInt("MaxGroup", 1e5);
+	MaxGroup = _option.getInt("MaxGroup", 100000);
 
 	if (_option.getInt("UseCUDA"))
 	{
@@ -43,7 +43,7 @@ void NeuralNet::run()
 	{
 		if (_option.getString("TrainDataFile") != "")
 		{
-			readData(_option.getString("TrainDataFile").c_str(), da_Train);
+			readData(_option.getString("TrainDataFile").c_str(), &_train_groupCount, &_train_inputData, &_train_expectData);
 		}
 	}
 	else
@@ -72,7 +72,7 @@ void NeuralNet::run()
 		saveInfo(_option.getString("SaveFile").c_str());
 	if (_option.getString("TestDataFile") != "")
 	{
-		readData(_option.getString("TestDataFile").c_str(), da_Test);
+		readData(_option.getString("TestDataFile").c_str(), &_test_groupCount, &_test_inputData, &_test_expectData);
 		test();
 	}
 }
@@ -220,7 +220,7 @@ void NeuralNet::train(int times /*= 1000000*/, int interval /*= 1000*/, double t
 
 //读取数据
 //这里的处理可能不是很好
-void NeuralNet::readData(const char* filename, DateType dm/*= Train*/)
+void NeuralNet::readData(const char* filename, int* count, Matrix** input, Matrix** expect)
 {
 	_train_groupCount = 0;
 	_test_groupCount = 0;
@@ -236,32 +236,22 @@ void NeuralNet::readData(const char* filename, DateType dm/*= Train*/)
 	InputNodeCount = int(v[0]);
 	OutputNodeCount = int(v[1]);
 
-	auto groupCount = &_train_groupCount;
-	auto inputData = &_train_inputData;
-	auto expectData = &_train_expectData;
-	if (dm == da_Test)
-	{
-		groupCount = &_test_groupCount;
-		inputData = &_test_inputData;
-		expectData = &_test_expectData;
-	}
-
-	*groupCount = (n - mark) / (InputNodeCount + OutputNodeCount);
-	*inputData = new Matrix(InputNodeCount, *groupCount, 1, 0);
-	*expectData = new Matrix(OutputNodeCount, *groupCount, 1, 0);
+	*count = (n - mark) / (InputNodeCount + OutputNodeCount);
+	*input = new Matrix(InputNodeCount, *count, 1, 0);
+	*expect = new Matrix(OutputNodeCount, *count, 1, 0);
 
 	//写法太难看了
 	int k = mark, k1 = 0, k2 = 0;
 
-	for (int i_data = 1; i_data <= (*groupCount); i_data++)
+	for (int i_data = 1; i_data <= (*count); i_data++)
 	{
 		for (int i = 1; i <= InputNodeCount; i++)
 		{
-			(*inputData)->getData(k1++) = v[k++];
+			(*input)->getData(k1++) = v[k++];
 		}
 		for (int i = 1; i <= OutputNodeCount; i++)
 		{
-			(*expectData)->getData(k2++) = v[k++];
+			(*expect)->getData(k2++) = v[k++];
 		}
 	}
 	// 	for (int i = 0; i < 784 * 22; i++)

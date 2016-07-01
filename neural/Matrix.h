@@ -62,14 +62,8 @@ public:
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
 	void setInsideData(int id) { insideData = id; }
 
-	double& operator [] (int i)
-	{
-		return data[i];
-	}
-	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t)
-	{
-		return t == mt_NoTrans ? CblasNoTrans : CblasTrans;
-	}
+	double& operator [] (int i) { return data[i]; }
+	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t) { return t == mt_NoTrans ? CblasNoTrans : CblasTrans; }
 
 	static void initCublas();
 
@@ -109,14 +103,12 @@ public:
 	static void resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
 		int countPerGroup, ResampleType re, int** maxPos = nullptr);
 	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R);
-	static void convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
+	static void convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R, 
+		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
 
 private:
 	static cublasHandle_t handle;
-	static cublasOperation_t get_cublas_trans(MatrixTransType t)
-	{
-		return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T;
-	}
+	static cublasOperation_t get_cublas_trans(MatrixTransType t) { return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T; }
 
 	//必须配对！
 	double* mallocData(int size);
