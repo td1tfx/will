@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 		net.loadOption("p.ini");
 	}
 
-	test();
+	//test();
 
 	t.start();
 	net.run();

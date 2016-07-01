@@ -12,6 +12,9 @@
     <Filter Include="ext-source">
       <UniqueIdentifier>{858ff5f1-e19f-4412-a57e-20e9aaa09a83}</UniqueIdentifier>
     </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{20940564-1c68-4f5c-a95e-db87c98f8f51}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="NeuralLayer.cpp">
@@ -101,5 +104,10 @@
   <ItemGroup>
     <None Include="Makefile" />
     <None Include="..\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="lib\libopenblas64.dll.a">
+      <Filter>lib</Filter>
+    </Library>
   </ItemGroup>
 </Project>
