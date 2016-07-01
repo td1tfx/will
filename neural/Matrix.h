@@ -96,7 +96,7 @@ public:
 		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
 	static void productVector2(Matrix* A, Matrix* B, Matrix* R,
 		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
-	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
+	//static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
 	static void minus(Matrix* A, Matrix* B, Matrix* R);
 
 	static void resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int basePos);
@@ -111,6 +111,9 @@ private:
 	static cudnnHandle_t cudnnHandle;
 	static cublasOperation_t get_cublas_trans(MatrixTransType t) { return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T; }
 	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t) { return t == mt_NoTrans ? CblasNoTrans : CblasTrans; }
+
+	static cudnnTensorDescriptor_t td;
+	static cudnnActivationDescriptor_t ad;
 
 	//±ÿ–Î≈‰∂‘£°
 	double* mallocData(int size);

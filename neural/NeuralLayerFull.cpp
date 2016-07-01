@@ -4,7 +4,7 @@
 
 NeuralLayerFull::NeuralLayerFull()
 {
-	_activeFunctionType = af_Sigmoid;
+	//_activeFunctionType = af_Sigmoid;
 }
 
 

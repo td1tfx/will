@@ -13,6 +13,8 @@
 #pragma comment (lib, "cublas.lib")
 #pragma comment (lib, "cudart_static.lib")
 #pragma comment (lib, "cudnn.lib")
+
+/*
 #pragma comment (lib, "neural-cuda.lib")
 
 #ifdef __cplusplus   
@@ -25,7 +27,7 @@ int _stdcall cuda_hadamardProduct(const double *A, const double *B, double *R, u
 int _stdcall cuda_sigmoid(double *A, double *B, unsigned int size);
 int _stdcall cuda_dsigmoid(double *A, double *B, unsigned int size);
 int _stdcall cuda_exp(double *A, double *B, unsigned int size);
-
+*/
 #else
 
 //在cuda不生效的时候，屏蔽所有使用过的cuda函数
@@ -58,5 +60,9 @@ int _stdcall cuda_exp(double *A, double *B, unsigned int size);
 #define cuda_sigmoid
 #define cuda_dsigmoid
 #define cuda_hadamardProduct
+
+#define cudnnTensorDescriptor_t int
+#define cudnnActivationDescriptor_t int
+
 
 #endif
