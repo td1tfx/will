@@ -6,6 +6,8 @@ namespace MyMath
 {
 #define MyMathFor(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
 #define MyMathVector(fv, f) static int fv(double* x, double* y, int size) { MyMathFor(f); return 0; }
+#define MyMathFor_b(f) do{for(int i=0;i<size;i++){y[i]=f(x[i])*y[i];}}while(0)
+#define MyMathVector_b(fv, f) static int fv(double* x, double* y, int size) { MyMathFor_b(f); return 0; }
 
 	static double sigmoid(double x) { return 1.0 / (1 + exp(-x)); }
 	static double dsigmoid(double x) { double a = 1 + exp(-x); return (a - 1) / (a*a); }
@@ -21,27 +23,29 @@ namespace MyMath
 
 
 	MyMathVector(sigmoid_v, sigmoid);
-	MyMathVector(dsigmoid_v, dsigmoid);
+	MyMathVector_b(sigmoid_vb, dsigmoid);
 
 	MyMathVector(tanh_v, tanh);
-	MyMathVector(dtanh_v, dtanh);
+	MyMathVector_b(tanh_vb, dtanh);
 
 	MyMathVector(exp_v, exp);
-	MyMathVector(dexp_v, exp);
+	MyMathVector_b(exp_vb, exp);
 
 	MyMathVector(softplus_v, softplus);
-	MyMathVector(dsoftplus_v, sigmoid);
+	MyMathVector_b(softplus_vb, sigmoid);
 
 	MyMathVector(relu_v, relu);
-	MyMathVector(drelu_v, drelu);
+	MyMathVector_b(relu_vb, drelu);
 
 	static int linear_v(double* x, double* y, int size) { memcpy(y, x, sizeof(double)*size); }
-	MyMathVector(dlinear_v, constant);
+	MyMathVector_b(linear_vb, constant);
 
 	static int nullfunction(double* x, double* y, int size) { return 0; }
 
 	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 #undef MyMathFor
 #undef MyMathVector
+#undef MyMathFor_b
+#undef MyMathVector_b
 };
 

@@ -126,10 +126,10 @@ private:
 public:
 	static void selectFunction(int useCuda, double* x, double* y, int size, 
 		std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2);
-	void activeFunction(ActiveFunctionType af) { activeFunction(this, this, af); }
-	void dactiveFunction(ActiveFunctionType af) { dactiveFunction(this, this, af); }
-	static void activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af);
-	static void dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af);
+	//void activeForward(ActiveFunctionType af) { activeForward(af, this, this); }
+	//void activeBackward(ActiveFunctionType af) { activeBackward(af, this, this, this); }
+	static void activeForward(ActiveFunctionType af, Matrix* A, Matrix* R);
+	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix* R);
 
 };
 

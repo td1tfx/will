@@ -57,8 +57,9 @@ void NeuralLayer::updateDelta()
 		{
 		case cf_RMSE:
 			Matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
-			UnactivedMatrix->dactiveFunction(_activeFunctionType);
-			Matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
+			//UnactivedMatrix->activeBackward(_activeFunctionType);
+			//Matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
+			Matrix::activeBackward(_activeFunctionType, UnactivedMatrix, OutputMatrix, DeltaMatrix);
 			break;
 		case cf_CrossEntropy:
 			Matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);

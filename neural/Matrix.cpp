@@ -661,7 +661,7 @@ void Matrix::selectFunction(int useCuda, double* x, double* y, int size,
 	}
 }
 
-void Matrix::activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
+void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 {
 	switch (af)
 	{
@@ -756,7 +756,7 @@ void Matrix::activeFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 	}
 }
 
-void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
+void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix* R)
 {
 	switch (af)
 	{
@@ -771,13 +771,14 @@ void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
 			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_SIGMOID, CUDNN_NOT_PROPAGATE_NAN, 1);
 			double alpha = 1, beta = 0;
-			cudnnActivationBackward(cudnnHandle, ad, &alpha, td, A->data, ,,&beta, td, R->data,,);
+			//这里没有用到y矩阵
+			cudnnActivationBackward(cudnnHandle, ad, &alpha, td, B->data, td, R->data, td, A->data, &beta, td, R->data);
 			cudnnDestroyTensorDescriptor(td);
 			cudnnDestroyActivationDescriptor(ad);
 		}
 		else
 		{
-			MyMath::dsigmoid_v(A->data, R->data, R->max_script);
+			MyMath::sigmoid_vb(A->data, R->data, R->max_script);
 		}
 		break;
 	case af_Linear:
@@ -802,7 +803,7 @@ void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 		}
 		else
 		{
-			MyMath::dtanh_v(A->data, R->data, R->max_script);
+			MyMath::tanh_vb(A->data, R->data, R->max_script);
 		}
 		break;
 	case af_Findmax:
@@ -822,7 +823,7 @@ void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 		}
 		else
 		{
-			MyMath::dsoftplus_v(A->data, R->data, R->max_script);
+			MyMath::softplus_vb(A->data, R->data, R->max_script);
 		}
 		break;
 	case af_ReLU:
@@ -832,7 +833,7 @@ void Matrix::dactiveFunction(Matrix* A, Matrix* R, ActiveFunctionType af)
 		}
 		else
 		{
-			MyMath::drelu_v(A->data, R->data, R->max_script);
+			MyMath::relu_vb(A->data, R->data, R->max_script);
 		}
 		break;
 	}

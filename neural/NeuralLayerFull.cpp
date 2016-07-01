@@ -58,8 +58,10 @@ void NeuralLayerFull::connetPrevlayer2()
 void NeuralLayerFull::updateDelta2()
 {
 	NextLayer->spreadDeltaToPrevLayer();
-	UnactivedMatrix->dactiveFunction(_activeFunctionType);
-	Matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
+	//UnactivedMatrix->dactiveFunction(_activeFunctionType);
+	//Matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
+
+	Matrix::activeBackward(_activeFunctionType, UnactivedMatrix, OutputMatrix, DeltaMatrix);
 }
 
 void NeuralLayerFull::activeOutputValue()
@@ -68,7 +70,7 @@ void NeuralLayerFull::activeOutputValue()
 	UnactivedMatrix->expand();
 	Matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->UnactivedMatrix, 1, 1);
 	//d_matrix::productVector2(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
-	Matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
+	Matrix::activeForward(_activeFunctionType, UnactivedMatrix, OutputMatrix);
 }
 
 void NeuralLayerFull::spreadDeltaToPrevLayer()

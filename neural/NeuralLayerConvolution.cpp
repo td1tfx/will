@@ -17,7 +17,7 @@ void NeuralLayerConvolution::activeOutputValue()
 	// 	d_matrix::convolution_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix,
 	// 		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCount,
 	// 		ImageRow, ImageRow);
-	Matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
+	Matrix::activeForward(_activeFunctionType, UnactivedMatrix, OutputMatrix);
 }
 
 int NeuralLayerConvolution::saveInfo(FILE* fout)
