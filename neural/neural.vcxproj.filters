@@ -73,9 +73,6 @@
     <ClInclude Include="lib\INIReader.h">
       <Filter>ext-source</Filter>
     </ClInclude>
-    <ClInclude Include="Option.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="win.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -98,6 +95,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Matrix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IniOption.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

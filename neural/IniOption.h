@@ -2,11 +2,11 @@
 #include <string>
 #include "lib/INIReader.h"
 
-struct Option
+struct IniOption
 {
-	Option() {}
-	Option(const char* filename) { loadIni(filename); }
-	~Option() { delete _ini; }
+	IniOption() {}
+	IniOption(const char* filename) { loadIni(filename); }
+	~IniOption() { delete _ini; }
 
 private:
 	INIReader* _ini;

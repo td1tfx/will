@@ -5,7 +5,7 @@
 #include <cmath>
 #include "NeuralLayer.h"
 #include "MNISTFunctions.h"
-#include "Option.h"
+#include "IniOption.h"
 #include "NeuralLayerFactory.h"
 #include "lib/libconvert.h"
 
@@ -35,7 +35,7 @@ public:
 	virtual ~NeuralNet();
 	int Id;
 
-	Option _option;
+	IniOption* Option;
 	void loadOption(const char* filename);
 	int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
 
@@ -79,16 +79,16 @@ public:
 	void getOutputData(Matrix* output, int groupCount, int col = 0);
 
 	//数据
-	Matrix* _train_inputData = nullptr;
-	Matrix* _train_expectData = nullptr;
-	int _train_groupCount = 0;   //实际的数据量
+	Matrix* train_inputData = nullptr;
+	Matrix* train_expectData = nullptr;
+	int train_groupCount = 0;   //实际的数据量
 
 	void readData(const char* filename, int* count, Matrix** input, Matrix** expect);
 	int resetGroupCount(int n);
 
-	Matrix* _test_inputData = nullptr;
-	Matrix* _test_expectData = nullptr;
-	int _test_groupCount = 0;
+	Matrix* test_inputData = nullptr;
+	Matrix* test_expectData = nullptr;
+	int test_groupCount = 0;
 
 	//具体设置
 	virtual void createByData(int layerCount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
