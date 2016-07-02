@@ -135,6 +135,7 @@ private:
 	static cudnnTensorDescriptor_t td;
 	static cudnnActivationDescriptor_t ad;
 	static cudnnOpTensorDescriptor_t od;
+	static cudnnPoolingDescriptor_t pd;
 
 	//±ÿ–Î≈‰∂‘£°
 	double* mallocData(int size);

@@ -77,6 +77,10 @@ void NeuralNet::run()
 		readData(Option->getString("TestDataFile").c_str(), &test_groupCount, &test_inputData, &test_expectData);
 		test();
 	}
+	if (Option->getInt("UseCUDA"))
+	{
+		Matrix::destroyCuda();
+	}
 }
 
 //设置学习模式
@@ -540,5 +544,3 @@ void NeuralNet::printResult(int nodeCount, int groupCount, Matrix* output, Matri
 		fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
 	}
 }
-
-

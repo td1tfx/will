@@ -58,7 +58,7 @@ void NeuralLayerResample::activeOutputValue()
 //平均值模式未完成，先不管了
 void NeuralLayerResample::spreadDeltaToPrevLayer()
 {
-	if (_resampleType == re_Findmax)
+	if (_resampleType == re_Max)
 	{
 		for (int i = 0; i < OutputCountPerGroup*GroupCount; i++)
 		{

@@ -13,7 +13,7 @@ public:
 
 	int* maxPos = nullptr;   //记录最大值的位置，待以后看看能不能改成用cuda
 
-	ResampleType _resampleType = re_Findmax;
+	ResampleType _resampleType = re_Max;
 	double Weight, Bias;
 	//所有值为1
 	Matrix* _asBiasMatrix = nullptr;

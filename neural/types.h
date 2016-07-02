@@ -17,7 +17,7 @@ typedef enum
 //采样种类
 typedef enum
 {
-	re_Findmax = 0,
+	re_Max = 0,
 	re_Average,
 } ResampleType;
 

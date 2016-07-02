@@ -17,11 +17,10 @@ int main(int argc, char* argv[])
 		net.loadOption("p.ini");
 	}
 
-	test();
-
 	t.start();
-	//net.run();
+	net.run();
 	t.stop();
+	test();
 
 	fprintf(stdout, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
 
@@ -37,12 +36,12 @@ void test()
 	auto A = new Matrix(4, 4);
 	auto m = new int[4];
 	A->initRandom();
-	A->print(stdout);
+	A->print();
 	auto B = new Matrix(2, 2);
-	Matrix::resample(A, B, re_Findmax, &m, 0);
+	Matrix::resample(A, B, re_Max, &m, 0);
 	//d_matrix::resample_colasImage(A, B, 4, 4, 2, 2, 1, re_Findmax, &m);
 	printf("\n");
-	B->print(stdout);
+	B->print();
 	for (int i = 0; i < 4; i++)
 	{
 		printf("%d ", m[i]);
@@ -51,7 +50,6 @@ void test()
 	A = new Matrix(32, 2);
 	auto a = new Matrix(4, 4, md_Outside);
 	A->initInt();
-
 	auto K = new Matrix(2, 2);
 	K->initData(1);
 	printf("\n");

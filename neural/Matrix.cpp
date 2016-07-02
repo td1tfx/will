@@ -8,9 +8,11 @@ cudnnHandle_t Matrix::cudnnHandle;
 cudnnTensorDescriptor_t Matrix::td;
 cudnnActivationDescriptor_t Matrix::ad;
 cudnnOpTensorDescriptor_t Matrix::od;
+cudnnPoolingDescriptor_t Matrix::pd;
 
 using namespace MyMath;
 
+//构造函数
 Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 {
 	insideData = tryInside;
@@ -31,9 +33,14 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 	}
 }
 
+//以4阶张量构造
 Matrix::Matrix(int w, int h, int c, int n, MatrixDataType tryInside /*= md_Inside*/, MatrixCudaType tryCuda /*= mc_UseCuda*/)
 {
 	Matrix(w*h*c, h, tryInside, tryCuda);
+	W = w;
+	H = h;
+	C = c;
+	N = n;
 	if (UseCuda == mc_UseCuda)
 	{
 		setTensor(tensorDes, n, c, h, w);
@@ -74,7 +81,7 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 }
 
 
-//注意，比较危险
+//重设数据指针，比较危险，不推荐
 void Matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
 {
 	if (UseCuda == mc_UseCuda)
@@ -100,21 +107,26 @@ void Matrix::initCuda()
 	inited = true;
 #ifdef _USE_CUDA
 	int dev = -1;
+	globalUseCuda = mc_NoCuda;
 	if (cublasCreate(&cublasHandle) != CUBLAS_STATUS_SUCCESS)
 	{
 		fprintf(stderr, "CUBLAS initialization error\n");
+		return;
 	}
-
 	if (cudnnCreate(&cudnnHandle) != CUDNN_STATUS_SUCCESS)
 	{
 		fprintf(stderr, "CUDNN initialization error\n");
+		return;
 	}
-
 	dev = findCudaDevice(0, nullptr);
-	globalUseCuda = (dev >= 0) ? mc_UseCuda : mc_NoCuda;
+	if (dev >= 0)
+	{
+		globalUseCuda = mc_UseCuda;
+	}
 	cudnnCreateTensorDescriptor(&td);
 	cudnnCreateActivationDescriptor(&ad);
 	cudnnCreateOpTensorDescriptor(&od);
+	cudnnCreatePoolingDescriptor(&pd);
 #endif	
 }
 
@@ -124,6 +136,7 @@ void Matrix::destroyCuda()
 	cudnnDestroyTensorDescriptor(td);
 	cudnnDestroyActivationDescriptor(ad);
 	cudnnDestroyOpTensorDescriptor(od);
+	cudnnDestroyPoolingDescriptor(pd);
 
 	cublasDestroy(cublasHandle);
 	cudnnDestroy(cudnnHandle);
@@ -160,6 +173,7 @@ int Matrix::load(double* v, int n)
 	return k;
 }
 
+//将矩阵当做向量，按照内存中的顺序依次输出
 void Matrix::printAsVector(FILE* fout /*= stdout*/)
 {
 	auto temp = malloc_getDataFromDevice();
@@ -171,6 +185,7 @@ void Matrix::printAsVector(FILE* fout /*= stdout*/)
 	freeDataForDevice(temp);
 }
 
+//将矩阵当做向量，按照内存中的顺序依次载入
 int Matrix::loadAsVector(double* v, int n)
 {
 	auto temp = mallocDataForDevice();
@@ -184,7 +199,7 @@ int Matrix::loadAsVector(double* v, int n)
 	return k;
 }
 
-//参数指针必须指向Host内存！
+//将外界的值复制到矩阵，参数指针必须指向Host内存！
 void Matrix::memcpyDataIn(double* src, int size)
 {
 	if (UseCuda == mc_UseCuda)
@@ -197,7 +212,7 @@ void Matrix::memcpyDataIn(double* src, int size)
 	}
 }
 
-//参数指针必须指向Host内存！
+//将矩阵的值复制到外界，参数指针必须指向Host内存！
 void Matrix::memcpyDataOut(double* dst, int size)
 {
 	if (UseCuda == mc_UseCuda)
@@ -210,7 +225,6 @@ void Matrix::memcpyDataOut(double* dst, int size)
 	}
 }
 
-//这两个的操作没有数学道理
 //将第一列复制到整个矩阵
 void Matrix::expand()
 {
@@ -232,6 +246,7 @@ void Matrix::expand()
 	}
 }
 
+//一列中最大值的序号
 int Matrix::indexColMaxAbs(int c)
 {
 	if (UseCuda == mc_UseCuda)
@@ -246,6 +261,7 @@ int Matrix::indexColMaxAbs(int c)
 	}
 }
 
+//一列的绝对值和
 double Matrix::sumColAbs(int c)
 {
 	if (UseCuda == mc_UseCuda)
@@ -260,6 +276,7 @@ double Matrix::sumColAbs(int c)
 	}
 }
 
+//点乘，即所有元素平方和
 double Matrix::ddot()
 {
 	if (UseCuda == mc_UseCuda)
@@ -274,6 +291,7 @@ double Matrix::ddot()
 	}
 }
 
+//以同一个值初始化矩阵
 void Matrix::initData(double v)
 {
 	if (UseCuda == mc_UseCuda)
@@ -292,7 +310,7 @@ void Matrix::initData(double v)
 }
 
 
-//注意这个函数调用次数很少
+//随机数初始化矩阵，注意这个函数调用次数很少
 void Matrix::initRandom()
 {
 	auto temp = mallocDataForDevice();
@@ -304,7 +322,7 @@ void Matrix::initRandom()
 	set_freeDataToDevice(temp);
 }
 
-//用连续整数初始化，用于测试
+//用连续整数初始化，仅用于测试
 void Matrix::initInt()
 {
 	auto temp = mallocDataForDevice();
@@ -316,6 +334,7 @@ void Matrix::initInt()
 	set_freeDataToDevice(temp);
 }
 
+//数乘
 void Matrix::multiply(double v)
 {
 	if (UseCuda == mc_UseCuda)
@@ -328,6 +347,7 @@ void Matrix::multiply(double v)
 	}
 }
 
+//选择一列数乘
 void Matrix::colMultiply(double v, int c)
 {
 	if (UseCuda == mc_UseCuda)
@@ -375,6 +395,7 @@ void Matrix::tryUploadToCuda()
 	}
 }
 
+//将显存中的数据转移到内存
 void Matrix::tryDownloadFromCuda()
 {
 	if (UseCuda == mc_UseCuda)
@@ -389,12 +410,14 @@ void Matrix::tryDownloadFromCuda()
 	}
 }
 
+//将一个外部数据矩阵的指针指向其他位置
 void Matrix::shareData(Matrix* A, int m, int n)
 {
 	if (insideData == md_Outside && UseCuda == A->UseCuda)
 		this->data = A->getDataPointer(m, n);
 }
 
+//矩阵乘，R = aAB+cR
 void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/, MatrixTransType tb /*= NoTrans*/)
 {
@@ -418,6 +441,7 @@ void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	}
 }
 
+//矩阵乘以向量，R = aAB+cR
 void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
@@ -435,6 +459,7 @@ void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, do
 	}
 }
 
+//没什么用，废弃
 void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
@@ -454,7 +479,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, d
 	}
 }
 
-
+//矩阵元素乘
 void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (globalUseCuda == mc_UseCuda)
@@ -473,7 +498,7 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 	}
 }
 
-
+//矩阵减
 void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (globalUseCuda == mc_UseCuda)
@@ -499,13 +524,17 @@ void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 	}
 }
 
-
+//池化
 void Matrix::resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int basePos)
 {
 	int scalem = (A->row + R->row - 1) / R->row;
 	int scalen = (A->col + R->col - 1) / R->col;
 	if (globalUseCuda == mc_UseCuda)
 	{
+		double a = 1, b = 0;
+		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
+		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN,1, 1, 2, 0, 2, 2);
+		cudnnPoolingForward(cudnnHandle, pd, &a, A->tensorDes, A->data, &b, R->tensorDes, R->data);
 	}
 	else
 	{
@@ -715,14 +744,14 @@ void Matrix::setActiveParameter(cudnnActivationMode_t am, int n, int c, int h, i
 
 void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 {
-	double alpha = 1, beta = 0;
+	double a = 1, b = 0;
 	switch (af)
 	{
 	case af_Sigmoid:
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
-			cudnnActivationForward(cudnnHandle, ad, &alpha, A->tensorDes, A->data, &beta, R->tensorDes, R->data);
+			cudnnActivationForward(cudnnHandle, ad, &a, A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}
 		else
 		{
@@ -737,7 +766,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 		{
 			setTensor(td, A->col, 1, 1, A->row);
 			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
-				&alpha, td, A->data, &beta, td, R->data);
+				&a, td, A->data, &b, td, R->data);
 		}
 		else
 		{
@@ -754,7 +783,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_TANH);
-			cudnnActivationForward(cudnnHandle, ad, &alpha, A->tensorDes, A->data, &beta, R->tensorDes, R->data);
+			cudnnActivationForward(cudnnHandle, ad, &a, A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}
 		else
 		{
@@ -794,7 +823,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_RELU);
-			cudnnActivationForward(cudnnHandle, ad, &alpha, A->tensorDes, A->data, &beta, R->tensorDes, R->data);
+			cudnnActivationForward(cudnnHandle, ad, &a, A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}
 		else
 		{
@@ -806,7 +835,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 
 void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix* R)
 {
-	double alpha = 1, beta = 0;
+	double a = 1, b = 0;
 	switch (af)
 	{
 	case af_Sigmoid:
@@ -814,8 +843,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
 			//这里没有用到y矩阵
-			cudnnActivationBackward(cudnnHandle, ad, &alpha, B->tensorDes, B->data, R->tensorDes, R->data, 
-				A->tensorDes, A->data, &beta, R->tensorDes, R->data);
+			cudnnActivationBackward(cudnnHandle, ad, &a, B->tensorDes, B->data, R->tensorDes, R->data,
+				A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}
 		else
 		{
@@ -843,8 +872,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_TANH);
-			cudnnActivationBackward(cudnnHandle, ad, &alpha, B->tensorDes, B->data, R->tensorDes, R->data,
-				A->tensorDes, A->data, &beta, R->tensorDes, R->data);
+			cudnnActivationBackward(cudnnHandle, ad, &a, B->tensorDes, B->data, R->tensorDes, R->data,
+				A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}
 		else
 		{
@@ -865,7 +894,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
-			cudnnActivationForward(cudnnHandle, ad, &alpha, A->tensorDes, A->data, &beta, R->tensorDes, R->data);
+			cudnnActivationForward(cudnnHandle, ad, &a, A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}
 		else
 		{
@@ -876,8 +905,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_RELU);
-			cudnnActivationBackward(cudnnHandle, ad, &alpha, B->tensorDes, B->data, R->tensorDes, R->data,
-				A->tensorDes, A->data, &beta, R->tensorDes, R->data);
+			cudnnActivationBackward(cudnnHandle, ad, &a, B->tensorDes, B->data, R->tensorDes, R->data,
+				A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}
 		else
 		{
