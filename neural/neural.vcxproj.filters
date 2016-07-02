@@ -29,9 +29,6 @@
     <ClCompile Include="NeuralNet.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MNISTFunctions.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="MyMath.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -56,15 +53,15 @@
     <ClCompile Include="Matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="MNIST.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="NeuralNet.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="NeuralLayer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MNISTFunctions.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MyMath.h">
@@ -98,6 +95,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="IniOption.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MNIST.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -4,7 +4,7 @@
 #include <string.h>
 #include <cmath>
 #include "NeuralLayer.h"
-#include "MNISTFunctions.h"
+#include "MNIST.h"
 #include "IniOption.h"
 #include "NeuralLayerFactory.h"
 #include "lib/libconvert.h"

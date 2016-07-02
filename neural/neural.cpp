@@ -17,10 +17,10 @@ int main(int argc, char* argv[])
 		net.loadOption("p.ini");
 	}
 
-	//test();
+	test();
 
 	t.start();
-	net.run();
+	//net.run();
 	t.stop();
 
 	fprintf(stdout, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());

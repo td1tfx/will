@@ -1,15 +1,7 @@
-#include "MNISTFunctions.h"
-
-MNISTFunctions::MNISTFunctions()
-{
-}
+#include "MNIST.h"
 
 
-MNISTFunctions::~MNISTFunctions()
-{
-}
-
-unsigned char* MNISTFunctions::readFile(const char* filename)
+unsigned char* MNIST::readFile(const char* filename)
 {
 	FILE *fp = fopen(filename, "rb");
 	if (!fp)
@@ -27,12 +19,12 @@ unsigned char* MNISTFunctions::readFile(const char* filename)
 	return s;
 }
 
-int MNISTFunctions::readImageFile(const char* filename, double* input)
+int MNIST::readImageFile(const char* filename, double* input)
 {
 	auto content = readFile(filename);
-	BE2LE(content + 4, 4);
-	BE2LE(content + 8, 4);
-	BE2LE(content + 12, 4);
+	reverse(content + 4, 4);
+	reverse(content + 8, 4);
+	reverse(content + 12, 4);
 	int count = *(int*)(content + 4);
 	int w = *(int*)(content + 8);
 	int h = *(int*)(content + 12);
@@ -61,10 +53,10 @@ int MNISTFunctions::readImageFile(const char* filename, double* input)
 	return w*h;
 }
 
-int MNISTFunctions::readLabelFile(const char* filename, double* expect)
+int MNIST::readLabelFile(const char* filename, double* expect)
 {
 	auto content = readFile(filename);
-	BE2LE(content + 4, 4);
+	reverse(content + 4, 4);
 	int count = *(int*)(content + 4);
 	//fprintf(stderr, "%-30s%d groups data\n", filename, count);
 	//expect = new double[count*10];
@@ -78,7 +70,7 @@ int MNISTFunctions::readLabelFile(const char* filename, double* expect)
 	return 10;
 }
 
-void MNISTFunctions::BE2LE(unsigned char* c, int n)
+void MNIST::reverse(unsigned char* c, int n)
 {
 	for (int i = 0; i < n / 2; i++)
 	{
