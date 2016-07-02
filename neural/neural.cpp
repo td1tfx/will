@@ -49,14 +49,14 @@ void test()
 	}
 
 	A = new Matrix(32, 2);
-	auto a = new Matrix(4, 4, 0);
+	auto a = new Matrix(4, 4, md_Outside);
 	A->initInt();
 
 	auto K = new Matrix(2, 2);
 	K->initData(1);
 	printf("\n");
 	auto R = new Matrix(18, 2);
-	auto r = new Matrix(3, 3, 0);
+	auto r = new Matrix(3, 3, md_Outside);
 
 	Matrix::convolution_colasImage(A, K, R, 4, 4, 3, 3, 2);
 	//A->print(stdout);

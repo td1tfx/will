@@ -239,8 +239,8 @@ void NeuralNet::readData(const char* filename, int* count, Matrix** input, Matri
 	OutputNodeCount = int(v[1]);
 
 	*count = (n - mark) / (InputNodeCount + OutputNodeCount);
-	*input = new Matrix(InputNodeCount, *count, 1, 0);
-	*expect = new Matrix(OutputNodeCount, *count, 1, 0);
+	*input = new Matrix(InputNodeCount, *count, md_Inside, mc_NoCuda);
+	*expect = new Matrix(OutputNodeCount, *count, md_Inside, mc_NoCuda);
 
 	//写法太难看了
 	int k = mark, k1 = 0, k2 = 0;
@@ -377,12 +377,12 @@ void NeuralNet::readMNIST()
 	OutputNodeCount = 10;
 
 	train_groupCount = 60000;
-	train_inputData = new Matrix(InputNodeCount, train_groupCount, 1, 0);
-	train_expectData = new Matrix(OutputNodeCount, train_groupCount, 1, 0);
+	train_inputData = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+	train_expectData = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 
 	test_groupCount = 1000;
-	test_inputData = new Matrix(InputNodeCount, train_groupCount, 1, 0);
-	test_expectData = new Matrix(OutputNodeCount, train_groupCount, 1, 0);
+	test_inputData = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+	test_expectData = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 
 	MNISTFunctions::readImageFile("train-images.idx3-ubyte", train_inputData->getDataPointer());
 	MNISTFunctions::readLabelFile("train-labels.idx1-ubyte", train_expectData->getDataPointer());
@@ -444,7 +444,7 @@ void NeuralNet::test()
 	train_expectData->tryDownloadFromCuda();
 	if (train_groupCount > 0)
 	{
-		auto train_output = new Matrix(OutputNodeCount, train_groupCount, 1, 0);
+		auto train_output = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 		train_inputData->tryUploadToCuda();
 		active(train_inputData, nullptr, train_output, train_groupCount, resetGroupCount(train_groupCount));
 		fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", train_groupCount);
@@ -453,7 +453,7 @@ void NeuralNet::test()
 	}
 	if (test_groupCount > 0)
 	{
-		auto test_output = new Matrix(OutputNodeCount, test_groupCount, 1, 0);
+		auto test_output = new Matrix(OutputNodeCount, test_groupCount, md_Inside, mc_NoCuda);
 		test_inputData->tryUploadToCuda();
 		active(test_inputData, nullptr, test_output, test_groupCount, resetGroupCount(test_groupCount));
 		fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", test_groupCount);
@@ -483,7 +483,7 @@ void NeuralNet::printResult(int nodeCount, int groupCount, Matrix* output, Matri
 
 	if (Option->getInt("TestMax"))
 	{
-		auto outputMax = new Matrix(nodeCount, groupCount, 1, 0);
+		auto outputMax = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
 		outputMax->initData(0);
 		auto om = new int[groupCount];
 		auto em = new int[groupCount];

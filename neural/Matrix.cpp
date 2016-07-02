@@ -1,6 +1,6 @@
 #include "Matrix.h"
 
-int Matrix::globalUseCuda = 0;
+MatrixCudaType Matrix::globalUseCuda = mc_NoCuda;
 bool Matrix::inited = false;
 
 cublasHandle_t Matrix::cublasHandle;
@@ -8,24 +8,31 @@ cudnnHandle_t Matrix::cudnnHandle;
 cudnnTensorDescriptor_t Matrix::td;
 cudnnActivationDescriptor_t Matrix::ad;
 
-Matrix::Matrix(int m, int n, int tryInsideData /*= 1*/, int tryUseCuda /*= 1*/)
+using namespace  MyMath;
+
+Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 {
-	insideData = tryInsideData;
-	UseCuda = tryUseCuda && globalUseCuda;
+	insideData = tryInside;
+	UseCuda = (tryCuda == mc_UseCuda) && (globalUseCuda == mc_UseCuda) ? mc_UseCuda : mc_NoCuda;
 
 	row = m;
 	col = n;
 	max_script = row*col;
-	if (insideData)
+	if (insideData == md_Inside)
 	{
 		data = mallocData(max_script);
 		data_size = max_script;
 	}
 }
 
+Matrix::Matrix(int w, int h, int c, int n, MatrixDataType tryInside /*= md_Inside*/, MatrixCudaType tryCuda /*= mc_UseCuda*/)
+{
+	Matrix(w*h*c, h, tryInside, tryCuda);
+}
+
 Matrix::~Matrix()
 {
-	if (insideData) freeData();
+	if (insideData == md_Inside) freeData();
 }
 
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
@@ -40,7 +47,7 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 	if (max_script > data_size || force)
 	{
 		//重新申请空间
-		if (insideData)
+		if (insideData == md_Inside)
 		{
 			freeData();
 			data = mallocData(row*col);
@@ -55,7 +62,7 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 //注意，比较危险
 void Matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		if (d_in_cuda == 0)
 		{
@@ -89,9 +96,9 @@ void Matrix::initCuda()
 	}
 
 	dev = findCudaDevice(0, nullptr);
-	globalUseCuda = (dev >= 0);
-		cudnnCreateTensorDescriptor(&td);
-		cudnnCreateActivationDescriptor(&ad);
+	globalUseCuda = (dev >= 0) ? mc_UseCuda : mc_NoCuda;
+	cudnnCreateTensorDescriptor(&td);
+	cudnnCreateActivationDescriptor(&ad);
 #endif	
 }
 
@@ -160,7 +167,7 @@ int Matrix::loadAsVector(double* v, int n)
 //参数指针必须指向Host内存！
 void Matrix::memcpyDataIn(double* src, int size)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		cudaMemcpy(data, src, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyHostToDevice);
 	}
@@ -173,7 +180,7 @@ void Matrix::memcpyDataIn(double* src, int size)
 //参数指针必须指向Host内存！
 void Matrix::memcpyDataOut(double* dst, int size)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		cudaMemcpy(dst, data, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyDeviceToHost);
 	}
@@ -187,7 +194,7 @@ void Matrix::memcpyDataOut(double* dst, int size)
 //将第一列复制到整个矩阵
 void Matrix::expand()
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		for (int i = 1; i < col; i *= 2)
 		{
@@ -207,7 +214,7 @@ void Matrix::expand()
 
 int Matrix::indexColMaxAbs(int c)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		int r;
 		cublasIdamax(cublasHandle, row, getDataPointer(0, c), 1, &r);
@@ -221,7 +228,7 @@ int Matrix::indexColMaxAbs(int c)
 
 double Matrix::sumColAbs(int c)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		double r;
 		cublasDasum(cublasHandle, row, getDataPointer(0, c), 1, &r);
@@ -235,7 +242,7 @@ double Matrix::sumColAbs(int c)
 
 double Matrix::ddot()
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		double r;
 		cublasDdot(cublasHandle, max_script, data, 1, data, 1, &r);
@@ -284,7 +291,7 @@ void Matrix::initInt()
 
 void Matrix::multiply(double v)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		cublasDscal(cublasHandle, row, &v, data, 1);
 	}
@@ -296,7 +303,7 @@ void Matrix::multiply(double v)
 
 void Matrix::colMultiply(double v, int c)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		cublasDscal(cublasHandle, row, &v, getDataPointer(0, c), 1);
 	}
@@ -310,7 +317,7 @@ void Matrix::colMultiply(double v, int c)
 //复制数据，只处理较少的
 void Matrix::cpyData(Matrix* dst, Matrix* src)
 {
-	if (dst->UseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 		cudaMemcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col), cudaMemcpyDeviceToDevice);
 	}
@@ -322,11 +329,11 @@ void Matrix::cpyData(Matrix* dst, Matrix* src)
 
 void Matrix::tryUploadToCuda()
 {
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
-		if (UseCuda == 0)
+		if (UseCuda == mc_NoCuda)
 		{
-			UseCuda = 1;
+			UseCuda = mc_UseCuda;
 			auto temp = mallocData(data_size);
 			if (temp)
 			{
@@ -335,7 +342,7 @@ void Matrix::tryUploadToCuda()
 			}
 			else
 			{
-				UseCuda = 0;
+				UseCuda = mc_NoCuda;
 			}
 		}
 	}
@@ -343,7 +350,7 @@ void Matrix::tryUploadToCuda()
 
 void Matrix::tryDownloadFromCuda()
 {
-	if (UseCuda == 1)
+	if (UseCuda == mc_UseCuda)
 	{
 		auto temp = malloc_getDataFromDevice();
 		if (temp)
@@ -351,25 +358,14 @@ void Matrix::tryDownloadFromCuda()
 			std::swap(temp, data);
 			cudaFree(temp);
 		}
-		UseCuda = 0;
+		UseCuda = mc_NoCuda;
 	}
 }
 
 void Matrix::shareData(Matrix* A, int m, int n)
 {
-	if (!insideData &&
-		((UseCuda && A->UseCuda)
-			|| (!UseCuda && !A->UseCuda)))
+	if (insideData == md_Outside && UseCuda == A->UseCuda)
 		this->data = A->getDataPointer(m, n);
-	/*
-	else if (UseCuda && !A->UseCuda)
-	{
-		memcpyDataIn(A->getDataPointer(m, n), max_script);
-	}
-	else
-	{
-	}
-	*/
 }
 
 void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
@@ -381,7 +377,7 @@ void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	int k = A->col;
 	int ldb = B->row;
 	if (ta == mt_Trans) { k = A->row; }
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		auto tb1 = get_cublas_trans(tb);
@@ -400,7 +396,7 @@ void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, do
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
 
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		cublasDgemv(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
@@ -417,7 +413,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, d
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
 
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		for (int i = 0; i <= R->col; i++)
@@ -434,7 +430,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, d
 /*
 void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 {
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 		cuda_hadamardProduct(A->data, B->data, R->data, R->max_script);
 	}
@@ -451,7 +447,7 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 
 void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 {
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 		double a = -1;
 		cublasDcopy(cublasHandle, R->max_script, A->data, 1, R->data, 1);
@@ -474,7 +470,7 @@ void Matrix::resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int b
 {
 	int scalem = (A->row + R->row - 1) / R->row;
 	int scalen = (A->col + R->col - 1) / R->col;
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 	}
 	else
@@ -519,8 +515,8 @@ void Matrix::resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int b
 void Matrix::resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
 	int countPerGroup, ResampleType re, int** maxPos /*= nullptr*/)
 {
-	auto subA = new Matrix(m_subA, n_subA, 0, 1);
-	auto subR = new Matrix(m_subR, n_subR, 0, 1);
+	auto subA = new Matrix(m_subA, n_subA, md_Outside, mc_UseCuda);
+	auto subR = new Matrix(m_subR, n_subR, md_Outside, mc_UseCuda);
 	for (int i = 0; i < countPerGroup; i++)
 	{
 		for (int j = 0; j < A->col; j++)
@@ -536,7 +532,7 @@ void Matrix::resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, i
 
 void Matrix::convolution(Matrix* A, Matrix* conv_kernel, Matrix* R)
 {
-	if (globalUseCuda)
+	if (globalUseCuda == mc_UseCuda)
 	{
 	}
 	else
@@ -562,8 +558,8 @@ void Matrix::convolution(Matrix* A, Matrix* conv_kernel, Matrix* R)
 
 void Matrix::convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
 {
-	auto subA = new Matrix(m_subA, n_subA, 0, 1);
-	auto subR = new Matrix(m_subR, n_subR, 0, 1);
+	auto subA = new Matrix(m_subA, n_subA, md_Outside, mc_UseCuda);
+	auto subR = new Matrix(m_subR, n_subR, md_Outside, mc_UseCuda);
 	for (int i = 0; i < countPerGroup; i++)
 	{
 		for (int j = 0; j < A->col; j++)
@@ -579,7 +575,7 @@ void Matrix::convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R, i
 
 double* Matrix::mallocData(int size)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		double* d = nullptr;
 		if (cudaMalloc((void **)&d, size * sizeof(double)) == cudaSuccess)
@@ -598,7 +594,7 @@ void Matrix::freeData()
 {
 	if (!data)
 		return;
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		cudaFree(data);
 		return;
@@ -612,7 +608,7 @@ void Matrix::freeData()
 
 double* Matrix::malloc_getDataFromDevice()
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		auto temp = new double[max_script];
 		cudaMemcpy(temp, data, sizeof(double)*max_script, cudaMemcpyDeviceToHost);
@@ -626,7 +622,7 @@ double* Matrix::malloc_getDataFromDevice()
 
 void Matrix::freeDataForDevice(double* temp)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		delete temp;
 	}
@@ -634,7 +630,7 @@ void Matrix::freeDataForDevice(double* temp)
 
 double* Matrix::mallocDataForDevice()
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		return new double[max_script];
 	}
@@ -646,7 +642,7 @@ double* Matrix::mallocDataForDevice()
 
 void Matrix::set_freeDataToDevice(double* temp)
 {
-	if (UseCuda)
+	if (UseCuda == mc_UseCuda)
 	{
 		cudaMemcpy(data, temp, sizeof(double)*max_script, cudaMemcpyHostToDevice);
 		delete temp;
@@ -654,12 +650,10 @@ void Matrix::set_freeDataToDevice(double* temp)
 }
 
 //这里应该有优化的办法，再说
-
-
-void Matrix::selectFunction(int useCuda, double* x, double* y, int size,
+void Matrix::selectFunction(MatrixCudaType useCuda, double* x, double* y, int size,
 	std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2)
 {
-	if (useCuda)
+	if (useCuda == mc_UseCuda)
 	{
 		f1(x, y, size);
 	}
@@ -669,16 +663,31 @@ void Matrix::selectFunction(int useCuda, double* x, double* y, int size,
 	}
 }
 
+void Matrix::setTensor(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w)
+{
+	cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
+}
+
+void Matrix::setActive(cudnnActivationMode_t am)
+{
+	cudnnSetActivationDescriptor(ad, am, CUDNN_NOT_PROPAGATE_NAN, 1);
+}
+
+void Matrix::setActiveParameter(cudnnActivationMode_t am, int n, int c, int h, int w)
+{
+	cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
+	cudnnSetActivationDescriptor(ad, am, CUDNN_NOT_PROPAGATE_NAN, 1);
+}
+
 void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 {
+	double alpha = 1, beta = 0;
 	switch (af)
 	{
 	case af_Sigmoid:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
-			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_SIGMOID, CUDNN_NOT_PROPAGATE_NAN, 1);
-			double alpha = 1, beta = 0;
+			setActiveParameter(CUDNN_ACTIVATION_SIGMOID, 1, 1, A->col, A->row);
 			cudnnActivationForward(cudnnHandle, ad, &alpha, td, A->data, &beta, td, R->data);
 		}
 		else
@@ -687,30 +696,30 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 		}
 		break;
 	case af_Linear:
-		Matrix::cpyData(R, A);
+		cpyData(R, A);
 		break;
 	case af_Softmax:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			//cuda_exp(A->data, R->data, R->max_script);
+			setTensor(td, A->col, 1, 1, A->row);
+			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
+				&alpha, td, A->data, &beta, td, R->data);
 		}
 		else
 		{
 			MyMath::exp_v(A->data, R->data, R->max_script);
-		}
-		for (int i = 0; i < R->col; i++)
-		{
-			double sum = R->sumColAbs(i);
-			if (sum == 0) continue;
-			R->colMultiply(1 / sum, i);
+			for (int i = 0; i < R->col; i++)
+			{
+				double sum = R->sumColAbs(i);
+				if (sum == 0) continue;
+				R->colMultiply(1 / sum, i);
+			}
 		}
 		break;
 	case af_Tanh:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
-			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_TANH, CUDNN_NOT_PROPAGATE_NAN, 1);
-			double alpha = 1, beta = 0;
+			setActiveParameter(CUDNN_ACTIVATION_TANH, 1, 1, A->col, A->row);
 			cudnnActivationForward(cudnnHandle, ad, &alpha, td, A->data, &beta, td, R->data);
 		}
 		else
@@ -719,7 +728,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 		}
 		break;
 	case af_Findmax:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
 
 		}
@@ -738,7 +747,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 		}
 		break;
 	case af_Softplus:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
 
 		}
@@ -748,11 +757,9 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 		}
 		break;
 	case af_ReLU:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
-			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_RELU, CUDNN_NOT_PROPAGATE_NAN, 1);
-			double alpha = 1, beta = 0;
+			setActiveParameter(CUDNN_ACTIVATION_RELU, 1, 1, A->col, A->row);
 			cudnnActivationForward(cudnnHandle, ad, &alpha, td, A->data, &beta, td, R->data);
 		}
 		else
@@ -765,15 +772,13 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* A, Matrix* R)
 
 void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix* R)
 {
+	double alpha = 1, beta = 0;
 	switch (af)
 	{
 	case af_Sigmoid:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			//cuda_dsigmoid(A->data, R->data, R->max_script);
-			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
-			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_SIGMOID, CUDNN_NOT_PROPAGATE_NAN, 1);
-			double alpha = 1, beta = 0;
+			setActiveParameter(CUDNN_ACTIVATION_SIGMOID, 1, 1, A->col, A->row);
 			//这里没有用到y矩阵
 			cudnnActivationBackward(cudnnHandle, ad, &alpha, td, B->data, td, R->data, td, A->data, &beta, td, R->data);
 		}
@@ -788,7 +793,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		break;
 	case af_Softmax:
 		//softmax一般是最后一层，可能无用
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
 			//cuda_exp(A->data, R->data, R->max_script);
 		}
@@ -798,11 +803,9 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		}
 		break;
 	case af_Tanh:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
-			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_TANH, CUDNN_NOT_PROPAGATE_NAN, 1);
-			double alpha = 1, beta = 0;
+			setActiveParameter(CUDNN_ACTIVATION_TANH, 1, 1, A->col, A->row);
 			cudnnActivationBackward(cudnnHandle, ad, &alpha, td, B->data, td, R->data, td, A->data, &beta, td, R->data);
 		}
 		else
@@ -811,7 +814,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		}
 		break;
 	case af_Findmax:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
 
 		}
@@ -821,11 +824,9 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		}
 		break;
 	case af_Softplus:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
-			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_SIGMOID, CUDNN_NOT_PROPAGATE_NAN, 1);
-			double alpha = 1, beta = 0;
+			setActiveParameter(CUDNN_ACTIVATION_SIGMOID, 1, 1, A->col, A->row);
 			cudnnActivationForward(cudnnHandle, ad, &alpha, td, A->data, &beta, td, R->data);
 		}
 		else
@@ -834,11 +835,9 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		}
 		break;
 	case af_ReLU:
-		if (globalUseCuda)
+		if (globalUseCuda == mc_UseCuda)
 		{
-			cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, 1, 1, A->col, A->row);
-			cudnnSetActivationDescriptor(ad, CUDNN_ACTIVATION_RELU, CUDNN_NOT_PROPAGATE_NAN, 1);
-			double alpha = 1, beta = 0;
+			setActiveParameter(CUDNN_ACTIVATION_RELU, 1, 1, A->col, A->row);
 			cudnnActivationBackward(cudnnHandle, ad, &alpha, td, B->data, td, R->data, td, A->data, &beta, td, R->data);
 		}
 		else

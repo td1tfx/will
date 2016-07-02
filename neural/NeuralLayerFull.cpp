@@ -23,7 +23,7 @@ void NeuralLayerFull::initData2(int x1, int x2)
 
 	if (Type == lt_Input)
 	{
-		OutputMatrix = new Matrix(x1, GroupCount, 0);
+		OutputMatrix = new Matrix(x1, GroupCount, md_Outside);
 	}
 	else
 	{
@@ -32,7 +32,7 @@ void NeuralLayerFull::initData2(int x1, int x2)
 	}
 	if (Type == lt_Output)
 	{
-		ExpectMatrix = new Matrix(x1, GroupCount, 0);
+		ExpectMatrix = new Matrix(x1, GroupCount, md_Outside);
 	}
 
 	DeltaMatrix = new Matrix(x1, GroupCount);

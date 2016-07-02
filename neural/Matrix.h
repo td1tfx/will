@@ -21,26 +21,40 @@ typedef enum
 	mt_Trans,
 } MatrixTransType;
 
+typedef enum
+{
+	md_Outside = 0,
+	md_Inside,
+} MatrixDataType;
+
+typedef enum
+{
+	mc_NoCuda = 0,
+	mc_UseCuda,
+} MatrixCudaType;
+
 struct Matrix
 {
 private:
 	static bool inited;
 
-	int UseCuda = false;
-	static int globalUseCuda;
+	MatrixCudaType UseCuda = mc_NoCuda;
+	static MatrixCudaType globalUseCuda;
 
 	double* data = nullptr;
 	int row = 0;
 	int col = 0;
 	int max_script;
-	int insideData = 1;
+	MatrixDataType insideData = md_Inside;
 	int data_size = -1;
 
 	//一列的数据作为一个或一组图像，矩阵本身是列优先
 	//但是在图片处理，包含卷积核默认是行优先，也就是说图片和卷积核可以认为是转置保存的！！
+	int W, H, C, N;
 
 public:
-	Matrix(int m, int n, int tryInsideData = 1, int tryUseCuda = 1);
+	Matrix(int m, int n, MatrixDataType tryInside = md_Inside, MatrixCudaType tryCuda = mc_UseCuda);
+	Matrix(int w, int h, int c, int n, MatrixDataType tryInside = md_Inside, MatrixCudaType tryCuda = mc_UseCuda);
 	~Matrix();
 	int getRow() { return row; }
 	int getCol() { return col; }
@@ -60,7 +74,7 @@ public:
 	//这个函数可能不安全，慎用！！
 	void resetDataPointer(double* d, int d_in_cuda = 0);
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
-	void setInsideData(int id) { insideData = id; }
+	void setInsideData(MatrixDataType id) { insideData = id; }
 
 	double& operator [] (int i) { return data[i]; }
 
@@ -103,7 +117,7 @@ public:
 	static void resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
 		int countPerGroup, ResampleType re, int** maxPos = nullptr);
 	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R);
-	static void convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R, 
+	static void convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R,
 		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
 
 private:
@@ -127,14 +141,14 @@ private:
 	void set_freeDataToDevice(double* temp);
 
 public:
-	static void selectFunction(int useCuda, double* x, double* y, int size, 
+	static void selectFunction(MatrixCudaType useCuda, double* x, double* y, int size,
 		std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2);
-	//void activeForward(ActiveFunctionType af) { activeForward(af, this, this); }
-	//void activeBackward(ActiveFunctionType af) { activeBackward(af, this, this, this); }
+
+	static void setTensor(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
+	static void setActive(cudnnActivationMode_t am);
+	static void setActiveParameter(cudnnActivationMode_t am, int n, int c, int h, int w);
 	static void activeForward(ActiveFunctionType af, Matrix* A, Matrix* R);
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix* R);
 
 };
 
-class Tensor : private Matrix
-{};

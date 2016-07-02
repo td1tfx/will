@@ -38,7 +38,7 @@ int NeuralLayerConvolution::loadInfo(double* v, int n)
 	k += kernelData->loadAsVector(v + k, n - k);
 	for (int i = 0; i < kernelCount; i++)
 	{
-		kernels[i] = new Matrix(kernelRow, kernelCol, 0, 1);
+		kernels[i] = new Matrix(kernelRow, kernelCol,md_Outside, mc_UseCuda);
 		kernels[i]->shareData(kernelData, 0, i);
 	}
 	return k;
