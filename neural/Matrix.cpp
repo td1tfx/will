@@ -8,7 +8,7 @@ cudnnHandle_t Matrix::cudnnHandle;
 cudnnTensorDescriptor_t Matrix::td;
 cudnnActivationDescriptor_t Matrix::ad;
 
-using namespace  MyMath;
+using namespace MyMath;
 
 Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 {

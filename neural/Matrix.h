@@ -9,24 +9,28 @@
 #include "MyMath.h"
 #include "MyCudaMath.h"
 
+//列优先或者行优先（未使用）
 typedef enum
 {
 	ms_ColMajor,
 	ms_RowMajor,
 } MatrixStoreType;
 
+//转置
 typedef enum
 {
 	mt_NoTrans,
 	mt_Trans,
 } MatrixTransType;
 
+//数据位置（是否需要自己析构数据）
 typedef enum
 {
 	md_Outside = 0,
 	md_Inside,
 } MatrixDataType;
 
+//数据是否存储于CUDA设备
 typedef enum
 {
 	mc_NoCuda = 0,

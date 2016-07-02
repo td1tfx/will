@@ -14,6 +14,7 @@ typedef enum
 	lt_Output,
 } NeuralLayerType;
 
+//连接类型
 typedef enum
 {
 	lc_Full,
