@@ -1,4 +1,5 @@
 # WILL
+<img src='https://raw.githubusercontent.com/scarsty/will/master/logo-will.png' width = '20%'/>
 * <https://scarsty.gitbooks.io/will/content/>
 * 这个项目包含两个部分：
 
