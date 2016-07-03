@@ -1,6 +1,6 @@
 #pragma once
 #include "NeuralLayer.h"
-class NeuralLayerResample :
+class NeuralLayerPooling :
 	public NeuralLayer
 {
 public:
@@ -8,8 +8,8 @@ public:
 	//在处理图像模式的时候，上一层output的向量在这里被转为矩阵
 	int region_m = 2, region_n = 2;
 
-	NeuralLayerResample();
-	virtual ~NeuralLayerResample();
+	NeuralLayerPooling();
+	virtual ~NeuralLayerPooling();
 
 	int* maxPos = nullptr;   //记录最大值的位置，待以后看看能不能改成用cuda
 

@@ -70,6 +70,8 @@ public:
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
 	int resize(int m, int n, int force = 0);
+	double& getData(int w, int h, int p) { return data[w+h*W+p*W*H]; }
+	double& getData(int w, int h, int c, int n) { return getData(w,h,0); }
 
 	//这两个不推荐使用，比较乱
 	double& getImageData(int m, int n) { return getData(n, m); }
@@ -117,8 +119,7 @@ public:
 	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
 	static void minus(Matrix* A, Matrix* B, Matrix* R);
 
-	static void resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int basePos);
-	static void resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
+	static void pooling(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
 		int countPerGroup, ResampleType re, int** maxPos = nullptr);
 	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R);
 	static void convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R,
@@ -136,6 +137,7 @@ private:
 	static cudnnActivationDescriptor_t ad;
 	static cudnnOpTensorDescriptor_t od;
 	static cudnnPoolingDescriptor_t pd;
+	static cudnnConvolutionDescriptor_t cd;
 
 	//必须配对！
 	double* mallocData(int size);

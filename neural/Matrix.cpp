@@ -9,6 +9,7 @@ cudnnTensorDescriptor_t Matrix::td;
 cudnnActivationDescriptor_t Matrix::ad;
 cudnnOpTensorDescriptor_t Matrix::od;
 cudnnPoolingDescriptor_t Matrix::pd;
+cudnnConvolutionDescriptor_t Matrix::cd;
 
 using namespace MyMath;
 
@@ -20,6 +21,10 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 
 	row = m;
 	col = n;
+	W = n;
+	H = m;
+	C = 1;
+	N = 1;
 	max_script = row*col;
 	if (insideData == md_Inside)
 	{
@@ -127,6 +132,7 @@ void Matrix::initCuda()
 	cudnnCreateActivationDescriptor(&ad);
 	cudnnCreateOpTensorDescriptor(&od);
 	cudnnCreatePoolingDescriptor(&pd);
+	cudnnCreateConvolutionDescriptor(&cd);
 #endif	
 }
 
@@ -137,6 +143,7 @@ void Matrix::destroyCuda()
 	cudnnDestroyActivationDescriptor(ad);
 	cudnnDestroyOpTensorDescriptor(od);
 	cudnnDestroyPoolingDescriptor(pd);
+	cudnnDestroyConvolutionDescriptor(cd);
 
 	cublasDestroy(cublasHandle);
 	cudnnDestroy(cudnnHandle);
@@ -529,72 +536,43 @@ void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 }
 
 //³Ø»¯
-void Matrix::resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int basePos)
+void Matrix::pooling(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
+	int countPerGroup, ResampleType re, int** maxPos /*= nullptr*/)
 {
-	int scalem = (A->row + R->row - 1) / R->row;
-	int scalen = (A->col + R->col - 1) / R->col;
-	if (globalUseCuda == mc_UseCuda)
+	int stepw = 2;
+	int steph = 2;
+	if (globalUseCuda==mc_UseCuda)
 	{
 		double a = 1, b = 0;
 		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
-		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, scalen, scalem, 0, 0, scalen, scalem);
+		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, 2, 2, 0, 0, 2, 2);
 		cudnnPoolingForward(cudnnHandle, pd, &a, A->tensorDes, A->data, &b, R->tensorDes, R->data);
 	}
 	else
 	{
-		for (int i1 = 0; i1 < A->row; i1 += scalem)
+		for (int p = 0; p < R->N*R->C; p++)
 		{
-			for (int j1 = 0; j1 < A->col; j1 += scalen)
+			for (int i_R = 0; i_R < R->W; i_R++)
 			{
-				double v = -1;
-				for (int i2 = i1; i2 < std::min(i1 + scalem, A->row); i2++)
+				for (int j_R = 0; j_R < R->H; j_R++)
 				{
-					for (int j2 = j1; j2 < std::min(j1 + scalen, A->col); j2++)
+					double v=0;
+					//if (re == re_Average)v = 0;
+					if (re == re_Max) v = -DBL_MAX;
+					for (int i_A = i_R*stepw; i_A < i_R*stepw + stepw; i_A++)
 					{
-						double d = A->getData(i2, j2);
-						if (re == 0)
+						for (int j_A = j_R*steph; j_A < j_R*steph + steph; j_A++)
 						{
-							if (d > v)
-							{
-								v = d;
-								if (maxPos)
-								{
-									(*maxPos)[R->xy2i(i1 / scalem, j1 / scalen)] = A->xy2i(i2, j2) + basePos;
-								}
-							}
-						}
-						else
-						{
-							v += d;
+							if (re == re_Average)v += A->getData(i_A, j_A, p);
+							else if (re == re_Max) v = std::max(v, A->getData(i_A, j_A, p));
 						}
 					}
+					if (re == re_Average) v /= steph*stepw;
+					R->getData(i_R,j_R,p) = v;
 				}
-				if (re == 1)
-				{
-					v /= scalem*scalen;
-				}
-				R->getData(i1 / scalem, j1 / scalen) = v;
 			}
 		}
 	}
-}
-
-void Matrix::resample_colasImage(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
-	int countPerGroup, ResampleType re, int** maxPos /*= nullptr*/)
-{
-	auto subA = new Matrix(m_subA, n_subA, md_Outside, mc_UseCuda);
-	auto subR = new Matrix(m_subR, n_subR, md_Outside, mc_UseCuda);
-	for (int i = 0; i < countPerGroup; i++)
-	{
-		for (int j = 0; j < A->col; j++)
-		{
-			subA->shareData(A, i*subA->max_script, j);
-			subR->shareData(R, i*subR->max_script, j);
-			resample(subA, subR, re, maxPos ? maxPos + i*subA->max_script : nullptr, i*subA->max_script);
-		}
-	}
-	delete subA;
-	delete subR;
 }
 
 void Matrix::convolution(Matrix* A, Matrix* conv_kernel, Matrix* R)

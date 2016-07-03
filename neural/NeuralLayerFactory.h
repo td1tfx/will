@@ -2,7 +2,7 @@
 #include "NeuralLayer.h"
 #include "NeuralLayerFull.h"
 #include "NeuralLayerConvolution.h"
-#include "NeuralLayerResample.h"
+#include "NeuralLayerPooling.h"
 
 class NeuralLayerFactory
 {

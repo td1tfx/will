@@ -183,7 +183,7 @@
     <ClCompile Include="NeuralLayerConvolution.cpp" />
     <ClCompile Include="NeuralLayerFactory.cpp" />
     <ClCompile Include="NeuralLayerFull.cpp" />
-    <ClCompile Include="NeuralLayerResample.cpp" />
+    <ClCompile Include="NeuralLayerPooling.cpp" />
     <ClCompile Include="NeuralNet.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -195,7 +195,7 @@
     <ClInclude Include="NeuralLayerConvolution.h" />
     <ClInclude Include="NeuralLayerFactory.h" />
     <ClInclude Include="NeuralLayerFull.h" />
-    <ClInclude Include="NeuralLayerResample.h" />
+    <ClInclude Include="NeuralLayerPooling.h" />
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralLayer.h" />
     <ClInclude Include="IniOption.h" />

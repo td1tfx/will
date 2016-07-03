@@ -39,7 +39,7 @@ void test()
 	A->print();
 	auto B = new Matrix(2, 2, 1, 3);
 	//Matrix::resample(A, B, re_Max, &m, 0);
-	Matrix::resample_colasImage(A, B, 4, 4, 2, 2, 3, re_Max, nullptr);
+	Matrix::pooling(A, B, 4, 4, 2, 2, 3, re_Average, nullptr);
 	printf("\n");
 	B->print();
 	for (int i = 0; i < 4; i++)

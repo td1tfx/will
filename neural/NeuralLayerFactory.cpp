@@ -23,7 +23,7 @@ NeuralLayer* NeuralLayerFactory::createLayer(NeuralLayerConnectionType mode)
 		layer = new NeuralLayerConvolution();
 		break;
 	case lc_Resample:
-		layer = new NeuralLayerResample();
+		layer = new NeuralLayerPooling();
 		break;
 	default:
 		break;
