@@ -10,10 +10,11 @@ cudnnActivationDescriptor_t Matrix::ad;
 cudnnOpTensorDescriptor_t Matrix::od;
 cudnnPoolingDescriptor_t Matrix::pd;
 cudnnConvolutionDescriptor_t Matrix::cd;
+cudnnFilterDescriptor_t Matrix::fd;
 
 using namespace MyMath;
 
-//构造函数
+//普通二维矩阵构造函数
 Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 {
 	insideData = tryInside;
@@ -38,7 +39,7 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 	}
 }
 
-//以4阶张量构造
+//4阶张量形式构造函数，用于池化和卷积
 Matrix::Matrix(int w, int h, int c, int n, MatrixDataType tryInside /*= md_Inside*/, MatrixCudaType tryCuda /*= mc_UseCuda*/)
 :Matrix(w*h*c, n, tryInside, tryCuda)
 {
@@ -133,6 +134,7 @@ void Matrix::initCuda()
 	cudnnCreateOpTensorDescriptor(&od);
 	cudnnCreatePoolingDescriptor(&pd);
 	cudnnCreateConvolutionDescriptor(&cd);
+	cudnnCreateFilterDescriptor(&fd);
 #endif	
 }
 
@@ -144,6 +146,7 @@ void Matrix::destroyCuda()
 	cudnnDestroyOpTensorDescriptor(od);
 	cudnnDestroyPoolingDescriptor(pd);
 	cudnnDestroyConvolutionDescriptor(cd);
+	cudnnDestroyFilterDescriptor(fd);
 
 	cublasDestroy(cublasHandle);
 	cudnnDestroy(cudnnHandle);
@@ -612,6 +615,11 @@ void Matrix::set_freeDataToDevice(double* temp)
 	}
 }
 
+void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w)
+{
+	cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
+}
+
 //池化
 void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
 	int window_w, int window_h, int stride_w, int stride_h, int** maxPos /*= nullptr*/)
@@ -661,7 +669,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 	}
 }
 
-void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, Matrix* DX, 
+void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX, 
 	int window_w, int window_h, int stride_w, int stride_h, int* maxPos /*= nullptr*/)
 {
 	if (globalUseCuda == mc_UseCuda)
@@ -670,24 +678,24 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, 
 		double a = 1, b = 0;
 		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
 		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
-		cudnnPoolingBackward(cudnnHandle, pd, &a, Y->tensorDes, Y->data, DY->tensorDes, DY->data, X->tensorDes, X->data, &b, DX->tensorDes, DX->data);
+		cudnnPoolingBackward(cudnnHandle, pd, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data, X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 	}
 	else
 	{
 		if (re == re_Average)
 		{
-			for (int p = 0; p < DY->N*DY->C; p++)
+			for (int p = 0; p < dY->N*dY->C; p++)
 			{
-				for (int i_DY = 0; i_DY < DY->W; i_DY++)
+				for (int i_DY = 0; i_DY < dY->W; i_DY++)
 				{
-					for (int j_DY = 0; j_DY < DY->H; j_DY++)
+					for (int j_DY = 0; j_DY < dY->H; j_DY++)
 					{
-						double v = DY->getData(i_DY, j_DY, p) / window_w / window_h;
-						for (int i_DX = i_DY*stride_w; i_DX < std::min(DX->W, i_DY*stride_w + window_w); i_DX++)
+						double v = dY->getData(i_DY, j_DY, p) / window_w / window_h;
+						for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
 						{
-							for (int j_DX = j_DY*stride_h; j_DX < std::min(DX->H, j_DY*stride_h + window_h); j_DX++)
+							for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)
 							{
-								DX->getData(i_DX, j_DX, p) = v;
+								dX->getData(i_DX, j_DX, p) = v;
 							}
 						}
 					}
@@ -697,37 +705,37 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, 
 		else if (re == re_Max || maxPos)
 		{
 			//这样速度会快一点
-			DX->initData(0);
-			for (int i = 0; i < DY->getDataCount(); i++)
+			dX->initData(0);
+			for (int i = 0; i < dY->getDataCount(); i++)
 			{
-				DX->getData(maxPos[i]) = DY->getData(i);
+				dX->getData(maxPos[i]) = dY->getData(i);
 			}
 		}
 	}
 }
 
-void Matrix::convolution(Matrix* A, Matrix* conv_kernel, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
+void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
 {
 	if (globalUseCuda == mc_UseCuda)
 	{
 	}
 	else
 	{
-		for (int p = 0; p < R->N*R->C; p++)
+		for (int p = 0; p < Y->N*Y->C; p++)
 		{
-			for (int i_R = 0; i_R < R->W; i_R++)
+			for (int i_R = 0; i_R < Y->W; i_R++)
 			{
-				for (int j_R = 0; j_R < R->H; j_R++)
+				for (int j_R = 0; j_R < Y->H; j_R++)
 				{
 					double v = 0;
-					for (int i_A = i_R; i_A < std::min(A->W, i_R + conv_kernel->row); i_A++)
+					for (int i_A = i_R; i_A < std::min(X->W, i_R + conv_kernel->row); i_A++)
 					{
-						for (int j_A = j_R; j_A < std::min(A->H, j_R + conv_kernel->col); j_A++)
+						for (int j_A = j_R; j_A < std::min(X->H, j_R + conv_kernel->col); j_A++)
 						{
-							v += A->getData(i_A, j_A, p) * conv_kernel->getData(i_A - i_R, j_A - j_R);
+							v += X->getData(i_A, j_A, p) * conv_kernel->getData(i_A - i_R, j_A - j_R);
 						}
 					}
-					R->getData(i_R, j_R, p) = v;
+					Y->getData(i_R, j_R, p) = v;
 				}
 			}
 		}
@@ -748,19 +756,10 @@ void Matrix::selectFunction(MatrixCudaType useCuda, double* x, double* y, int si
 	}
 }
 
-void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w)
-{
-	cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
-}
+
 
 void Matrix::setActive(cudnnActivationMode_t am)
 {
-	cudnnSetActivationDescriptor(ad, am, CUDNN_NOT_PROPAGATE_NAN, 1);
-}
-
-void Matrix::setActiveParameter(cudnnActivationMode_t am, int n, int c, int h, int w)
-{
-	cudnnSetTensor4dDescriptor(td, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
 	cudnnSetActivationDescriptor(ad, am, CUDNN_NOT_PROPAGATE_NAN, 1);
 }
 
@@ -855,7 +854,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 	}
 }
 
-void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* DX)
+void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* dX)
 {
 	double a = 1, b = 0;
 	switch (af)
@@ -864,16 +863,16 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, DX->tensorDes, DX->data,
-				X->tensorDes, X->data, &b, DX->tensorDes, DX->data);
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
+				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else
 		{
-			MyMath::sigmoid_vb(X->data, DX->data, DX->max_script);
+			MyMath::sigmoid_vb(X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Linear:
-		DX->initData(1);
+		dX->initData(1);
 		break;
 	case af_Softmax:
 		//softmax一般是最后一层，可能无用
@@ -886,19 +885,19 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		}
 		else
 		{
-			MyMath::exp_v(X->data, DX->data, DX->max_script);
+			MyMath::exp_v(X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Tanh:
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_TANH);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, DX->tensorDes, DX->data,
-				X->tensorDes, X->data, &b, DX->tensorDes, DX->data);
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
+				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else
 		{
-			MyMath::tanh_vb(X->data, DX->data, DX->max_script);
+			MyMath::tanh_vb(X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Findmax:
@@ -915,23 +914,23 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
-			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, DX->tensorDes, DX->data);
+			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else
 		{
-			MyMath::softplus_vb(X->data, DX->data, DX->max_script);
+			MyMath::softplus_vb(X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_ReLU:
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_RELU);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, DX->tensorDes, DX->data,
-				X->tensorDes, X->data, &b, DX->tensorDes, DX->data);
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
+				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else
 		{
-			MyMath::relu_vb(X->data, DX->data, DX->max_script);
+			MyMath::relu_vb(X->data, dX->data, dX->max_script);
 		}
 		break;
 	}

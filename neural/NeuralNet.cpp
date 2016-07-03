@@ -1,6 +1,5 @@
 #include "NeuralNet.h"
 
-
 NeuralNet::NeuralNet()
 {
 	Option = new IniOption();
@@ -388,11 +387,11 @@ void NeuralNet::readMNIST()
 	test_inputData = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 	test_expectData = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 
-	MNIST::readImageFile("train-images.idx3-ubyte", train_inputData->getDataPointer());
-	MNIST::readLabelFile("train-labels.idx1-ubyte", train_expectData->getDataPointer());
+	Test::MNIST_readImageFile("train-images.idx3-ubyte", train_inputData->getDataPointer());
+	Test::MNIST_readLabelFile("train-labels.idx1-ubyte", train_expectData->getDataPointer());
 
-	MNIST::readImageFile("t10k-images.idx3-ubyte", test_inputData->getDataPointer());
-	MNIST::readLabelFile("t10k-labels.idx1-ubyte", test_expectData->getDataPointer());
+	Test::MNIST_readImageFile("t10k-images.idx3-ubyte", test_inputData->getDataPointer());
+	Test::MNIST_readLabelFile("t10k-labels.idx1-ubyte", test_expectData->getDataPointer());
 }
 
 void NeuralNet::loadOption(const char* filename)

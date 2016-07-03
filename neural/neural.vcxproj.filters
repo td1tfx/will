@@ -50,10 +50,10 @@
     <ClCompile Include="Matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MNIST.cpp">
+    <ClCompile Include="NeuralLayerPooling.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralLayerPooling.cpp">
+    <ClCompile Include="Test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -94,10 +94,10 @@
     <ClInclude Include="IniOption.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MNIST.h">
+    <ClInclude Include="NeuralLayerPooling.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="NeuralLayerPooling.h">
+    <ClInclude Include="Test.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

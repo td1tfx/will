@@ -132,35 +132,35 @@ private:
 	static cudnnOpTensorDescriptor_t od;
 	static cudnnPoolingDescriptor_t pd;
 	static cudnnConvolutionDescriptor_t cd;
+	static cudnnFilterDescriptor_t fd;
 
 	//必须配对！
 	double* mallocData(int size);
 	void freeData();
-	//必须配对！
+	
+	//这两组好像必须交叉配对！
 	double* malloc_getDataFromDevice();
 	void freeDataForDevice(double* temp);
-	//必须配对！
 	double* mallocDataForDevice();
 	void set_freeDataToDevice(double* temp);
 
 public:
+	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 
 	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
 		int window_w, int window_h, int stride_w, int stride_h, int** maxPos = nullptr);
-	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, Matrix* DX, 
+	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX, 
 		int window_w, int window_h, int stride_w, int stride_h, int* maxPos = nullptr);
 
-	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R,
+	static void convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y,
 		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
 
 	static void selectFunction(MatrixCudaType useCuda, double* x, double* y, int size,
 		std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2);
 
-	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 	static void setActive(cudnnActivationMode_t am);
-	static void setActiveParameter(cudnnActivationMode_t am, int n, int c, int h, int w);
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y);
-	static void activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* DX);
+	static void activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* dX);
 
 };
 

@@ -1,7 +1,7 @@
-#include "MNIST.h"
+#include "Test.h"
+#include "Matrix.h"
 
-
-unsigned char* MNIST::readFile(const char* filename)
+unsigned char* Test::readFile(const char* filename)
 {
 	FILE *fp = fopen(filename, "rb");
 	if (!fp)
@@ -19,7 +19,19 @@ unsigned char* MNIST::readFile(const char* filename)
 	return s;
 }
 
-int MNIST::readImageFile(const char* filename, double* input)
+void Test::reverse(unsigned char* c, int n)
+{
+	for (int i = 0; i < n / 2; i++)
+	{
+		auto& a = *(c + i);
+		auto& b = *(c + n - 1 - i);
+		auto t = b;
+		b = a;
+		a = t;
+	}
+}
+
+int Test::MNIST_readImageFile(const char* filename, double* input)
 {
 	auto content = readFile(filename);
 	reverse(content + 4, 4);
@@ -53,7 +65,7 @@ int MNIST::readImageFile(const char* filename, double* input)
 	return w*h;
 }
 
-int MNIST::readLabelFile(const char* filename, double* expect)
+int Test::MNIST_readLabelFile(const char* filename, double* expect)
 {
 	auto content = readFile(filename);
 	reverse(content + 4, 4);
@@ -70,14 +82,52 @@ int MNIST::readLabelFile(const char* filename, double* expect)
 	return 10;
 }
 
-void MNIST::reverse(unsigned char* c, int n)
+
+void Test::test()
 {
-	for (int i = 0; i < n / 2; i++)
+	auto A = new Matrix(4, 4, 1, 1);
+
+	A->initRandom();
+	A->print();
+
+	auto B = new Matrix(2, 2, 1, 1);
+	auto m = new int[B->getDataCount()];
+	//Matrix::resample(A, B, re_Max, &m, 0);
+	Matrix::poolingForward(re_Max, A, B, 2, 2, 2, 2, &m);
+	printf("\n");
+	B->print();
+	for (int i = 0; i < 4; i++)
 	{
-		auto& a = *(c + i);
-		auto& b = *(c + n - 1 - i);
-		auto t = b;
-		b = a;
-		a = t;
+		printf("%d ", m[i]);
+	}
+	printf("\n");
+	auto DA = new Matrix(4, 4, 1, 1);
+	auto DB = new Matrix(2, 2, 1, 1);
+	DB->initInt();
+	Matrix::poolingBackward(re_Max, B, DB, A, DA, 2, 2, 2, 2, m);
+	DB->print();
+	printf("\n");
+	DA->print();
+
+
+	printf("\nconvolution test:\n");
+	A = new Matrix(4, 4, 2, 2);
+	auto a = new Matrix(4, 4, md_Outside);
+	A->initInt();
+	auto K = new Matrix(2, 2);
+	K->initData(1);
+
+	auto R = new Matrix(3, 3, 2, 2);
+	auto r = new Matrix(3, 3, md_Outside);
+
+	Matrix::convolutionForward(A, K, R, 4, 4, 3, 3, 2);
+	//A->print(stdout);
+	for (int i = 0; i < 4; i++)
+	{
+		a->resetDataPointer(A->getDataPointer(16 * i, 0));
+		a->print();
+		r->resetDataPointer(R->getDataPointer(9 * i, 0));
+		r->print();
+		printf("\n");
 	}
 }

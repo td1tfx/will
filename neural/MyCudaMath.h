@@ -61,8 +61,14 @@ int _stdcall cuda_exp(double *A, double *B, unsigned int size);
 #define cuda_dsigmoid
 #define cuda_hadamardProduct
 
+#define cudnnHandle_t int
 #define cudnnTensorDescriptor_t int
 #define cudnnActivationDescriptor_t int
-
+#define cudnnTensorDescriptor_t int;
+#define cudnnActivationDescriptor_t int;
+#define cudnnOpTensorDescriptor_t int;
+#define cudnnPoolingDescriptor_t int;
+#define cudnnConvolutionDescriptor_t int;
+#define cudnnFilterDescriptor_t int;
 
 #endif

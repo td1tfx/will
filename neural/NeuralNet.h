@@ -3,11 +3,11 @@
 #include <vector>
 #include <string.h>
 #include <cmath>
-#include "NeuralLayer.h"
-#include "MNIST.h"
+#include "lib/libconvert.h"
 #include "IniOption.h"
 #include "NeuralLayerFactory.h"
-#include "lib/libconvert.h"
+#include "Test.h"
+
 
 //ѧϰģʽ
 typedef enum
