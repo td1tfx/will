@@ -70,8 +70,8 @@ public:
 	double* getDataPointer(int i) { return &getData(i); }
 	double* getDataPointer() { return data; }
 	int resize(int m, int n, int force = 0);
-	double& getData(int w, int h, int p) { return data[w+h*W+p*W*H]; }
-	double& getData(int w, int h, int c, int n) { return getData(w,h,0); }
+	double& getData(int w, int h, int p) { return data[w + h*W + p*W*H]; }
+	double& getData(int w, int h, int c, int n) { return getData(w, h, c + C*n); }
 
 	//这两个不推荐使用，比较乱
 	double& getImageData(int m, int n) { return getData(n, m); }
@@ -119,12 +119,6 @@ public:
 	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
 	static void minus(Matrix* A, Matrix* B, Matrix* R);
 
-	static void pooling(Matrix* A, Matrix* R, int m_subA, int n_subA, int m_subR, int n_subR,
-		int countPerGroup, ResampleType re, int** maxPos = nullptr);
-	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R);
-	static void convolution_colasImage(Matrix* A, Matrix* conv_kernel, Matrix* R,
-		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
-
 private:
 	static cublasHandle_t cublasHandle;
 	static cudnnHandle_t cudnnHandle;
@@ -151,14 +145,21 @@ private:
 	void set_freeDataToDevice(double* temp);
 
 public:
+
+	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y, int** maxPos = nullptr);
+	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, Matrix* DX, int* maxPos = nullptr);
+
+	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R,
+		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
+
 	static void selectFunction(MatrixCudaType useCuda, double* x, double* y, int size,
 		std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2);
 
-	static void setTensor(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
+	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 	static void setActive(cudnnActivationMode_t am);
 	static void setActiveParameter(cudnnActivationMode_t am, int n, int c, int h, int w);
-	static void activeForward(ActiveFunctionType af, Matrix* A, Matrix* R);
-	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix* R);
+	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y);
+	static void activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* DX);
 
 };
 

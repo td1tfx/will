@@ -47,9 +47,7 @@ void NeuralLayerPooling::updateDelta2()
 //直接硬上
 void NeuralLayerPooling::activeOutputValue()
 {
-	Matrix::pooling(PrevLayer->OutputMatrix, OutputMatrix,
-		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCountPerGroup,
-		ImageRow, ImageRow, _resampleType, &maxPos);
+	Matrix::poolingForward(_resampleType, PrevLayer->OutputMatrix, OutputMatrix, &maxPos);
 	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说
 	//d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
 }
