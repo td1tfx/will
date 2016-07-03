@@ -35,8 +35,8 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 
 //以4阶张量构造
 Matrix::Matrix(int w, int h, int c, int n, MatrixDataType tryInside /*= md_Inside*/, MatrixCudaType tryCuda /*= mc_UseCuda*/)
+:Matrix(w*h*c, n, tryInside, tryCuda)
 {
-	Matrix(w*h*c, h, tryInside, tryCuda);
 	W = w;
 	H = h;
 	C = c;
@@ -150,7 +150,11 @@ void Matrix::print(FILE* fout)
 	{
 		for (int j = 0; j < col; j++)
 		{
-			fprintf(fout, "%14.11lf ", temp[xy2i(i, j)]);
+			double v = temp[xy2i(i, j)];
+			if (std::abs(v) > 1e10)
+				fprintf(fout, "%14.11e ", v);
+			else
+				fprintf(fout, "%14.11lf ", v);
 		}
 		fprintf(fout, "\n");
 	}
@@ -533,7 +537,7 @@ void Matrix::resample(Matrix* A, Matrix* R, ResampleType re, int** maxPos, int b
 	{
 		double a = 1, b = 0;
 		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
-		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN,1, 1, 2, 0, 2, 2);
+		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, scalen, scalem, 0, 0, scalen, scalem);
 		cudnnPoolingForward(cudnnHandle, pd, &a, A->tensorDes, A->data, &b, R->tensorDes, R->data);
 	}
 	else
@@ -842,7 +846,6 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* B, Matrix*
 		if (globalUseCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
-			//这里没有用到y矩阵
 			cudnnActivationBackward(cudnnHandle, ad, &a, B->tensorDes, B->data, R->tensorDes, R->data,
 				A->tensorDes, A->data, &b, R->tensorDes, R->data);
 		}

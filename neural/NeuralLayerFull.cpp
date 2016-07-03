@@ -60,7 +60,6 @@ void NeuralLayerFull::updateDelta2()
 	NextLayer->spreadDeltaToPrevLayer();
 	//UnactivedMatrix->dactiveFunction(_activeFunctionType);
 	//Matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
-
 	Matrix::activeBackward(_activeFunctionType, UnactivedMatrix, OutputMatrix, DeltaMatrix);
 }
 

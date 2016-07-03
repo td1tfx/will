@@ -33,13 +33,13 @@ int main(int argc, char* argv[])
 
 void test()
 {
-	auto A = new Matrix(4, 4);
+	auto A = new Matrix(4, 4, 1, 3);
 	auto m = new int[4];
 	A->initRandom();
 	A->print();
-	auto B = new Matrix(2, 2);
-	Matrix::resample(A, B, re_Max, &m, 0);
-	//d_matrix::resample_colasImage(A, B, 4, 4, 2, 2, 1, re_Findmax, &m);
+	auto B = new Matrix(2, 2, 1, 3);
+	//Matrix::resample(A, B, re_Max, &m, 0);
+	Matrix::resample_colasImage(A, B, 4, 4, 2, 2, 3, re_Max, nullptr);
 	printf("\n");
 	B->print();
 	for (int i = 0; i < 4; i++)
@@ -52,7 +52,7 @@ void test()
 	A->initInt();
 	auto K = new Matrix(2, 2);
 	K->initData(1);
-	printf("\n");
+	printf("\nconvolution\n");
 	auto R = new Matrix(18, 2);
 	auto r = new Matrix(3, 3, md_Outside);
 
