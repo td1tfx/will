@@ -613,15 +613,14 @@ void Matrix::set_freeDataToDevice(double* temp)
 }
 
 //池化
-void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y, int** maxPos /*= nullptr*/)
+void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
+	int window_w, int window_h, int stride_w, int stride_h, int** maxPos /*= nullptr*/)
 {
-	int stepw = 2;
-	int steph = 2;
 	if (globalUseCuda == mc_UseCuda)
 	{
 		double a = 1, b = 0;
 		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
-		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, 2, 2, 0, 0, 2, 2);
+		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
 		cudnnPoolingForward(cudnnHandle, pd, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
 	}
 	else
@@ -635,9 +634,9 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y, int** maxPos 
 					double v = 0;
 					//if (re == re_Average)v = 0;
 					if (re == re_Max) v = -DBL_MAX;
-					for (int i_X = i_Y*stepw; i_X < std::min(X->W, i_Y*stepw + stepw); i_X++)
+					for (int i_X = i_Y*stride_w; i_X < std::min(X->W, i_Y*stride_w + window_w); i_X++)
 					{
-						for (int j_X = j_Y*steph; j_X < std::min(X->H, j_Y*steph + steph); j_X++)
+						for (int j_X = j_Y*stride_h; j_X < std::min(X->H, j_Y*stride_h + window_h); j_X++)
 						{
 							if (re == re_Average)
 							{
@@ -654,7 +653,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y, int** maxPos 
 							}								
 						}
 					}
-					if (re == re_Average) v /= steph*stepw;
+					if (re == re_Average) v /= window_w*window_h;
 					Y->getData(i_Y, j_Y, p) = v;
 				}
 			}
@@ -662,16 +661,15 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y, int** maxPos 
 	}
 }
 
-void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, Matrix* DX, int* maxPos /*= nullptr*/)
+void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, Matrix* DX, 
+	int window_w, int window_h, int stride_w, int stride_h, int* maxPos /*= nullptr*/)
 {
-	int stepw = 2;
-	int steph = 2;
 	if (globalUseCuda == mc_UseCuda)
 	{
 		//这个怎么看都快不了
 		double a = 1, b = 0;
 		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
-		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, 2, 2, 0, 0, 2, 2);
+		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
 		cudnnPoolingBackward(cudnnHandle, pd, &a, Y->tensorDes, Y->data, DY->tensorDes, DY->data, X->tensorDes, X->data, &b, DX->tensorDes, DX->data);
 	}
 	else
@@ -684,10 +682,10 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, 
 				{
 					for (int j_DY = 0; j_DY < DY->H; j_DY++)
 					{
-						double v = DY->getData(i_DY, j_DY, p) / steph / stepw;
-						for (int i_DX = i_DY*stepw; i_DX < std::min(DX->W, i_DY*stepw + stepw); i_DX++)
+						double v = DY->getData(i_DY, j_DY, p) / window_w / window_h;
+						for (int i_DX = i_DY*stride_w; i_DX < std::min(DX->W, i_DY*stride_w + window_w); i_DX++)
 						{
-							for (int j_DX = j_DY*steph; j_DX < std::min(DX->H, j_DY*steph + steph); j_DX++)
+							for (int j_DX = j_DY*stride_h; j_DX < std::min(DX->H, j_DY*stride_h + window_h); j_DX++)
 							{
 								DX->getData(i_DX, j_DX, p) = v;
 							}
@@ -696,7 +694,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, 
 				}
 			}
 		}
-		else if (re == re_Max)
+		else if (re == re_Max || maxPos)
 		{
 			//这样速度会快一点
 			DX->initData(0);

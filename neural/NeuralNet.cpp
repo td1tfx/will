@@ -145,15 +145,15 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 
 		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
 		{
-			Layers[i_layer]->activeOutputValue();
+			Layers[i_layer]->activeForwardOutput();
 		}
 
 		if (learn)
 		{
 			for (int i_layer = getLayerCount() - 1; i_layer > 0; i_layer--)
 			{
-				Layers[i_layer]->updateDelta();
-				Layers[i_layer]->backPropagate(LearnSpeed, Lambda);
+				Layers[i_layer]->backPropagateDelta();
+				Layers[i_layer]->updateWeightBias(LearnSpeed, Lambda);
 			}
 		}
 		if (output)
@@ -165,7 +165,7 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 		{
 			if (!learn)
 			{
-				getLastLayer()->updateDelta();
+				getLastLayer()->backPropagateDelta();
 			}
 			*error += getLastLayer()->getDeltaMatrix()->ddot() / groupCount / OutputNodeCount;
 		}

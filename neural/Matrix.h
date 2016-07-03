@@ -136,7 +136,6 @@ private:
 	//必须配对！
 	double* mallocData(int size);
 	void freeData();
-
 	//必须配对！
 	double* malloc_getDataFromDevice();
 	void freeDataForDevice(double* temp);
@@ -146,8 +145,10 @@ private:
 
 public:
 
-	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y, int** maxPos = nullptr);
-	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, Matrix* DX, int* maxPos = nullptr);
+	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
+		int window_w, int window_h, int stride_w, int stride_h, int** maxPos = nullptr);
+	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* DY, Matrix* X, Matrix* DX, 
+		int window_w, int window_h, int stride_w, int stride_h, int* maxPos = nullptr);
 
 	static void convolution(Matrix* A, Matrix* conv_kernel, Matrix* R,
 		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);

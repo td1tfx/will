@@ -6,27 +6,29 @@ class NeuralLayerPooling :
 public:
 
 	//在处理图像模式的时候，上一层output的向量在这里被转为矩阵
-	int region_m = 2, region_n = 2;
 
 	NeuralLayerPooling();
 	virtual ~NeuralLayerPooling();
 
-	int* maxPos = nullptr;   //记录最大值的位置，待以后看看能不能改成用cuda
+	int* maxPos = nullptr;   //记录最大值的位置
 
 	ResampleType _resampleType = re_Max;
 	double Weight, Bias;
 	//所有值为1
 	Matrix* _asBiasMatrix = nullptr;
 
+	int window_w, window_h;  //pooling窗口尺寸
+	int w_stride, h_stride;  //pooling步长
+
 protected:
 	void initData2(int x1, int x2) override;
 	void resetGroupCount2() override;
 	void connetPrevlayer2() override;
-	void updateDelta2() override;
+	void backPropagateDelta2() override;
 public:
-	void activeOutputValue() override;
+	void activeForwardOutput() override;
 	void spreadDeltaToPrevLayer() override;
-	void backPropagate(double learnSpeed, double lambda) override;
+	void updateWeightBias(double learnSpeed, double lambda) override;
 	int saveInfo(FILE* fout) override;
 	int loadInfo(double* v, int n) override;
 
