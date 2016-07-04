@@ -33,7 +33,10 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 		data = mallocData(max_script);
 		data_size = max_script;
 	}
-	cudnnCreateTensorDescriptor(&tensorDes);
+	if (globalUseCuda == mc_UseCuda)
+	{
+		cudnnCreateTensorDescriptor(&tensorDes);
+	}
 	setTensorDes(tensorDes, 1, 1, n, m);
 }
 
@@ -619,7 +622,10 @@ void Matrix::set_freeDataToDevice(double* temp)
 
 void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w)
 {
-	cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
+	if (tensor && globalUseCuda == mc_UseCuda)
+	{
+		cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
+	}
 }
 
 //³Ø»¯
