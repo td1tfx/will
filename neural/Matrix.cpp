@@ -1,5 +1,6 @@
 #include "Matrix.h"
 
+
 MatrixCudaType Matrix::globalUseCuda = mc_NoCuda;
 bool Matrix::inited = false;
 
@@ -32,31 +33,25 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 		data = mallocData(max_script);
 		data_size = max_script;
 	}
-	if (UseCuda == mc_UseCuda)
-	{
-		cudnnCreateTensorDescriptor(&tensorDes);
-		setTensorDes(tensorDes, 1, 1, n, m);
-	}
+	cudnnCreateTensorDescriptor(&tensorDes);
+	setTensorDes(tensorDes, 1, 1, n, m);
 }
 
 //4阶张量形式构造函数，用于池化和卷积
 Matrix::Matrix(int w, int h, int c, int n, MatrixDataType tryInside /*= md_Inside*/, MatrixCudaType tryCuda /*= mc_UseCuda*/)
-:Matrix(w*h*c, n, tryInside, tryCuda)
+	:Matrix(w*h*c, n, tryInside, tryCuda)
 {
 	W = w;
 	H = h;
 	C = c;
 	N = n;
-	if (UseCuda == mc_UseCuda)
-	{
-		setTensorDes(tensorDes, n, c, h, w);
-	}
+	setTensorDes(tensorDes, n, c, h, w);
 }
 
 Matrix::~Matrix()
 {
 	if (insideData == md_Inside) freeData();
-	if (UseCuda == mc_UseCuda) cudnnDestroyTensorDescriptor(tensorDes);
+	if (tensorDes) cudnnDestroyTensorDescriptor(tensorDes);
 }
 
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
@@ -67,10 +62,7 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 	row = m;
 	col = n;
 	max_script = m*n;
-	if (UseCuda == mc_UseCuda)
-	{
-		setTensorDes(tensorDes, 1, 1, n, m);
-	}
+	setTensorDes(tensorDes, 1, 1, n, m);
 	//空间不够或者强制则重新分配
 	if (max_script > data_size || force)
 	{
@@ -107,6 +99,7 @@ void Matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
 	}
 }
 
+//在matrix中初始化Cuda可能不是很好，暂时没想出更好的设计
 void Matrix::initCuda()
 {
 	if (inited) { return; }
@@ -114,21 +107,28 @@ void Matrix::initCuda()
 #ifdef _USE_CUDA
 	int dev = -1;
 	globalUseCuda = mc_NoCuda;
-	if (cublasCreate(&cublasHandle) != CUBLAS_STATUS_SUCCESS)
-	{
-		fprintf(stderr, "CUBLAS initialization error\n");
-		return;
-	}
-	if (cudnnCreate(&cudnnHandle) != CUDNN_STATUS_SUCCESS)
-	{
-		fprintf(stderr, "CUDNN initialization error\n");
-		return;
-	}
 	dev = findCudaDevice(0, nullptr);
 	if (dev >= 0)
 	{
 		globalUseCuda = mc_UseCuda;
 	}
+	else
+	{
+		fprintf(stderr, "Cannot find CUDA device!\n");
+		return;
+	}
+
+	if (cublasCreate(&cublasHandle) != CUBLAS_STATUS_SUCCESS)
+	{
+		fprintf(stderr, "CUBLAS initialization error!\n");
+		return;
+	}
+	if (cudnnCreate(&cudnnHandle) != CUDNN_STATUS_SUCCESS)
+	{
+		fprintf(stderr, "CUDNN initialization error!\n");
+		return;
+	}
+
 	cudnnCreateTensorDescriptor(&td);
 	cudnnCreateActivationDescriptor(&ad);
 	cudnnCreateOpTensorDescriptor(&od);
@@ -140,6 +140,7 @@ void Matrix::initCuda()
 
 void Matrix::destroyCuda()
 {
+	inited = false;
 #ifdef _USE_CUDA
 	cudnnDestroyTensorDescriptor(td);
 	cudnnDestroyActivationDescriptor(ad);
@@ -327,11 +328,12 @@ void Matrix::initData(double v)
 //随机数初始化矩阵，注意这个函数调用次数很少
 void Matrix::initRandom()
 {
+	Random r;
 	auto temp = mallocDataForDevice();
 	//#pragma loop(hint_parallel(8))
 	for (int i = 0; i < max_script; i++)
 	{
-		temp[i] = 2.0 * rand() / RAND_MAX - 1;
+		temp[i] = 2.0 * r.rand() - 1;
 	}
 	set_freeDataToDevice(temp);
 }
@@ -621,7 +623,7 @@ void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, i
 }
 
 //池化
-void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
+void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 	int window_w, int window_h, int stride_w, int stride_h, int** maxPos /*= nullptr*/)
 {
 	if (globalUseCuda == mc_UseCuda)
@@ -653,12 +655,12 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 							else if (re == re_Max)
 							{
 								auto x = X->getData(i_X, j_X, p);
-								if (x > v) 
+								if (x > v)
 								{
 									v = x;
 									(*maxPos)[i_Y + j_Y*Y->W + p*Y->H*Y->W] = i_X + j_X*X->W + p*X->H*X->W;
 								}
-							}								
+							}
 						}
 					}
 					if (re == re_Average) v /= window_w*window_h;
@@ -669,7 +671,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 	}
 }
 
-void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX, 
+void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX,
 	int window_w, int window_h, int stride_w, int stride_h, int* maxPos /*= nullptr*/)
 {
 	if (globalUseCuda == mc_UseCuda)

@@ -85,49 +85,50 @@ int Test::MNIST_readLabelFile(const char* filename, double* expect)
 
 void Test::test()
 {
-	auto A = new Matrix(4, 4, 1, 1);
+	Matrix::initCuda();
+ 	Matrix A(4, 4, 1, 1);
+ 	A.initRandom();
+ 	A.print();
+ 	Matrix B(2, 2, 1, 1);
+ 	auto m = new int[B.getDataCount()];
 
-	A->initRandom();
-	A->print();
-
-	auto B = new Matrix(2, 2, 1, 1);
-	auto m = new int[B->getDataCount()];
-	//Matrix::resample(A, B, re_Max, &m, 0);
-	Matrix::poolingForward(re_Max, A, B, 2, 2, 2, 2, &m);
-	printf("\n");
-	B->print();
+ 	Matrix::poolingForward(re_Max, &A, &B, 2, 2, 2, 2, &m);
+ 	printf("\n");
+	B.print();
 	for (int i = 0; i < 4; i++)
 	{
 		printf("%d ", m[i]);
 	}
 	printf("\n");
-	auto DA = new Matrix(4, 4, 1, 1);
-	auto DB = new Matrix(2, 2, 1, 1);
-	DB->initInt();
-	Matrix::poolingBackward(re_Max, B, DB, A, DA, 2, 2, 2, 2, m);
-	DB->print();
+	Matrix DA(4, 4, 1, 1);
+	Matrix DB(2, 2, 1, 1);
+	DB.initInt();
+// 	Matrix::poolingBackward(re_Max, &B, &DB, &A, &DA, 2, 2, 2, 2, m);
+	DB.print();
 	printf("\n");
-	DA->print();
+	DA.print();
 
 
 	printf("\nconvolution test:\n");
-	A = new Matrix(4, 4, 2, 2);
-	auto a = new Matrix(4, 4, md_Outside);
-	A->initInt();
-	auto K = new Matrix(2, 2);
-	K->initData(1);
+	//A = Matrix(4,4,2,2);
+	Matrix a(4, 4, md_Outside);
+	A.initInt();
+	Matrix K(2, 2);
+	K.initData(1);
 
-	auto R = new Matrix(3, 3, 2, 2);
-	auto r = new Matrix(3, 3, md_Outside);
+	Matrix R(3, 3, 2, 2);
+	Matrix r(3, 3, md_Outside);
 
-	Matrix::convolutionForward(A, K, R, 4, 4, 3, 3, 2);
+	Matrix::convolutionForward(&A, &K, &R, 4, 4, 3, 3, 2);
 	//A->print(stdout);
 	for (int i = 0; i < 4; i++)
 	{
-		a->resetDataPointer(A->getDataPointer(16 * i, 0));
-		a->print();
-		r->resetDataPointer(R->getDataPointer(9 * i, 0));
-		r->print();
+		a.resetDataPointer(A.getDataPointer(16 * i, 0));
+		a.print();
+		r.resetDataPointer(R.getDataPointer(9 * i, 0));
+		r.print();
 		printf("\n");
 	}
+	Matrix::destroyCuda();
+	delete m;
 }

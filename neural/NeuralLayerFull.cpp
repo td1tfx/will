@@ -55,7 +55,7 @@ void NeuralLayerFull::connetPrevlayer2()
 	this->BiasVector->initRandom();
 }
 
-void NeuralLayerFull::backPropagateDelta2()
+void NeuralLayerFull::updateDelta2()
 {
 	NextLayer->spreadDeltaToPrevLayer();
 	//UnactivedMatrix->dactiveFunction(_activeFunctionType);
@@ -63,7 +63,7 @@ void NeuralLayerFull::backPropagateDelta2()
 	Matrix::activeBackward(_activeFunctionType, OutputMatrix, UnactivedMatrix, DeltaMatrix);
 }
 
-void NeuralLayerFull::activeForwardOutput()
+void NeuralLayerFull::activeOutput()
 {
 	Matrix::cpyData(UnactivedMatrix, BiasVector);
 	UnactivedMatrix->expand();

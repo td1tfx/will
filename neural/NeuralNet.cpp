@@ -1,4 +1,5 @@
 #include "NeuralNet.h"
+#include "Random.h"
 
 NeuralNet::NeuralNet()
 {
@@ -40,6 +41,7 @@ void NeuralNet::run()
 	{
 		Matrix::initCuda();
 	}
+
 	if (Option->getInt("UseMNIST") == 0)
 	{
 		if (Option->getString("TrainDataFile") != "")
@@ -70,12 +72,15 @@ void NeuralNet::run()
 	test();
 
 	if (Option->getString("SaveFile") != "")
+	{
 		saveInfo(Option->getString("SaveFile").c_str());
+	}
 	if (Option->getString("TestDataFile") != "")
 	{
 		readData(Option->getString("TestDataFile").c_str(), &test_groupCount, &test_inputData, &test_expectData);
 		test();
 	}
+
 	if (Option->getInt("UseCUDA"))
 	{
 		Matrix::destroyCuda();
@@ -124,34 +129,38 @@ void NeuralNet::createLayers(int layerCount)
 	}
 }
 
-
-//不能整除的情况未处理
 void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupCount, int batchCount,
 	bool learn /*= false*/, double* error /*= nullptr*/)
 {
+	Random r;
 	if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)
 	{
-		int n = resetGroupCount(std::min(batchCount, groupCount - i));
+		int selectgroup = i;
+		if (batchCount <= 1)
+		{
+			selectgroup = int(r.rand()*groupCount);
+		}
+		int n = resetGroupCount(std::min(batchCount, groupCount - selectgroup));
 		if (input)
 		{
-			getFirstLayer()->OutputMatrix->shareData(input, 0, i);
+			getFirstLayer()->OutputMatrix->shareData(input, 0, selectgroup);
 		}
 		if (expect)
 		{
-			getLastLayer()->ExpectMatrix->shareData(expect, 0, i);
+			getLastLayer()->ExpectMatrix->shareData(expect, 0, selectgroup);
 		}
 
 		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
 		{
-			Layers[i_layer]->activeForwardOutput();
+			Layers[i_layer]->activeOutput();
 		}
 
 		if (learn)
 		{
 			for (int i_layer = getLayerCount() - 1; i_layer > 0; i_layer--)
 			{
-				Layers[i_layer]->backPropagateDelta();
+				Layers[i_layer]->updateDelta();
 				Layers[i_layer]->updateWeightBias(LearnSpeed, Lambda);
 			}
 		}
@@ -164,7 +173,7 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 		{
 			if (!learn)
 			{
-				getLastLayer()->backPropagateDelta();
+				getLastLayer()->updateDelta();
 			}
 			*error += getLastLayer()->getDeltaMatrix()->ddot() / groupCount / OutputNodeCount;
 		}

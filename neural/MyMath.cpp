@@ -1,4 +1,1 @@
 #include "MyMath.h"
-
-
-

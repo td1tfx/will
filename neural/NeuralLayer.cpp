@@ -48,7 +48,7 @@ void NeuralLayer::resetGroupCount()
 	resetGroupCount2();
 }
 
-void NeuralLayer::backPropagateDelta()
+void NeuralLayer::updateDelta()
 {
 	if (this->Type == lt_Output)
 	{
@@ -57,21 +57,27 @@ void NeuralLayer::backPropagateDelta()
 		{
 		case cf_RMSE:
 			Matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
-			//UnactivedMatrix->activeBackward(_activeFunctionType);
-			//Matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
 			Matrix::activeBackward(_activeFunctionType, OutputMatrix, UnactivedMatrix, DeltaMatrix);
 			break;
 		case cf_CrossEntropy:
-			Matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
+			if (_activeFunctionType == af_Sigmoid)
+			{
+				//交叉熵和Sigmoid同时使用，则有此简化方法
+				Matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
+			}
+			else
+			{
+				//其余情况需自行推导
+				Matrix::activeBackward(_activeFunctionType, OutputMatrix, UnactivedMatrix, DeltaMatrix);
+			}
 			break;
 		default:
 			break;
 		}
-		//这里如果去掉这个乘法，是使用交叉熵作为代价函数，但是在隐藏层的传播不可以去掉！具体方程自己推导！
 	}
 	else
 	{
-		backPropagateDelta2();
+		updateDelta2();
 	}
 }
 

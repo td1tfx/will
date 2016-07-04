@@ -47,5 +47,6 @@ namespace MyMath
 #undef MyMathVector
 #undef MyMathFor_b
 #undef MyMathVector_b
+
 };
 

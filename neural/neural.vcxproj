@@ -177,6 +177,7 @@
     <ClCompile Include="MyMath.cpp" />
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="Matrix.cpp" />
+    <ClCompile Include="Random.cpp" />
     <ClCompile Include="Test.cpp" />
     <ClCompile Include="neural.cpp" />
     <ClCompile Include="NeuralLayer.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="MyCudaMath.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Random.h" />
     <ClInclude Include="Test.h" />
     <ClInclude Include="NeuralLayerConvolution.h" />
     <ClInclude Include="NeuralLayerFactory.h" />

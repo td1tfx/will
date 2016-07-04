@@ -39,13 +39,13 @@ void NeuralLayerPooling::connetPrevlayer2()
 	maxPos = new int[OutputCountPerGroup*GroupCount];
 }
 
-void NeuralLayerPooling::backPropagateDelta2()
+void NeuralLayerPooling::updateDelta2()
 {
 	NextLayer->spreadDeltaToPrevLayer();
 }
 
 //直接硬上
-void NeuralLayerPooling::activeForwardOutput()
+void NeuralLayerPooling::activeOutput()
 {
 	Matrix::poolingForward(_resampleType, PrevLayer->OutputMatrix, UnactivedMatrix, window_w, window_h, w_stride, h_stride, &maxPos);
 	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说

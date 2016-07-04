@@ -17,11 +17,11 @@ int main(int argc, char* argv[])
 
 	t.start();
 	net.run();
-	t.stop();
-	Test::test();
+	t.stop(); 
 
 	fprintf(stdout, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
-
+	
+	Test::test();
 #ifdef _WIN32
 	fprintf(stderr, "\nPress any key to exit.\n");
 	getchar();

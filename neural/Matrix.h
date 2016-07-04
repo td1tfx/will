@@ -8,6 +8,7 @@
 #include "types.h"
 #include "MyMath.h"
 #include "MyCudaMath.h"
+#include "Random.h"
 
 //列优先或者行优先（未使用）
 typedef enum
@@ -125,7 +126,7 @@ private:
 	static cublasOperation_t get_cublas_trans(MatrixTransType t) { return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T; }
 	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t) { return t == mt_NoTrans ? CblasNoTrans : CblasTrans; }
 
-	cudnnTensorDescriptor_t tensorDes;
+	cudnnTensorDescriptor_t tensorDes = nullptr;
 
 	static cudnnTensorDescriptor_t td;
 	static cudnnActivationDescriptor_t ad;
