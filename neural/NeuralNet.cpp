@@ -384,7 +384,7 @@ void NeuralNet::readMNIST()
 	train_inputData = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 	train_expectData = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 
-	test_groupCount = 1000;
+	test_groupCount = 10000;
 	test_inputData = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 	test_expectData = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 

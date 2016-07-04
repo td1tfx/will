@@ -94,7 +94,7 @@ void Test::test()
 	Matrix::poolingForward(re_Average, &A, &B, 2, 2, 2, 2, &m);
 	printf("\n");
 	B.print();
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < A.getDataCount(); i++)
 	{
 		printf("%d ", m[i]);
 	}

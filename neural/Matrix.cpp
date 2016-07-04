@@ -916,7 +916,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		}
 		else
 		{
-			MyMath::sigmoid_vb(X->data, dX->data, dX->max_script);
+			//MyMath::sigmoid_vb(X->data, dX->data, dX->max_script);
+			MyMath::sigmoid_vb2(Y->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Linear:
