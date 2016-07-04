@@ -279,6 +279,20 @@ int Matrix::indexColMaxAbs(int c)
 	}
 }
 
+double Matrix::sumAbs()
+{
+	if (UseCuda == mc_UseCuda)
+	{
+		double r;
+		cublasDasum(cublasHandle, max_script, data, 1, &r);
+		return r;
+	}
+	else
+	{
+		return cblas_dasum(max_script,data, 1);
+	}
+}
+
 //一列的绝对值和
 double Matrix::sumColAbs(int c)
 {
@@ -332,11 +346,13 @@ void Matrix::initData(double v)
 void Matrix::initRandom()
 {
 	Random r;
+	//r.set_uniform(0, 1);
 	auto temp = mallocDataForDevice();
 	//#pragma loop(hint_parallel(8))
 	for (int i = 0; i < max_script; i++)
 	{
-		temp[i] = 2.0 * r.rand() - 1;
+		temp[i] = 2.0 * r.rand_uniform() - 1;
+		//temp[i] = r.rand_normal();
 	}
 	set_freeDataToDevice(temp);
 }
@@ -379,17 +395,25 @@ void Matrix::colMultiply(double v, int c)
 	}
 }
 
-
 //复制数据，只处理较少的
 void Matrix::cpyData(Matrix* dst, Matrix* src)
 {
-	if (globalUseCuda == mc_UseCuda)
+	auto size = sizeof(double)*std::min(dst->row*dst->col, src->row*src->col);
+	if (dst->UseCuda == mc_UseCuda && src->UseCuda==mc_UseCuda)
 	{
-		cudaMemcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col), cudaMemcpyDeviceToDevice);
+		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToDevice);
+	}
+	else if (dst->UseCuda == mc_UseCuda && src->UseCuda == mc_NoCuda)
+	{
+		cudaMemcpy(dst->data, src->data, size, cudaMemcpyHostToDevice);
+	}
+	else if (dst->UseCuda == mc_NoCuda && src->UseCuda == mc_UseCuda)
+	{
+		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToHost);
 	}
 	else
 	{
-		memcpy(dst->data, src->data, sizeof(double)*std::min(dst->row*dst->col, src->row*src->col));
+		memcpy(dst->data, src->data, size);
 	}
 }
 
@@ -628,9 +652,9 @@ void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, i
 	}
 }
 
-//池化
+//池化，注意利用一个record记录下了对应位置
 void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
-	int window_w, int window_h, int stride_w, int stride_h, int** maxPos /*= nullptr*/)
+	int window_w, int window_h, int stride_w, int stride_h, int** recordPos /*= nullptr*/)
 {
 	if (globalUseCuda == mc_UseCuda)
 	{
@@ -657,6 +681,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 							if (re == re_Average)
 							{
 								v += X->getData(i_X, j_X, p);
+								(*recordPos)[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
 							}
 							else if (re == re_Max)
 							{
@@ -664,7 +689,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 								if (x > v)
 								{
 									v = x;
-									(*maxPos)[i_Y + j_Y*Y->W + p*Y->H*Y->W] = i_X + j_X*X->W + p*X->H*X->W;
+									(*recordPos)[i_Y + j_Y*Y->W + p*Y->H*Y->W] = i_X + j_X*X->W + p*X->H*X->W;
 								}
 							}
 						}
@@ -677,8 +702,9 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 	}
 }
 
+//使用cpu时利用了record
 void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX,
-	int window_w, int window_h, int stride_w, int stride_h, int* maxPos /*= nullptr*/)
+	int window_w, int window_h, int stride_w, int stride_h, int* recordPos /*= nullptr*/)
 {
 	if (globalUseCuda == mc_UseCuda)
 	{
@@ -692,31 +718,42 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 	{
 		if (re == re_Average)
 		{
-			for (int p = 0; p < dY->N*dY->C; p++)
+			//以下两种算法实际上遍历元素的数目是相同的
+			if (recordPos == nullptr)
 			{
-				for (int i_DY = 0; i_DY < dY->W; i_DY++)
+				for (int p = 0; p < dY->N*dY->C; p++)
 				{
-					for (int j_DY = 0; j_DY < dY->H; j_DY++)
+					for (int i_DY = 0; i_DY < dY->W; i_DY++)
 					{
-						double v = dY->getData(i_DY, j_DY, p) / window_w / window_h;
-						for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
+						for (int j_DY = 0; j_DY < dY->H; j_DY++)
 						{
-							for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)
+							double v = dY->getData(i_DY, j_DY, p) / window_w / window_h;
+							for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
 							{
-								dX->getData(i_DX, j_DX, p) = v;
+								for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)
+								{
+									dX->getData(i_DX, j_DX, p) = v;
+								}
 							}
 						}
 					}
 				}
 			}
+			else
+			{
+				for (int i = 0; i < dX->getDataCount(); i++)
+				{
+					dX->getData(i) = dY->getData(recordPos[i]) / window_w / window_h;
+				}
+			}
 		}
-		else if (re == re_Max || maxPos)
+		else if (re == re_Max || recordPos)
 		{
-			//这样速度会快一点
+			//利用记录保存最大值的位置，这样速度会快一点
 			dX->initData(0);
 			for (int i = 0; i < dY->getDataCount(); i++)
 			{
-				dX->getData(maxPos[i]) = dY->getData(i);
+				dX->getData(recordPos[i]) = dY->getData(i);
 			}
 		}
 	}
@@ -820,17 +857,20 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		}
 		break;
 	case af_Findmax:
+		if (Y->max_script <= 0) return;
+		Y->initData(0);
 		if (globalUseCuda == mc_UseCuda)
 		{
-
+			auto T = new Matrix(Y->row, Y->col, md_Inside, mc_NoCuda);
+			for (int i_group = 0; i_group < Y->col; i_group++)
+			{
+				int index = X->indexColMaxAbs(i_group);
+				T->getData(index, i_group) = 1;
+			}
+			cpyData(Y, T);
 		}
 		else
 		{
-			if (Y->max_script <= 0) return;
-			auto temp = new double[Y->max_script];
-			memset(temp, 0, sizeof(double)*Y->max_script);
-			std::swap(Y->data, temp);
-			delete temp;
 			for (int i_group = 0; i_group < Y->col; i_group++)
 			{
 				int index = X->indexColMaxAbs(i_group);

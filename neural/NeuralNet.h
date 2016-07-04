@@ -4,7 +4,7 @@
 #include <string.h>
 #include <cmath>
 #include "lib/libconvert.h"
-#include "IniOption.h"
+#include "Option.h"
 #include "NeuralLayerFactory.h"
 #include "Test.h"
 
@@ -35,11 +35,9 @@ public:
 	virtual ~NeuralNet();
 	int Id;
 
-	IniOption* Option;
-	void loadOption(const char* filename);
 	int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
 
-	void run();
+	void run(Option* option);
 
 	//神经层
 	NeuralLayer** Layers;
@@ -101,7 +99,7 @@ public:
 	void readMNIST();
 
 	void selectTest();
-	void test();
-	void printResult(int nodeCount, int groupCount, Matrix* output, Matrix* expect);
+	void test(int forceOutput = 0, int testMax = 0);
+	void outputTest(const char* info, int nodeCount, int groupCount, Matrix* input, Matrix* expect, int forceOutput, int testMax);
 };
 

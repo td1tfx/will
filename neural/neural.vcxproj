@@ -200,7 +200,7 @@
     <ClInclude Include="NeuralLayerPooling.h" />
     <ClInclude Include="NeuralNet.h" />
     <ClInclude Include="NeuralLayer.h" />
-    <ClInclude Include="IniOption.h" />
+    <ClInclude Include="Option.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="win.h" />
   </ItemGroup>

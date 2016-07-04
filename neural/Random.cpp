@@ -1,5 +1,6 @@
 #include "Random.h"
 
+std::mt19937 Random::generator;
 
 Random::Random()
 {
@@ -12,7 +13,22 @@ Random::~Random()
 
 }
 
-double Random::rand()
+void Random::set_uniform(double a, double b)
 {
-	return uniform_dist(gen);
+	uniform_dist = std::uniform_real_distribution<double>(a, b);
+}
+
+double Random::rand_uniform()
+{
+	return uniform_dist(generator);
+}
+
+double Random::rand_normal()
+{
+	return normal_dist(generator);
+}
+
+void Random::reset()
+{
+	generator = std::mt19937(rd());
 }

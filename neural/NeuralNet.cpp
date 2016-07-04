@@ -3,7 +3,7 @@
 
 NeuralNet::NeuralNet()
 {
-	Option = new IniOption();
+
 }
 
 
@@ -22,31 +22,25 @@ NeuralNet::~NeuralNet()
 		delete test_inputData;
 	if (test_expectData)
 		delete test_expectData;
-	delete Option;
 }
 
 //运行，注意容错保护较弱
-void NeuralNet::run()
+void NeuralNet::run(Option* op)
 {
-	BatchMode = NeuralNetLearnType(Option->getInt("BatchMode"));
-	MiniBatchCount = std::max(1, Option->getInt("MiniBatch"));
-	WorkType = NeuralNetWorkType(Option->getInt("WorkMode"));
+	BatchMode = NeuralNetLearnType(op->getInt("BatchMode"));
+	MiniBatchCount = std::max(1, op->getInt("MiniBatch"));
+	WorkType = NeuralNetWorkType(op->getInt("WorkMode"));
 
-	LearnSpeed = Option->getDouble("LearnSpeed", 0.5);
-	Lambda = Option->getDouble("Regular");
+	LearnSpeed = op->getDouble("LearnSpeed", 0.5);
+	Lambda = op->getDouble("Regular");
 
-	MaxGroup = Option->getInt("MaxGroup", 100000);
+	MaxGroup = op->getInt("MaxGroup", 100000);
 
-	if (Option->getInt("UseCUDA"))
+	if (op->getInt("UseMNIST") == 0)
 	{
-		Matrix::initCuda();
-	}
-
-	if (Option->getInt("UseMNIST") == 0)
-	{
-		if (Option->getString("TrainDataFile") != "")
+		if (op->getString("TrainDataFile") != "")
 		{
-			readData(Option->getString("TrainDataFile").c_str(), &train_groupCount, &train_inputData, &train_expectData);
+			readData(op->getString("TrainDataFile").c_str(), &train_groupCount, &train_inputData, &train_expectData);
 		}
 	}
 	else
@@ -59,32 +53,29 @@ void NeuralNet::run()
 	//	_option.LoadNet == 0;
 
 	std::vector<double> v;
-	int n = findNumbers(Option->getString("NodePerLayer"), v);
+	int n = findNumbers(op->getString("NodePerLayer"), v);
 
-	if (Option->getInt("LoadNet") == 0)
-		createByData(Option->getInt("Layer", 3), int(v[0]));
+	if (op->getInt("LoadNet") == 0)
+		createByData(op->getInt("Layer", 3), int(v[0]));
 	else
-		createByLoad(Option->getString("LoadFile").c_str());
+		createByLoad(op->getString("LoadFile").c_str());
 
-	//net->selectTest();
-	train(Option->getInt("TrainTimes", 1000), Option->getInt("OutputInterval", 1000),
-		Option->getDouble("Tol", 1e-3), Option->getDouble("Dtol", 0));
-	test();
+	//selectTest();
+	train(op->getInt("TrainTimes", 1000), op->getInt("OutputInterval", 1000),
+		op->getDouble("Tol", 1e-3), op->getDouble("Dtol", 0));
 
-	if (Option->getString("SaveFile") != "")
+	test(op->getInt("ForceOutput"), op->getInt("TestMax"));
+
+	if (op->getString("SaveFile") != "")
 	{
-		saveInfo(Option->getString("SaveFile").c_str());
+		saveInfo(op->getString("SaveFile").c_str());
 	}
-	if (Option->getString("TestDataFile") != "")
+	if (op->getString("TestDataFile") != "")
 	{
-		readData(Option->getString("TestDataFile").c_str(), &test_groupCount, &test_inputData, &test_expectData);
-		test();
+		readData(op->getString("TestDataFile").c_str(), &test_groupCount, &test_inputData, &test_expectData);
+		test(op->getInt("ForceOutput"), op->getInt("TestMax"));
 	}
 
-	if (Option->getInt("UseCUDA"))
-	{
-		Matrix::destroyCuda();
-	}
 }
 
 //设置学习模式
@@ -133,13 +124,14 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 	bool learn /*= false*/, double* error /*= nullptr*/)
 {
 	Random r;
+	r.reset();
 	if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)
 	{
 		int selectgroup = i;
 		if (batchCount <= 1)
 		{
-			selectgroup = int(r.rand()*groupCount);
+			selectgroup = int(r.rand_uniform()*groupCount);
 		}
 		int n = resetGroupCount(std::min(batchCount, groupCount - selectgroup));
 		if (input)
@@ -403,152 +395,66 @@ void NeuralNet::readMNIST()
 	Test::MNIST_readLabelFile("t10k-labels.idx1-ubyte", test_expectData->getDataPointer());
 }
 
-void NeuralNet::loadOption(const char* filename)
-{
-	Option->loadIni(filename);
-}
 
-
-//这里拆一部分数据为测试数据，写法有hack性质
 void NeuralNet::selectTest()
 {
-	/*
-	//备份原来的数据
-	auto input = new double[InputNodeCount*_train_groupCount];
-	auto output = new double[OutputNodeCount*_train_groupCount];
-	memcpy(input, _train_inputData, sizeof(double)*InputNodeCount*_train_groupCount);
-	memcpy(output, _train_expectData, sizeof(double)*OutputNodeCount*_train_groupCount);
 
-	_test_inputData = new double[InputNodeCount*_train_groupCount];
-	_test_expectData = new double[OutputNodeCount*_train_groupCount];
-
-	std::vector<bool> isTest;
-	isTest.resize(_train_groupCount);
-
-	_test_groupCount = 0;
-	int p = 0, p_data = 0, p_test = 0;
-	int it = 0, id = 0;
-	for (int i = 0; i < _train_groupCount; i++)
-	{
-		isTest[i] = (0.9 < 1.0*rand() / RAND_MAX);
-		if (isTest[i])
-		{
-			memcpy(_test_inputData + InputNodeCount*it, input + InputNodeCount*i, sizeof(double)*InputNodeCount);
-			memcpy(_test_expectData + OutputNodeCount*it, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
-			_test_groupCount++;
-			it++;
-		}
-		else
-		{
-			memcpy(_train_inputData + InputNodeCount*id, input + InputNodeCount*i, sizeof(double)*InputNodeCount);
-			memcpy(_train_expectData + OutputNodeCount*id, output + OutputNodeCount*i, sizeof(double)*OutputNodeCount);
-			id++;
-		}
-	}
-	_train_groupCount -= _test_groupCount;
-	resetGroupCount(_train_groupCount);
-	*/
 }
 
 //输出拟合的结果和测试集的结果
-void NeuralNet::test()
+void NeuralNet::test(int forceOutput /*= 0*/, int testMax /*= 0*/)
 {
-	train_expectData->tryDownloadFromCuda();
-	if (train_groupCount > 0)
-	{
-		auto train_output = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-		train_inputData->tryUploadToCuda();
-		active(train_inputData, nullptr, train_output, train_groupCount, resetGroupCount(train_groupCount));
-		fprintf(stdout, "\n%d groups train data:\n---------------------------------------\n", train_groupCount);
-		printResult(OutputNodeCount, train_groupCount, train_output, train_expectData);
-		delete train_output;
-	}
-	if (test_groupCount > 0)
-	{
-		auto test_output = new Matrix(OutputNodeCount, test_groupCount, md_Inside, mc_NoCuda);
-		test_inputData->tryUploadToCuda();
-		active(test_inputData, nullptr, test_output, test_groupCount, resetGroupCount(test_groupCount));
-		fprintf(stdout, "\n%d groups test data:\n---------------------------------------\n", test_groupCount);
-		printResult(OutputNodeCount, test_groupCount, test_output, test_expectData);
-		delete test_output;
-	}
+	outputTest("train", OutputNodeCount, train_groupCount, train_inputData, train_expectData, forceOutput, testMax);
+	outputTest("test", OutputNodeCount, test_groupCount, test_inputData, test_expectData, forceOutput, testMax);
 }
 
-void NeuralNet::printResult(int nodeCount, int groupCount, Matrix* output, Matrix* expect)
+void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matrix* input, Matrix* expect, int forceOutput, int testMax)
 {
-	if (Option->getInt("ForceOutput") || groupCount <= 100)
+	if (groupCount > 0)
 	{
-		for (int i = 0; i < groupCount; i++)
-		{
-			for (int j = 0; j < nodeCount; j++)
-			{
-				fprintf(stdout, "%8.4lf ", output->getData(j, i));
-			}
-			fprintf(stdout, " --> ");
-			for (int j = 0; j < nodeCount; j++)
-			{
-				fprintf(stdout, "%8.4lf ", expect->getData(j, i));
-			}
-			fprintf(stdout, "\n");
-		}
-	}
+		expect->tryDownloadFromCuda();
+		auto output = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
+		test_inputData->tryUploadToCuda();
+		active(input, nullptr, output, groupCount, resetGroupCount(groupCount));
 
-	if (Option->getInt("TestMax"))
-	{
-		auto outputMax = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
-		outputMax->initData(0);
-		auto om = new int[groupCount];
-		auto em = new int[groupCount];
-
-		//那边标最大值完蛋了，手动重标
-		for (int i = 0; i < groupCount; i++)
-		{
-			outputMax->getData(output->indexColMaxAbs(i), i) = 1;
-		}
-
-		for (int i = 0; i < groupCount; i++)
-		{
-			for (int j = 0; j < nodeCount; j++)
-			{
-				if (outputMax->getData(j, i) == 1)
-					om[i] = j;
-			}
-			for (int j = 0; j < nodeCount; j++)
-			{
-				if (expect->getData(j, i) == 1)
-					em[i] = j;
-			}
-		}
-		if (Option->getInt("ForceOutput") || groupCount <= 100)
+		fprintf(stdout, "\n%d groups %s data:\n---------------------------------------\n", groupCount, info);
+		if (forceOutput || groupCount <= 100)
 		{
 			for (int i = 0; i < groupCount; i++)
 			{
-				//if (om[i] != em[i])
+				for (int j = 0; j < nodeCount; j++)
 				{
-					int om = 0, em = 0;
-					for (int j = 0; j < nodeCount; j++)
-					{
-						if (outputMax->getData(j, i) == 1)
-							fprintf(stdout, "%3d (%6.4lf) ", j, output->getData(j, i));
-					}
-					fprintf(stdout, " --> ");
-					for (int j = 0; j < nodeCount; j++)
-					{
-						if (expect->getData(j, i) == 1)
-							fprintf(stdout, "%3d ", j);
-					}
-					fprintf(stdout, "\n");
+					fprintf(stdout, "%8.4lf ", output->getData(j, i));
 				}
+				fprintf(stdout, " --> ");
+				for (int j = 0; j < nodeCount; j++)
+				{
+					fprintf(stdout, "%8.4lf ", expect->getData(j, i));
+				}
+				fprintf(stdout, "\n");
 			}
 		}
+		if (testMax)
+		{
+			auto outputMax = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
+			Matrix::activeForward(af_Findmax, output, outputMax);
 
-		double n = 0;
-		for (int i = 0; i < nodeCount*groupCount; i++)
-			n += std::abs(outputMax->getData(i) - expect->getData(i));
-		n /= 2;
-		delete outputMax;
-		delete om;
-		delete em;
-		fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
+			if (forceOutput || groupCount <= 100)
+			{
+				for (int i = 0; i < groupCount; i++)
+				{
+					int o = outputMax->indexColMaxAbs(i);
+					int e = expect->indexColMaxAbs(i);
+					fprintf(stdout, "%3d (%6.4lf) --> %3d\n", o, output->getData(o, i), e);					
+				}
+			}
+
+			double n = 0;
+			Matrix::minus(outputMax, expect, outputMax);
+			n = outputMax->sumAbs() / 2;
+			delete outputMax;
+			fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
+		}
+		delete output;
 	}
 }

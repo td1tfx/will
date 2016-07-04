@@ -94,9 +94,6 @@
     <ClInclude Include="Matrix.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="IniOption.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="NeuralLayerPooling.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -104,6 +101,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Random.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Option.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

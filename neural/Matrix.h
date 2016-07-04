@@ -97,6 +97,7 @@ public:
 	void memcpyDataOut(double* dst, int size);
 	void expand();
 	int indexColMaxAbs(int c);
+	double sumAbs();
 	double sumColAbs(int c);
 	double ddot();
 
@@ -149,9 +150,9 @@ public:
 	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 
 	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
-		int window_w, int window_h, int stride_w, int stride_h, int** maxPos = nullptr);
+		int window_w, int window_h, int stride_w, int stride_h, int** recordPos = nullptr);
 	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX, 
-		int window_w, int window_h, int stride_w, int stride_h, int* maxPos = nullptr);
+		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
 	static void convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y,
 		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);

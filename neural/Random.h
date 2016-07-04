@@ -8,11 +8,15 @@ public:
 	virtual ~Random();
 
 	std::random_device rd;
-	std::mt19937 gen;
-	std::uniform_real_distribution<double> uniform_dist{0,1};
-	std::normal_distribution<double> normal_dist{0,1};
+	static std::mt19937 generator;
+	std::uniform_real_distribution<double> uniform_dist;
+	std::normal_distribution<double> normal_dist;
 
-	double rand();
+	void set_uniform(double a, double b);
+	double rand_uniform();
+	double rand_normal();
+
+	void reset();
 	
 };
 
