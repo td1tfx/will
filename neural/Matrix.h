@@ -111,6 +111,10 @@ public:
 	void tryDownloadFromCuda();
 	void shareData(Matrix* A, int m, int n);
 
+	//为静态运算在结果矩阵使用显存时就调用cuda函数计算，但是调用者应保证所有矩阵一致
+	//并未考虑全局UseCuda，因为在使用cuda的时候也有可能存在在内存中的矩阵
+	static MatrixCudaType selectUseCuda(Matrix* A1 = nullptr, Matrix* A2 = nullptr, Matrix* A3 = nullptr, Matrix* A4 = nullptr);
+
 	static void product(Matrix* A, Matrix* B, Matrix* R,
 		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
 	static void productVector(Matrix* A, Matrix* B, Matrix* R,
@@ -149,7 +153,7 @@ public:
 	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 
 	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
-		int window_w, int window_h, int stride_w, int stride_h, int** recordPos = nullptr);
+		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX, 
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 

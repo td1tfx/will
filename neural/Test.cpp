@@ -86,45 +86,50 @@ int Test::MNIST_readLabelFile(const char* filename, double* expect)
 void Test::test()
 {
 	//Matrix::initCuda();
-	Matrix A(4, 4, 1, 1);
-	A.initRandom();
-	A.print();
-	Matrix B(2, 2, 1, 1);
-	auto m = new int[A.getDataCount()];
-	Matrix::poolingForward(re_Average_Padding, &A, &B, 2, 2, 2, 2, &m);
-	printf("\n");
-	B.print();
-	for (int i = 0; i < A.getDataCount(); i++)
 	{
-		printf("%d ", m[i]);
-	}
-	printf("\n");
-	Matrix DA(4, 4, 1, 1);
-	Matrix DB(2, 2, 1, 1);
-	DB.initInt();
-	Matrix::poolingBackward(re_Average_Padding, &B, &DB, &A, &DA, 2, 2, 2, 2, m);
-	DB.print();
-	printf("\n");
-	DA.print();
-
-	printf("\nconvolution test:\n");
-	//A = Matrix(4,4,2,2);
-	Matrix a(4, 4, md_Outside);
-	A.initInt();
-	Matrix K(2, 2);
-	K.initData(1);
-	Matrix R(3, 3, 2, 2);
-	Matrix r(3, 3, md_Outside);
-	Matrix::convolutionForward(&A, &K, &R, 4, 4, 3, 3, 2);
-	//A->print(stdout);
-	for (int i = 0; i < 4; i++)
-	{
-		a.resetDataPointer(A.getDataPointer(16 * i, 0));
-		a.print();
-		r.resetDataPointer(R.getDataPointer(9 * i, 0));
-		r.print();
+		Matrix A(3, 3, 1, 1);
+		A.initRandom();
+		A.print();
+		Matrix B(2, 2, 1, 1);
+		auto m = new int[A.getDataCount()];
+		auto re = re_Average_Padding;
+		Matrix::poolingForward(re, &A, &B, 2, 2, 2, 2, m);
 		printf("\n");
+		B.print();
+		for (int i = 0; i < A.getDataCount(); i++)
+		{
+			//printf("%d ", m[i]);
+		}
+		printf("\n");
+		Matrix DA(3, 3, 1, 1);
+		Matrix DB(2, 2, 1, 1);
+		DB.initInt();
+		Matrix::poolingBackward(re, &B, &DB, &A, &DA, 2, 2, 2, 2, m);
+		DB.print();
+		printf("\n");
+		DA.print();
+		delete m;
 	}
+
+	{
+		printf("\nconvolution test:\n");
+		Matrix A = Matrix(4, 4, 2, 2);
+		Matrix a(4, 4, md_Outside);
+		A.initInt();
+		Matrix K(2, 2);
+		K.initData(1);
+		Matrix R(3, 3, 2, 2);
+		Matrix r(3, 3, md_Outside);
+		//Matrix::convolutionForward(&A, &K, &R, 4, 4, 3, 3, 2);
+		//A->print(stdout);
+		for (int i = 0; i < 4; i++)
+		{
+			a.resetDataPointer(A.getDataPointer(16 * i, 0));
+			//a.print();
+			r.resetDataPointer(R.getDataPointer(9 * i, 0));
+			//r.print();
+			printf("\n");
+		}}
 	//Matrix::destroyCuda();
-	delete m;
+
 }

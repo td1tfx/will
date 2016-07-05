@@ -10,7 +10,7 @@ NeuralLayerPooling::NeuralLayerPooling()
 
 NeuralLayerPooling::~NeuralLayerPooling()
 {
-	if (maxPos) delete maxPos;
+	if (recordPos) delete recordPos;
 }
 
 //采样层，参数为本层横向和纵向的采样像素个数
@@ -22,8 +22,8 @@ void NeuralLayerPooling::initData2(int x1, int x2)
 
 void NeuralLayerPooling::resetGroupCount2()
 {
-	if (maxPos) delete maxPos;
-	maxPos = new int[OutputCountPerGroup*GroupCount];
+	if (recordPos) delete recordPos;
+	recordPos = new int[OutputCountPerGroup*GroupCount];
 }
 
 //连接的时候才能知道本层的输出数
@@ -36,7 +36,7 @@ void NeuralLayerPooling::connetPrevlayer2()
 	//UnactivedMatrix = new d_matrix(OutputCount, GroupCount);
 	DeltaMatrix = new Matrix(OutputCountPerGroup, GroupCount);
 	OutputMatrix = new Matrix(OutputCountPerGroup, GroupCount);
-	maxPos = new int[OutputCountPerGroup*GroupCount];
+	recordPos = new int[OutputCountPerGroup*GroupCount];
 }
 
 void NeuralLayerPooling::updateDelta2()
@@ -47,7 +47,7 @@ void NeuralLayerPooling::updateDelta2()
 //直接硬上
 void NeuralLayerPooling::activeOutput()
 {
-	Matrix::poolingForward(_resampleType, PrevLayer->OutputMatrix, UnactivedMatrix, window_w, window_h, w_stride, h_stride, &maxPos);
+	Matrix::poolingForward(_resampleType, PrevLayer->OutputMatrix, UnactivedMatrix, window_w, window_h, w_stride, h_stride, recordPos);
 	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说
 	//d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
 }
@@ -57,7 +57,7 @@ void NeuralLayerPooling::activeOutput()
 void NeuralLayerPooling::spreadDeltaToPrevLayer()
 {
 	Matrix::poolingBackward(_resampleType, OutputMatrix, DeltaMatrix, PrevLayer->OutputMatrix, PrevLayer->DeltaMatrix,
-		window_w, window_h, w_stride, h_stride, maxPos);
+		window_w, window_h, w_stride, h_stride, recordPos);
 }
 
 

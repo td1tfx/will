@@ -289,7 +289,7 @@ double Matrix::sumAbs()
 	}
 	else
 	{
-		return cblas_dasum(max_script,data, 1);
+		return cblas_dasum(max_script, data, 1);
 	}
 }
 
@@ -399,7 +399,7 @@ void Matrix::colMultiply(double v, int c)
 void Matrix::cpyData(Matrix* dst, Matrix* src)
 {
 	auto size = sizeof(double)*std::min(dst->row*dst->col, src->row*src->col);
-	if (dst->UseCuda == mc_UseCuda && src->UseCuda==mc_UseCuda)
+	if (dst->UseCuda == mc_UseCuda && src->UseCuda == mc_UseCuda)
 	{
 		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToDevice);
 	}
@@ -460,6 +460,18 @@ void Matrix::shareData(Matrix* A, int m, int n)
 		this->data = A->getDataPointer(m, n);
 }
 
+
+MatrixCudaType Matrix::selectUseCuda(Matrix* A1 /*= nullptr*/, Matrix* A2 /*= nullptr*/, Matrix* A3 /*= nullptr*/, Matrix* A4 /*= nullptr*/)
+{
+	Matrix* m[4] = { A1,A2,A3,A4 };
+	for (int i = 0; i < 4; i++)
+	{
+		if (m[i] && m[i]->UseCuda == mc_NoCuda)
+			return mc_NoCuda;
+	}
+	return globalUseCuda;
+}
+
 //矩阵乘，R = aAB+cR
 void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/, MatrixTransType tb /*= NoTrans*/)
@@ -470,7 +482,7 @@ void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	int k = A->col;
 	int ldb = B->row;
 	if (ta == mt_Trans) { k = A->row; }
-	if (globalUseCuda == mc_UseCuda)
+	if (R->UseCuda == mc_UseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		auto tb1 = get_cublas_trans(tb);
@@ -490,7 +502,7 @@ void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, do
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
 
-	if (globalUseCuda == mc_UseCuda)
+	if (R->UseCuda == mc_UseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		cublasDgemv(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
@@ -508,7 +520,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, d
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
 
-	if (globalUseCuda == mc_UseCuda)
+	if (R->UseCuda == mc_UseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
 		for (int i = 0; i <= R->col; i++)
@@ -525,7 +537,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, d
 //矩阵元素乘
 void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 {
-	if (globalUseCuda == mc_UseCuda)
+	if (R->UseCuda == mc_UseCuda)
 	{
 		double a1 = 1, a2 = 1, b = 0;
 		cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_MUL, CUDNN_DATA_DOUBLE, CUDNN_NOT_PROPAGATE_NAN);
@@ -544,7 +556,7 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 //矩阵减
 void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 {
-	if (globalUseCuda == mc_UseCuda)
+	if (R->UseCuda == mc_UseCuda)
 	{
 		double a = -1;
 		cublasDcopy(cublasHandle, R->max_script, A->data, 1, R->data, 1);
@@ -653,11 +665,11 @@ void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, i
 }
 
 //池化，注意利用一个record记录下了对应位置
-//cpu部分，平均模式下对padding的支持目前还有问题
+//gpu部分，平均模式下对padding的支持目前还有问题
 void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
-	int window_w, int window_h, int stride_w, int stride_h, int** recordPos /*= nullptr*/)
+	int window_w, int window_h, int stride_w, int stride_h, int* recordPos /*= nullptr*/)
 {
-	if (globalUseCuda == mc_UseCuda)
+	if (Y->UseCuda == mc_UseCuda)
 	{
 		double a = 1, b = 0;
 		cudnnSetPooling2dDescriptor(pd, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
@@ -679,10 +691,10 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 					{
 						for (int j_X = j_Y*stride_h; j_X < std::min(X->H, j_Y*stride_h + window_h); j_X++)
 						{
-							if (re == re_Average_Padding)
+							if (re == re_Average_Padding || re == re_Average_NoPadding)
 							{
 								v += X->getData(i_X, j_X, p);
-								(*recordPos)[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
+								(recordPos)[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
 								n++;
 							}
 							else if (re == re_Max)
@@ -691,7 +703,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 								if (x > v)
 								{
 									v = x;
-									(*recordPos)[i_Y + j_Y*Y->W + p*Y->H*Y->W] = i_X + j_X*X->W + p*X->H*X->W;
+									(recordPos)[i_Y + j_Y*Y->W + p*Y->H*Y->W] = i_X + j_X*X->W + p*X->H*X->W;
 								}
 							}
 						}
@@ -715,7 +727,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX,
 	int window_w, int window_h, int stride_w, int stride_h, int* recordPos /*= nullptr*/)
 {
-	if (globalUseCuda == mc_UseCuda)
+	if (dX->UseCuda == mc_UseCuda)
 	{
 		//这个怎么看都快不了
 		double a = 1, b = 0;
@@ -724,41 +736,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 	}
 	else
 	{
-		if (re == re_Average_Padding)
-		{
-			//以下两种算法实际上遍历元素的数目是相同的
-			if (recordPos == nullptr)
-			{
-				for (int p = 0; p < dY->N*dY->C; p++)
-				{
-					for (int i_DY = 0; i_DY < dY->W; i_DY++)
-					{
-						for (int j_DY = 0; j_DY < dY->H; j_DY++)
-						{
-							//此处要优化一下
-							int n = window_w * window_h;
-							n = std::min(n, (dX->W- i_DY*stride_w)*(dX->H - j_DY*stride_h));
-							double v = dY->getData(i_DY, j_DY, p) / n;
-							for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
-							{
-								for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)
-								{
-									dX->getData(i_DX, j_DX, p) = v;
-								}
-							}
-						}
-					}
-				}
-			}
-			else
-			{
-				for (int i = 0; i < dX->getDataCount(); i++)
-				{
-					dX->getData(i) = dY->getData(recordPos[i]) / window_w / window_h;
-				}
-			}
-		}
-		else if (re == re_Max || recordPos)
+		if (re == re_Max && recordPos)
 		{
 			//利用记录保存最大值的位置，这样速度会快一点
 			dX->initData(0);
@@ -767,12 +745,49 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 				dX->getData(recordPos[i]) = dY->getData(i);
 			}
 		}
+		else if ((re == re_Average_Padding && recordPos == nullptr) || re == re_Average_NoPadding)
+		{
+			//以下两种算法实际上遍历元素的数目是相同的
+			for (int p = 0; p < dY->N*dY->C; p++)
+			{
+				for (int i_DY = 0; i_DY < dY->W; i_DY++)
+				{
+					for (int j_DY = 0; j_DY < dY->H; j_DY++)
+					{
+						int n;						
+						if (re == re_Average_NoPadding)
+						{
+							n = std::min(window_w, dX->W - i_DY*stride_w) * std::min(window_h,dX->H - j_DY*stride_h);
+						}
+						else
+						{
+							n = window_w * window_h;
+						}
+						double v = dY->getData(i_DY, j_DY, p) / n;
+						for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
+						{
+							for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)
+							{
+								dX->getData(i_DX, j_DX, p) = v;
+							}
+						}
+					}
+				}
+			}
+		}
+		else if (re == re_Average_Padding && recordPos)
+		{
+			for (int i = 0; i < dX->getDataCount(); i++)
+			{
+				dX->getData(i) = dY->getData(recordPos[i]) / window_w / window_h;
+			}
+		}
 	}
 }
 
 void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
 {
-	if (globalUseCuda == mc_UseCuda)
+	if (Y->UseCuda == mc_UseCuda)
 	{
 	}
 	else
@@ -822,10 +837,15 @@ void Matrix::setActive(cudnnActivationMode_t am)
 void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 {
 	double a = 1, b = 0;
+	MatrixCudaType useCuda = Y->UseCuda;
+	// 	if (X->UseCuda != mc_UseCuda || Y->UseCuda != mc_UseCuda)
+	// 	{
+	// 		useCuda = mc_NoCuda;
+	// 	}
 	switch (af)
 	{
 	case af_Sigmoid:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
 			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
@@ -839,7 +859,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		cpyData(Y, X);
 		break;
 	case af_Softmax:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setTensorDes(td, X->col, 1, 1, X->row);
 			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
@@ -857,7 +877,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		}
 		break;
 	case af_Tanh:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_TANH);
 			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
@@ -870,7 +890,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 	case af_Findmax:
 		if (Y->max_script <= 0) return;
 		Y->initData(0);
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			auto T = new Matrix(Y->row, Y->col, md_Inside, mc_NoCuda);
 			for (int i_group = 0; i_group < Y->col; i_group++)
@@ -891,7 +911,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		}
 		break;
 	case af_Softplus:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 
 		}
@@ -901,7 +921,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		}
 		break;
 	case af_ReLU:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_RELU);
 			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
@@ -917,10 +937,15 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* dX)
 {
 	double a = 1, b = 0;
+	MatrixCudaType useCuda = dX->UseCuda;
+	// 	if (X->UseCuda != mc_UseCuda || Y->UseCuda != mc_UseCuda || dX->UseCuda != mc_UseCuda)
+	// 	{
+	// 		useCuda = mc_NoCuda;
+	// 	}
 	switch (af)
 	{
 	case af_Sigmoid:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
 			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
@@ -937,7 +962,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		break;
 	case af_Softmax:
 		//softmax一般是最后一层，可能无用
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setTensorDes(td, X->col, 1, 1, X->row);
 			//TODO: wei wan cheng
@@ -950,7 +975,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		}
 		break;
 	case af_Tanh:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_TANH);
 			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
@@ -962,7 +987,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		}
 		break;
 	case af_Findmax:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 
 		}
@@ -972,7 +997,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		}
 		break;
 	case af_Softplus:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
 			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
@@ -983,7 +1008,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		}
 		break;
 	case af_ReLU:
-		if (globalUseCuda == mc_UseCuda)
+		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_RELU);
 			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,

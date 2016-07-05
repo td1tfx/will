@@ -10,7 +10,7 @@ public:
 	NeuralLayerPooling();
 	virtual ~NeuralLayerPooling();
 
-	int* maxPos = nullptr;   //记录最大值的位置
+	int* recordPos = nullptr;   //记录最大值的位置
 
 	ResampleType _resampleType = re_Max;
 	double Weight, Bias;

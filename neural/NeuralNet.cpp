@@ -63,19 +63,17 @@ void NeuralNet::run(Option* op)
 	//selectTest();
 	train(op->getInt("TrainTimes", 1000), op->getInt("OutputInterval", 1000),
 		op->getDouble("Tol", 1e-3), op->getDouble("Dtol", 0));
-
-	test(op->getInt("ForceOutput"), op->getInt("TestMax"));
-
 	if (op->getString("SaveFile") != "")
 	{
 		saveInfo(op->getString("SaveFile").c_str());
 	}
+
+	test(op->getInt("ForceOutput"), op->getInt("TestMax"));
 	if (op->getString("TestDataFile") != "")
 	{
 		readData(op->getString("TestDataFile").c_str(), &test_groupCount, &test_inputData, &test_expectData);
 		test(op->getInt("ForceOutput"), op->getInt("TestMax"));
 	}
-
 }
 
 //设置学习模式
@@ -158,7 +156,7 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 		}
 		if (output)
 		{
-			getOutputData(output, n, i);
+			getOutputData(output, n, selectgroup);
 		}
 		//计算误差，注意这个算法对于minibatch不严格
 		if (error)
@@ -173,7 +171,7 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 }
 
 
-void NeuralNet::getOutputData(Matrix* output, int groupCount, int col/*=0*/)
+void NeuralNet::getOutputData(Matrix* output, int groupCount, int col/*= 0*/)
 {
 	getLastLayer()->getOutputMatrix()->memcpyDataOut(output->getDataPointer(0, col), OutputNodeCount*groupCount);
 }
@@ -410,51 +408,50 @@ void NeuralNet::test(int forceOutput /*= 0*/, int testMax /*= 0*/)
 
 void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matrix* input, Matrix* expect, int forceOutput, int testMax)
 {
-	if (groupCount > 0)
-	{
-		expect->tryDownloadFromCuda();
-		auto output = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
-		test_inputData->tryUploadToCuda();
-		active(input, nullptr, output, groupCount, resetGroupCount(groupCount));
+	if (groupCount <= 0) return;
 
-		fprintf(stdout, "\n%d groups %s data:\n---------------------------------------\n", groupCount, info);
+	expect->tryDownloadFromCuda();
+	auto output = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
+	input->tryUploadToCuda();
+	active(input, nullptr, output, groupCount, resetGroupCount(groupCount));
+
+	fprintf(stdout, "\n%d groups %s data:\n---------------------------------------\n", groupCount, info);
+	if (forceOutput || groupCount <= 100)
+	{
+		for (int i = 0; i < groupCount; i++)
+		{
+			for (int j = 0; j < nodeCount; j++)
+			{
+				fprintf(stdout, "%8.4lf ", output->getData(j, i));
+			}
+			fprintf(stdout, " --> ");
+			for (int j = 0; j < nodeCount; j++)
+			{
+				fprintf(stdout, "%8.4lf ", expect->getData(j, i));
+			}
+			fprintf(stdout, "\n");
+		}
+	}
+	if (testMax)
+	{
+		auto outputMax = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
+		Matrix::activeForward(af_Findmax, output, outputMax);
+
 		if (forceOutput || groupCount <= 100)
 		{
 			for (int i = 0; i < groupCount; i++)
 			{
-				for (int j = 0; j < nodeCount; j++)
-				{
-					fprintf(stdout, "%8.4lf ", output->getData(j, i));
-				}
-				fprintf(stdout, " --> ");
-				for (int j = 0; j < nodeCount; j++)
-				{
-					fprintf(stdout, "%8.4lf ", expect->getData(j, i));
-				}
-				fprintf(stdout, "\n");
+				int o = outputMax->indexColMaxAbs(i);
+				int e = expect->indexColMaxAbs(i);
+				fprintf(stdout, "%3d (%6.4lf) --> %3d\n", o, output->getData(o, i), e);
 			}
 		}
-		if (testMax)
-		{
-			auto outputMax = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
-			Matrix::activeForward(af_Findmax, output, outputMax);
 
-			if (forceOutput || groupCount <= 100)
-			{
-				for (int i = 0; i < groupCount; i++)
-				{
-					int o = outputMax->indexColMaxAbs(i);
-					int e = expect->indexColMaxAbs(i);
-					fprintf(stdout, "%3d (%6.4lf) --> %3d\n", o, output->getData(o, i), e);					
-				}
-			}
-
-			double n = 0;
-			Matrix::minus(outputMax, expect, outputMax);
-			n = outputMax->sumAbs() / 2;
-			delete outputMax;
-			fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
-		}
-		delete output;
+		double n = 0;
+		Matrix::minus(outputMax, expect, outputMax);
+		n = outputMax->sumAbs() / 2;
+		delete outputMax;
+		fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
 	}
+	delete output;
 }

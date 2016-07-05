@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef _MSC_VER
-#define _USE_CUDA0
+#define _USE_CUDA
 #endif
 
 #include "lib/cuda/cuda_runtime.h"
