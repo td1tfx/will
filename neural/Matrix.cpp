@@ -653,14 +653,14 @@ void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, i
 }
 
 //池化，注意利用一个record记录下了对应位置
+//cpu部分，平均模式下对padding的支持目前还有问题
 void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 	int window_w, int window_h, int stride_w, int stride_h, int** recordPos /*= nullptr*/)
 {
 	if (globalUseCuda == mc_UseCuda)
 	{
 		double a = 1, b = 0;
-		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
-		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
+		cudnnSetPooling2dDescriptor(pd, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
 		cudnnPoolingForward(cudnnHandle, pd, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
 	}
 	else
@@ -674,14 +674,16 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 					double v = 0;
 					//if (re == re_Average)v = 0;
 					if (re == re_Max) v = -DBL_MAX;
+					int n = 0;
 					for (int i_X = i_Y*stride_w; i_X < std::min(X->W, i_Y*stride_w + window_w); i_X++)
 					{
 						for (int j_X = j_Y*stride_h; j_X < std::min(X->H, j_Y*stride_h + window_h); j_X++)
 						{
-							if (re == re_Average)
+							if (re == re_Average_Padding)
 							{
 								v += X->getData(i_X, j_X, p);
 								(*recordPos)[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
+								n++;
 							}
 							else if (re == re_Max)
 							{
@@ -694,7 +696,14 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 							}
 						}
 					}
-					if (re == re_Average) v /= window_w*window_h;
+					if (re == re_Average_Padding)
+					{
+						v /= window_w*window_h;
+					}
+					else if (re == re_Average_NoPadding)
+					{
+						v /= n;
+					}
 					Y->getData(i_Y, j_Y, p) = v;
 				}
 			}
@@ -710,13 +719,12 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 	{
 		//这个怎么看都快不了
 		double a = 1, b = 0;
-		auto pm = re == re_Max ? CUDNN_POOLING_MAX : CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING;
-		cudnnSetPooling2dDescriptor(pd, pm, CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
+		cudnnSetPooling2dDescriptor(pd, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
 		cudnnPoolingBackward(cudnnHandle, pd, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data, X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 	}
 	else
 	{
-		if (re == re_Average)
+		if (re == re_Average_Padding)
 		{
 			//以下两种算法实际上遍历元素的数目是相同的
 			if (recordPos == nullptr)
@@ -727,7 +735,10 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 					{
 						for (int j_DY = 0; j_DY < dY->H; j_DY++)
 						{
-							double v = dY->getData(i_DY, j_DY, p) / window_w / window_h;
+							//此处要优化一下
+							int n = window_w * window_h;
+							n = std::min(n, (dX->W- i_DY*stride_w)*(dX->H - j_DY*stride_h));
+							double v = dY->getData(i_DY, j_DY, p) / n;
 							for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
 							{
 								for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)

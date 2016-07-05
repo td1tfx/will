@@ -85,9 +85,6 @@
     <ClInclude Include="NeuralLayerConvolution.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MyCudaMath.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="types.h">
       <Filter>头文件</Filter>
     </ClInclude>

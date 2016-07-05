@@ -7,7 +7,6 @@
 #include "lib/cblas.h"
 #include "types.h"
 #include "MyMath.h"
-#include "MyCudaMath.h"
 #include "Random.h"
 
 //列优先或者行优先（未使用）

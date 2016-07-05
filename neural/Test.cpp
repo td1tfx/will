@@ -91,7 +91,7 @@ void Test::test()
 	A.print();
 	Matrix B(2, 2, 1, 1);
 	auto m = new int[A.getDataCount()];
-	Matrix::poolingForward(re_Average, &A, &B, 2, 2, 2, 2, &m);
+	Matrix::poolingForward(re_Average_Padding, &A, &B, 2, 2, 2, 2, &m);
 	printf("\n");
 	B.print();
 	for (int i = 0; i < A.getDataCount(); i++)
@@ -102,7 +102,7 @@ void Test::test()
 	Matrix DA(4, 4, 1, 1);
 	Matrix DB(2, 2, 1, 1);
 	DB.initInt();
-	Matrix::poolingBackward(re_Average, &B, &DB, &A, &DA, 2, 2, 2, 2, m);
+	Matrix::poolingBackward(re_Average_Padding, &B, &DB, &A, &DA, 2, 2, 2, 2, m);
 	DB.print();
 	printf("\n");
 	DA.print();

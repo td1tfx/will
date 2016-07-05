@@ -189,7 +189,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\INIReader.h" />
-    <ClInclude Include="MyCudaMath.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Random.h" />
