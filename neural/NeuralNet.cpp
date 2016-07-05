@@ -67,7 +67,7 @@ void NeuralNet::run(Option* op)
 	}
 
 	test(op->getInt("ForceOutput"), op->getInt("TestMax"));
-	extraTest(op->getString("TestDataFile").c_str(),op->getInt("ForceOutput"), op->getInt("TestMax"));
+	extraTest(op->getString("ExtraTestDataFile").c_str(),op->getInt("ForceOutput"), op->getInt("TestMax"));
 }
 
 //设置学习模式
@@ -397,7 +397,8 @@ void NeuralNet::extraTest(const char* filename, int forceOutput /*= 0*/, int tes
 	Matrix *input, *expect;
 	readData(filename, &count, &input, &expect);
 	outputTest("extra test", OutputNodeCount, count, input, expect, forceOutput, testMax);
-	delete input, expect;
+	delete input;
+	delete expect;
 }
 
 void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matrix* input, Matrix* expect, int forceOutput, int testMax)
