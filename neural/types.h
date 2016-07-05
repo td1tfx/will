@@ -84,7 +84,7 @@ typedef enum
 	af_ReLU,
 } ActiveFunctionType;
 
-//采样种类，与cuDNN直接对应，可以直接转换
+//采样种类，与cuDNN直接对应，可以类型转换
 typedef enum
 {
 	re_Max = CUDNN_POOLING_MAX,

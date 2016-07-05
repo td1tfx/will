@@ -37,6 +37,18 @@ public:
 
 	int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
 
+	int InputNodeCount;
+	int OutputNodeCount;
+
+	//训练集
+	Matrix* train_input = nullptr;
+	Matrix* train_expect = nullptr;
+	int train_groupCount = 0;
+	//测试集
+	Matrix* test_input = nullptr;
+	Matrix* test_expect = nullptr;
+	int test_groupCount = 0;
+
 	void run(Option* option);
 
 	//神经层
@@ -47,9 +59,6 @@ public:
 	NeuralLayer*& getFirstLayer() { return Layers[0]; }
 	NeuralLayer*& getLastLayer() { return Layers[LayerCount - 1]; }
 	int getLayerCount() { return LayerCount; };
-
-	int InputNodeCount;
-	int OutputNodeCount;
 
 	NeuralNetLearnType BatchMode = nl_Whole;
 	int MiniBatchCount = -1;
@@ -76,17 +85,8 @@ public:
 
 	void getOutputData(Matrix* output, int groupCount, int col = 0);
 
-	//数据
-	Matrix* train_inputData = nullptr;
-	Matrix* train_expectData = nullptr;
-	int train_groupCount = 0;   //实际的数据量
-
 	void readData(const char* filename, int* count, Matrix** input, Matrix** expect);
 	int resetGroupCount(int n);
-
-	Matrix* test_inputData = nullptr;
-	Matrix* test_expectData = nullptr;
-	int test_groupCount = 0;
 
 	//具体设置
 	virtual void createByData(int layerCount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
@@ -100,6 +100,7 @@ public:
 
 	void selectTest();
 	void test(int forceOutput = 0, int testMax = 0);
+	void extraTest(const char* filename, int forceOutput = 0, int testMax = 0);
 	void outputTest(const char* info, int nodeCount, int groupCount, Matrix* input, Matrix* expect, int forceOutput, int testMax);
 };
 
