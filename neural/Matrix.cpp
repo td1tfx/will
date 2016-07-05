@@ -868,6 +868,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 				T->getData(index, i_group) = 1;
 			}
 			cpyData(Y, T);
+			delete T;
 		}
 		else
 		{
