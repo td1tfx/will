@@ -10,8 +10,8 @@
 #include "lib/cuda/cudnn.h"
 
 #ifdef _USE_CUDA
+#pragma comment (lib, "cudart.lib")
 #pragma comment (lib, "cublas.lib")
-#pragma comment (lib, "cudart_static.lib")
 #pragma comment (lib, "cudnn.lib")
 
 /*
