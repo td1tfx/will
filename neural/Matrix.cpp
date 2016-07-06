@@ -694,7 +694,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 							if (re == re_Average_Padding || re == re_Average_NoPadding)
 							{
 								v += X->getData(i_X, j_X, p);
-								(recordPos)[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
+								if(recordPos) recordPos[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
 								n++;
 							}
 							else if (re == re_Max)
@@ -703,7 +703,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 								if (x > v)
 								{
 									v = x;
-									(recordPos)[i_Y + j_Y*Y->W + p*Y->H*Y->W] = i_X + j_X*X->W + p*X->H*X->W;
+									if (recordPos) recordPos[i_Y + j_Y*Y->W + p*Y->H*Y->W] = i_X + j_X*X->W + p*X->H*X->W;
 								}
 							}
 						}
@@ -738,11 +738,18 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 	{
 		if (re == re_Max && recordPos)
 		{
-			//利用记录保存最大值的位置，这样速度会快一点
+			//cpu计算时必须传入一个记录数组，保存最大值的位置，这样速度会快一点
 			dX->initData(0);
 			for (int i = 0; i < dY->getDataCount(); i++)
 			{
 				dX->getData(recordPos[i]) = dY->getData(i);
+			}
+		}
+		else if (re == re_Average_Padding && recordPos)
+		{
+			for (int i = 0; i < dX->getDataCount(); i++)
+			{
+				dX->getData(i) = dY->getData(recordPos[i]) / window_w / window_h;
 			}
 		}
 		else if ((re == re_Average_Padding && recordPos == nullptr) || re == re_Average_NoPadding)
@@ -773,13 +780,6 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 						}
 					}
 				}
-			}
-		}
-		else if (re == re_Average_Padding && recordPos)
-		{
-			for (int i = 0; i < dX->getDataCount(); i++)
-			{
-				dX->getData(i) = dY->getData(recordPos[i]) / window_w / window_h;
 			}
 		}
 	}
