@@ -111,12 +111,14 @@ typedef enum
 
 
 #ifdef _SINGLE_PRECISION
+#define REAL_MAX FLT_MAX
 #define CUDNN_DATA_real CUDNN_DATA_FLOAT  //大小写不同以区别
 #define CBLAS_FUNC(func) cblas_s##func
 #define CBLAS_FUNC_I(func) cblas_is##func
 #define CUBLAS_FUNC(func) cublasS##func
 #define CUBLAS_FUNC_I(func) cublasIs##func
 #else
+#define REAL_MAX DBL_MAX
 #define CUDNN_DATA_real CUDNN_DATA_DOUBLE
 #define CBLAS_FUNC(func) cblas_d##func
 #define CBLAS_FUNC_I(func) cblas_id##func

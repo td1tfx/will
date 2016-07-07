@@ -5,7 +5,7 @@ std::string readStringFromFile(const std::string &filename)
 	FILE *fp = fopen(filename.c_str(), "rb");
 	if (!fp)
 	{
-		printf("Can not open file %s\n", filename.c_str());
+		fprintf(stderr, "Can not open file %s\n", filename.c_str());
 		return "";
 	}
 	fseek(fp, 0, SEEK_END);
@@ -46,7 +46,7 @@ int replaceAllString(std::string &s, const std::string &oldstring, const std::st
 	{
 		s.erase(pos, oldstring.length());
 		s.insert(pos, newstring);
-		pos = s.find(oldstring, pos+ newstring.length());
+		pos = s.find(oldstring, pos + newstring.length());
 	}
 	return pos + newstring.length();
 }
@@ -87,16 +87,6 @@ void formatAppendString(std::string &str, const char *format, ...)
 	str += s;
 }
 
-double diff1(double y1, double x1, double y0, double x0)
-{
-	return (y1 - y0) / (x1 - x0);
-}
-
-double diff2(double y2, double x2, double y1, double x1, double y0, double x0)
-{
-	return (diff1(y2, x2, y1, x1) - diff1(y1, x1, y0, x0)) / (x1 - x0);
-}
-
 std::string findANumber(const std::string &s)
 {
 	bool findPoint = false;
@@ -106,7 +96,7 @@ std::string findANumber(const std::string &s)
 	for (int i = 0; i < s.length(); i++)
 	{
 		char c = s[i];
-		if (c >= '0' && c <= '9' || c=='-' || c == '.' || c=='e' || c=='E')
+		if (c >= '0' && c <= '9' || c == '-' || c == '.' || c == 'e' || c == 'E')
 		{
 			if (c >= '0' && c <= '9' || c == '-')
 			{

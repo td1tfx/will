@@ -51,7 +51,7 @@ void NeuralNet::run(Option* op)
 	//	_option.LoadNet == 0;
 
 	std::vector<int> v;
-	int n = findNumbers(op->getString("NodePerLayer"), v);
+	int n = findNumbers(op->getString("NodePerLayer"), &v);
 
 	if (op->getInt("LoadNet") == 0)
 		createByData(op->getInt("Layer", 3), v[0]);
@@ -231,7 +231,7 @@ void NeuralNet::readData(const char* filename, int* count, Matrix** input, Matri
 	if (str == "")
 		return;
 	std::vector<real> v;
-	int n = findNumbers(str, v);
+	int n = findNumbers(str, &v);
 	if (n <= 0) return;
 	InputNodeCount = int(v[0]);
 	OutputNodeCount = int(v[1]);
@@ -329,7 +329,7 @@ void NeuralNet::createByLoad(const char* filename)
 	if (str == "")
 		return;
 	std::vector<real> vv;
-	int n = findNumbers(str, vv);
+	int n = findNumbers(str, &vv);
 	auto v = new real[n];
 	for (int i = 0; i < n; i++)
 		v[i] = vv[i];

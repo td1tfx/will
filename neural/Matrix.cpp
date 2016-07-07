@@ -686,7 +686,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 				{
 					real v = 0;
 					//if (re == re_Average)v = 0;
-					if (re == re_Max) v = -DBL_MAX;
+					if (re == re_Max) v = -REAL_MAX;
 					int n = 0;
 					for (int i_X = i_Y*stride_w; i_X < std::min(X->W, i_Y*stride_w + window_w); i_X++)
 					{
