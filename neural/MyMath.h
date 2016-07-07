@@ -1,26 +1,27 @@
 #pragma once
 #include <math.h>
 #include <string.h>
+#include "types.h"
 
 namespace MyMath
 {
 #define MyMathFor(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
-#define MyMathVector(fv, f) static int fv(double* x, double* y, int size) { MyMathFor(f); return 0; }
+#define MyMathVector(fv, f) static int fv(real* x, real* y, int size) { MyMathFor(f); return 0; }
 #define MyMathFor_b(f) do{for(int i=0;i<size;i++){y[i]=f(x[i])*y[i];}}while(0)
-#define MyMathVector_b(fv, f) static int fv(double* x, double* y, int size) { MyMathFor_b(f); return 0; }
+#define MyMathVector_b(fv, f) static int fv(real* x, real* y, int size) { MyMathFor_b(f); return 0; }
 
-	static double sigmoid(double x) { return 1.0 / (1 + exp(-x)); }
-	static double dsigmoid(double x) { double a = 1 + exp(-x); return (a - 1) / (a*a); }
-	static double dsigmoid2(double y) { return y*(1-y); }
-	static double constant(double x) { return 1; }
-	static double dtanh(double x) { return 1 / cosh(x) / cosh(x); }
-	static double sign1(double x) { return x > 0 ? 1 : -1; }
-	static double dsign1(double x) { return 1; }
-	static double is(double x) { return x > 0.5 ? 1 : 0; }
-	static double dis(double x) { return 1; }
-	static double softplus(double x) { return log(1 + exp(x)); }
-	static double relu(double x) { return x > 0 ? x : 0; }
-	static double drelu(double x) { return x > 0 ? 1 : 0; }
+	static real sigmoid(real x) { return 1 / (1 + exp(-x)); }
+	static real dsigmoid(real x) { real a = 1 + exp(-x); return (a - 1) / (a*a); }
+	static real dsigmoid2(real y) { return y*(1-y); }
+	static real constant(real x) { return 1; }
+	static real dtanh(real x) { return 1 / cosh(x) / cosh(x); }
+	static real sign1(real x) { return x > 0 ? 1 : -1; }
+	static real dsign1(real x) { return 1; }
+	static real is(real x) { return x > 0.5 ? 1 : 0; }
+	static real dis(real x) { return 1; }
+	static real softplus(real x) { return log(1 + exp(x)); }
+	static real relu(real x) { return x > 0 ? x : 0; }
+	static real drelu(real x) { return x > 0 ? 1 : 0; }
 
 
 	MyMathVector(sigmoid_v, sigmoid);
@@ -39,10 +40,10 @@ namespace MyMath
 	MyMathVector(relu_v, relu);
 	MyMathVector_b(relu_vb, drelu);
 
-	static int linear_v(double* x, double* y, int size) { memcpy(y, x, sizeof(double)*size); }
+	static int linear_v(real* x, real* y, int size) { memcpy(y, x, sizeof(real)*size); }
 	MyMathVector_b(linear_vb, constant);
 
-	static int nullfunction(double* x, double* y, int size) { return 0; }
+	static int nullfunction(real* x, real* y, int size) { return 0; }
 
 	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 #undef MyMathFor

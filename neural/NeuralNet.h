@@ -64,21 +64,21 @@ public:
 	int MiniBatchCount = -1;
 	void setLearnType(NeuralNetLearnType lm, int lb = -1);
 
-	double LearnSpeed = 0.5;  //学习速度
-	void setLearnSpeed(double s) { LearnSpeed = s; }
+	real LearnSpeed = 0.5;  //学习速度
+	void setLearnSpeed(real s) { LearnSpeed = s; }
 
-	double Lambda = 0.0;      //正则化参数，防止过拟合
-	void setRegular(double l) { Lambda = l; }
+	real Lambda = 0.0;      //正则化参数，防止过拟合
+	void setRegular(real l) { Lambda = l; }
 
 	NeuralNetWorkType WorkType = nw_Fit;
 	void setWorkType(NeuralNetWorkType wm);
 
 	void createLayers(int layerCount);  //包含输入和输出层
 
-	void train(int times = 1000000, int interval = 1000, double tol = 1e-3, double dtol = 0);  //训练过程
+	void train(int times = 1000000, int interval = 1000, real tol = 1e-3, real dtol = 0);  //训练过程
 
 	void active(Matrix* input, Matrix* expect, Matrix* output, int groupCount, int batchCount,
-		bool learn = false, double* error = nullptr);  //计算一组输出
+		bool learn = false, real* error = nullptr);  //计算一组输出
 
 	//void setInputData(d_matrix* input, int groupid);
 	//void setExpectData(d_matrix* expect, int groupid);

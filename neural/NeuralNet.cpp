@@ -31,8 +31,8 @@ void NeuralNet::run(Option* op)
 	MiniBatchCount = std::max(1, op->getInt("MiniBatch"));
 	WorkType = NeuralNetWorkType(op->getInt("WorkMode"));
 
-	LearnSpeed = op->getDouble("LearnSpeed", 0.5);
-	Lambda = op->getDouble("Regular");
+	LearnSpeed = op->getReal("LearnSpeed", 0.5);
+	Lambda = op->getReal("Regular");
 
 	MaxGroup = op->getInt("MaxGroup", 100000);
 	
@@ -50,17 +50,17 @@ void NeuralNet::run(Option* op)
 	//if (readStringFromFile(_option.LoadFile) == "")
 	//	_option.LoadNet == 0;
 
-	std::vector<double> v;
+	std::vector<int> v;
 	int n = findNumbers(op->getString("NodePerLayer"), v);
 
 	if (op->getInt("LoadNet") == 0)
-		createByData(op->getInt("Layer", 3), int(v[0]));
+		createByData(op->getInt("Layer", 3), v[0]);
 	else
 		createByLoad(op->getString("LoadFile").c_str());
 
 	//selectTest();
 	train(op->getInt("TrainTimes", 1000), op->getInt("OutputInterval", 1000),
-		op->getDouble("Tol", 1e-3), op->getDouble("Dtol", 0));
+		op->getReal("Tol", 1e-3), op->getReal("Dtol", 0));
 	if (op->getString("SaveFile") != "")
 	{
 		saveInfo(op->getString("SaveFile").c_str());
@@ -114,18 +114,18 @@ void NeuralNet::createLayers(int layerCount)
 
 
 //训练一批数据，输出步数和误差，若训练次数为0可以理解为纯测试模式
-void NeuralNet::train(int times, int interval, double tol, double dtol)
+void NeuralNet::train(int times, int interval, real tol, real dtol)
 {
 	if (times <= 0) return;
 	//这里计算初始的误差，如果足够小就不训练了
 	//这个误差是总体误差，与批量误差有区别，故有时首次训练会出现误差增加
-	double e = 0;
+	real e = 0;
 	train_input->tryUploadToCuda();
 	train_expect->tryUploadToCuda();
 	active(train_input, train_expect, nullptr, train_groupCount, MiniBatchCount, false, &e);
 	fprintf(stdout, "step = %e, mse = %e\n", 0.0, e);
 	if (e < tol) return;
-	double e0 = e;
+	real e0 = e;
 
 	switch (BatchMode)
 	{
@@ -151,7 +151,7 @@ void NeuralNet::train(int times, int interval, double tol, double dtol)
 		active(train_input, train_expect, nullptr, train_groupCount, MiniBatchCount, true, count % interval == 0 ? &e : nullptr);
 		if (count % interval == 0 || count == times)
 		{
-			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", double(count), e, e0 - e);
+			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", real(count), e, e0 - e);
 			if (e < tol || std::abs(e - e0) < dtol) break;
 			e0 = e;
 		}
@@ -159,7 +159,7 @@ void NeuralNet::train(int times, int interval, double tol, double dtol)
 }
 
 void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupCount, int batchCount,
-	bool learn /*= false*/, double* error /*= nullptr*/)
+	bool learn /*= false*/, real* error /*= nullptr*/)
 {
 	Random r;
 	r.reset();
@@ -230,7 +230,7 @@ void NeuralNet::readData(const char* filename, int* count, Matrix** input, Matri
 	std::string str = readStringFromFile(filename);
 	if (str == "")
 		return;
-	std::vector<double> v;
+	std::vector<real> v;
 	int n = findNumbers(str, v);
 	if (n <= 0) return;
 	InputNodeCount = int(v[0]);
@@ -328,9 +328,9 @@ void NeuralNet::createByLoad(const char* filename)
 	std::string str = readStringFromFile(filename);
 	if (str == "")
 		return;
-	std::vector<double> vv;
+	std::vector<real> vv;
 	int n = findNumbers(str, vv);
-	auto v = new double[n];
+	auto v = new real[n];
 	for (int i = 0; i < n; i++)
 		v[i] = vv[i];
 
@@ -355,6 +355,7 @@ void NeuralNet::createByLoad(const char* filename)
 		int readcount = layer2->loadInfo(v + k, n - k);
 		k += readcount;
 	}
+	delete[] v;
 }
 
 void NeuralNet::readMNIST()
@@ -417,12 +418,12 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 		{
 			for (int j = 0; j < nodeCount; j++)
 			{
-				fprintf(stdout, "%8.4lf ", output->getData(j, i));
+				fprintf(stdout, "%8.4f ", output->getData(j, i));
 			}
 			fprintf(stdout, " --> ");
 			for (int j = 0; j < nodeCount; j++)
 			{
-				fprintf(stdout, "%8.4lf ", expect->getData(j, i));
+				fprintf(stdout, "%8.4f ", expect->getData(j, i));
 			}
 			fprintf(stdout, "\n");
 		}
@@ -438,15 +439,15 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 			{
 				int o = outputMax->indexColMaxAbs(i);
 				int e = expect->indexColMaxAbs(i);
-				fprintf(stdout, "%3d (%6.4lf) --> %3d\n", o, output->getData(o, i), e);
+				fprintf(stdout, "%3d (%6.4f) --> %3d\n", o, output->getData(o, i), e);
 			}
 		}
 
-		double n = 0;
+		real n = 0;
 		Matrix::minus(outputMax, expect, outputMax);
 		n = outputMax->sumAbs() / 2;
 		delete outputMax;
-		fprintf(stdout, "Error of max value position: %d, %5.2lf%%\n", int(n), n / groupCount * 100);
+		fprintf(stdout, "Error of max value position: %d, %5.2f%%\n", int(n), n / groupCount * 100);
 	}
 	delete output;
 }

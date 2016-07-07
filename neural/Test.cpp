@@ -31,7 +31,7 @@ void Test::reverse(unsigned char* c, int n)
 	}
 }
 
-int Test::MNIST_readImageFile(const char* filename, double* input)
+int Test::MNIST_readImageFile(const char* filename, real* input)
 {
 	auto content = readFile(filename);
 	reverse(content + 4, 4);
@@ -43,7 +43,7 @@ int Test::MNIST_readImageFile(const char* filename, double* input)
 	//fprintf(stderr, "%-30s%d groups data, w = %d, h = %d\n", filename, count, w, h);
 	int size = count*w*h;
 	//input = new double[size];
-	memset(input, 0, sizeof(double)*size);
+	memset(input, 0, sizeof(real)*size);
 	for (int i = 0; i < size; i++)
 	{
 		auto v = *(content + 16 + i);
@@ -65,14 +65,14 @@ int Test::MNIST_readImageFile(const char* filename, double* input)
 	return w*h;
 }
 
-int Test::MNIST_readLabelFile(const char* filename, double* expect)
+int Test::MNIST_readLabelFile(const char* filename, real* expect)
 {
 	auto content = readFile(filename);
 	reverse(content + 4, 4);
 	int count = *(int*)(content + 4);
 	//fprintf(stderr, "%-30s%d groups data\n", filename, count);
 	//expect = new double[count*10];
-	memset(expect, 0, sizeof(double)*count * 10);
+	memset(expect, 0, sizeof(real)*count * 10);
 	for (int i = 0; i < count; i++)
 	{
 		int pos = *(content + 8 + i);

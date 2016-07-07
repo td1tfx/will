@@ -77,7 +77,7 @@ void NeuralLayerFull::spreadDeltaToPrevLayer()
 	Matrix::product(WeightMatrix, DeltaMatrix, PrevLayer->DeltaMatrix, 1, 0, mt_Trans, mt_NoTrans);
 }
 
-void NeuralLayerFull::updateWeightBias(double learnSpeed, double lambda)
+void NeuralLayerFull::updateWeightBias(real learnSpeed, real lambda)
 {
 	Matrix::product(DeltaMatrix, PrevLayer->OutputMatrix, WeightMatrix,
 		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, mt_NoTrans, mt_Trans);
@@ -95,7 +95,7 @@ int NeuralLayerFull::saveInfo(FILE* fout)
 	return 3 + WeightMatrix->getDataCount() + BiasVector->getDataCount();
 }
 
-int NeuralLayerFull::loadInfo(double* v, int n)
+int NeuralLayerFull::loadInfo(real* v, int n)
 {
 	int k = 0;
 	k += 2;

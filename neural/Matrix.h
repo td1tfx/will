@@ -45,7 +45,7 @@ private:
 	MatrixCudaType UseCuda = mc_NoCuda;
 	static MatrixCudaType globalUseCuda;
 
-	double* data = nullptr;
+	real* data = nullptr;
 	int row = 0;
 	int col = 0;
 	int max_script;
@@ -64,47 +64,47 @@ public:
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
 	int xy2i(int m, int n) { return m + n*row; }
-	double& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }
-	double& getData(int i) { return data[std::min(i, max_script - 1)]; }
-	double* getDataPointer(int m, int n) { return &getData(m, n); }
-	double* getDataPointer(int i) { return &getData(i); }
-	double* getDataPointer() { return data; }
+	real& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }
+	real& getData(int i) { return data[std::min(i, max_script - 1)]; }
+	real* getDataPointer(int m, int n) { return &getData(m, n); }
+	real* getDataPointer(int i) { return &getData(i); }
+	real* getDataPointer() { return data; }
 	int resize(int m, int n, int force = 0);
-	double& getData(int w, int h, int p) { return data[w + h*W + p*W*H]; }
-	double& getData(int w, int h, int c, int n) { return getData(w, h, c + C*n); }
+	real& getData(int w, int h, int p) { return data[w + h*W + p*W*H]; }
+	real& getData(int w, int h, int c, int n) { return getData(w, h, c + C*n); }
 
 	//这两个不推荐使用，比较乱
-	double& getImageData(int m, int n) { return getData(n, m); }
-	double* getImageDataPointer(int m, int n) { return &getData(n, m); }
+	real& getImageData(int m, int n) { return getData(n, m); }
+	real* getImageDataPointer(int m, int n) { return &getData(n, m); }
 
 	//这个函数可能不安全，慎用！！
-	void resetDataPointer(double* d, int d_in_cuda = 0);
+	void resetDataPointer(real* d, int d_in_cuda = 0);
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
 	void setInsideData(MatrixDataType id) { insideData = id; }
 
-	double& operator [] (int i) { return data[i]; }
+	real& operator [] (int i) { return data[i]; }
 
 	static void initCuda();
 	static void destroyCuda();
 
 	void print(FILE* fout = stdout);
-	int load(double* v, int n);
+	int load(real* v, int n);
 	void printAsVector(FILE* fout = stdout);
-	int loadAsVector(double* v, int n);
+	int loadAsVector(real* v, int n);
 
-	void memcpyDataIn(double* src, int size);
-	void memcpyDataOut(double* dst, int size);
+	void memcpyDataIn(real* src, int size);
+	void memcpyDataOut(real* dst, int size);
 	void expand();
 	int indexColMaxAbs(int c);
-	double sumAbs();
-	double sumColAbs(int c);
-	double ddot();
+	real sumAbs();
+	real sumColAbs(int c);
+	real ddot();
 
-	void initData(double v);
+	void initData(real v);
 	void initRandom();
 	void initInt();
-	void multiply(double v);
-	void colMultiply(double v, int c);
+	void multiply(real v);
+	void colMultiply(real v, int c);
 
 	static void cpyData(Matrix* dst, Matrix* src);
 	void tryUploadToCuda();
@@ -116,11 +116,11 @@ public:
 	static MatrixCudaType selectUseCuda(Matrix* A1 = nullptr, Matrix* A2 = nullptr, Matrix* A3 = nullptr, Matrix* A4 = nullptr);
 
 	static void product(Matrix* A, Matrix* B, Matrix* R,
-		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
+		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
 	static void productVector(Matrix* A, Matrix* B, Matrix* R,
-		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
+		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
 	static void productVector2(Matrix* A, Matrix* B, Matrix* R,
-		double a = 1, double c = 0, MatrixTransType ta = mt_NoTrans);
+		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
 	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
 	static void minus(Matrix* A, Matrix* B, Matrix* R);
 
@@ -140,14 +140,14 @@ private:
 	static cudnnFilterDescriptor_t fd;
 
 	//必须配对！
-	double* mallocData(int size);
+	real* mallocData(int size);
 	void freeData();
 	
 	//这两组好像必须交叉配对！
-	double* malloc_getDataFromDevice();
-	void freeDataForDevice(double* temp);
-	double* mallocDataForDevice();
-	void set_freeDataToDevice(double* temp);
+	real* malloc_getDataFromDevice();
+	void freeDataForDevice(real* temp);
+	real* mallocDataForDevice();
+	void set_freeDataToDevice(real* temp);
 
 public:
 	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
@@ -160,8 +160,8 @@ public:
 	static void convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y,
 		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
 
-	static void selectFunction(MatrixCudaType useCuda, double* x, double* y, int size,
-		std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2);
+	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
+		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);
 
 	static void setActive(cudnnActivationMode_t am);
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y);

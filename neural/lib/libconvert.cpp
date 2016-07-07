@@ -97,36 +97,6 @@ double diff2(double y2, double x2, double y1, double x1, double y0, double x0)
 	return (diff1(y2, x2, y1, x1) - diff1(y1, x1, y0, x0)) / (x1 - x0);
 }
 
-int findNumbers(const std::string &s, std::vector<double> &data)
-{
-	int n = 0;
-	std::string str = "";
-	bool haveNum = false;
-	for (int i = 0; i < s.length(); i++)
-	{
-		char c = s[i];
-		bool findNumChar = (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'E' || c == 'e';
-		if (findNumChar)
-		{
-			str += c;
-			if (c >= '0' && c <= '9')
-				haveNum = true;
-		}
-		if (!findNumChar || i == s.length() - 1)
-		{
-			if (str != "" && haveNum)
-			{
-				double f = atof(str.c_str());
-				data.push_back(f);
-				n++;
-			}
-			str = "";
-			haveNum = false;
-		}
-	}
-	return n;
-}
-
 std::string findANumber(const std::string &s)
 {
 	bool findPoint = false;
@@ -203,3 +173,4 @@ bool isProChar(char c)
 {
 	return (c >= '0' && c <= '9') || (c >= 'A' && c <= 'z') || (c >= '(' && c <= ')');
 }
+

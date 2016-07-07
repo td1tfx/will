@@ -83,7 +83,7 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 
 
 //重设数据指针，比较危险，不推荐
-void Matrix::resetDataPointer(double* d, int d_in_cuda /*= 0*/)
+void Matrix::resetDataPointer(real* d, int d_in_cuda /*= 0*/)
 {
 	if (UseCuda == mc_UseCuda)
 	{
@@ -164,18 +164,18 @@ void Matrix::print(FILE* fout)
 	{
 		for (int j = 0; j < col; j++)
 		{
-			double v = temp[xy2i(i, j)];
+			real v = temp[xy2i(i, j)];
 			if (std::abs(v) > 1e10)
 				fprintf(fout, "%14.11e ", v);
 			else
-				fprintf(fout, "%14.11lf ", v);
+				fprintf(fout, "%14.11f ", v);
 		}
 		fprintf(fout, "\n");
 	}
 	freeDataForDevice(temp);
 }
 
-int Matrix::load(double* v, int n)
+int Matrix::load(real* v, int n)
 {
 	auto temp = mallocDataForDevice();
 	int k = 0;
@@ -197,14 +197,14 @@ void Matrix::printAsVector(FILE* fout /*= stdout*/)
 	auto temp = malloc_getDataFromDevice();
 	for (int i = 0; i < max_script; i++)
 	{
-		fprintf(fout, "%14.11lf ", temp[i]);
+		fprintf(fout, "%14.11f ", temp[i]);
 	}
 	fprintf(fout, "\n");
 	freeDataForDevice(temp);
 }
 
 //将矩阵当做向量，按照内存中的顺序依次载入
-int Matrix::loadAsVector(double* v, int n)
+int Matrix::loadAsVector(real* v, int n)
 {
 	auto temp = mallocDataForDevice();
 	int k = 0;
@@ -218,28 +218,28 @@ int Matrix::loadAsVector(double* v, int n)
 }
 
 //将外界的值复制到矩阵，参数指针必须指向Host内存！
-void Matrix::memcpyDataIn(double* src, int size)
+void Matrix::memcpyDataIn(real* src, int size)
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		cudaMemcpy(data, src, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyHostToDevice);
+		cudaMemcpy(data, src, int(sizeof(real)*std::min(size, max_script)), cudaMemcpyHostToDevice);
 	}
 	else
 	{
-		memcpy(data, src, int(sizeof(double)*std::min(size, max_script)));
+		memcpy(data, src, int(sizeof(real)*std::min(size, max_script)));
 	}
 }
 
 //将矩阵的值复制到外界，参数指针必须指向Host内存！
-void Matrix::memcpyDataOut(double* dst, int size)
+void Matrix::memcpyDataOut(real* dst, int size)
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		cudaMemcpy(dst, data, int(sizeof(double)*std::min(size, max_script)), cudaMemcpyDeviceToHost);
+		cudaMemcpy(dst, data, int(sizeof(real)*std::min(size, max_script)), cudaMemcpyDeviceToHost);
 	}
 	else
 	{
-		memcpy(dst, data, int(sizeof(double)*std::min(size, max_script)));
+		memcpy(dst, data, int(sizeof(real)*std::min(size, max_script)));
 	}
 }
 
@@ -251,7 +251,7 @@ void Matrix::expand()
 		for (int i = 1; i < col; i *= 2)
 		{
 			cudaMemcpy(getDataPointer(0, i), getDataPointer(0, 0),
-				sizeof(double)*row*std::min(i, col - i), cudaMemcpyDeviceToDevice);
+				sizeof(real)*row*std::min(i, col - i), cudaMemcpyDeviceToDevice);
 		}
 	}
 	else
@@ -259,7 +259,7 @@ void Matrix::expand()
 		//#pragma loop(hint_parallel(8))
 		for (int i = 1; i < col; i *= 2)
 		{
-			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(double)*row*std::min(i, col - i));
+			memcpy(getDataPointer(0, i), getDataPointer(0, 0), sizeof(real)*row*std::min(i, col - i));
 		}
 	}
 }
@@ -270,61 +270,61 @@ int Matrix::indexColMaxAbs(int c)
 	if (UseCuda == mc_UseCuda)
 	{
 		int r;
-		cublasIdamax(cublasHandle, row, getDataPointer(0, c), 1, &r);
+		CUBLAS_FUNC_I(amax)(cublasHandle, row, getDataPointer(0, c), 1, &r);
 		return r - 1;
 	}
 	else
 	{
-		return cblas_idamax(row, getDataPointer(0, c), 1);
+		return CBLAS_FUNC_I(amax)(row, getDataPointer(0, c), 1);
 	}
 }
 
-double Matrix::sumAbs()
+real Matrix::sumAbs()
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		double r;
-		cublasDasum(cublasHandle, max_script, data, 1, &r);
+		real r;
+		CUBLAS_FUNC(asum)(cublasHandle, max_script, data, 1, &r);
 		return r;
 	}
 	else
 	{
-		return cblas_dasum(max_script, data, 1);
+		return CBLAS_FUNC(asum)(max_script, data, 1);
 	}
 }
 
 //一列的绝对值和
-double Matrix::sumColAbs(int c)
+real Matrix::sumColAbs(int c)
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		double r;
-		cublasDasum(cublasHandle, row, getDataPointer(0, c), 1, &r);
+		real r;
+		CUBLAS_FUNC(asum)(cublasHandle, row, getDataPointer(0, c), 1, &r);
 		return r;
 	}
 	else
 	{
-		return cblas_dasum(row, getDataPointer(0, c), 1);
+		return CBLAS_FUNC(asum)(row, getDataPointer(0, c), 1);
 	}
 }
 
 //点乘，即所有元素平方和
-double Matrix::ddot()
+real Matrix::ddot()
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		double r;
-		cublasDdot(cublasHandle, max_script, data, 1, data, 1, &r);
+		real r;
+		CUBLAS_FUNC(dot)(cublasHandle, max_script, data, 1, data, 1, &r);
 		return r;
 	}
 	else
 	{
-		return cblas_ddot(max_script, data, 1, data, 1);
+		return CBLAS_FUNC(dot)(max_script, data, 1, data, 1);
 	}
 }
 
 //以同一个值初始化矩阵
-void Matrix::initData(double v)
+void Matrix::initData(real v)
 {
 	if (UseCuda == mc_UseCuda)
 	{
@@ -370,35 +370,35 @@ void Matrix::initInt()
 }
 
 //数乘
-void Matrix::multiply(double v)
+void Matrix::multiply(real v)
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		cublasDscal(cublasHandle, row, &v, data, 1);
+		CUBLAS_FUNC(scal)(cublasHandle, row, &v, data, 1);
 	}
 	else
 	{
-		cblas_dscal(max_script, v, data, 1);
+		CBLAS_FUNC(scal)(max_script, v, data, 1);
 	}
 }
 
 //选择一列数乘
-void Matrix::colMultiply(double v, int c)
+void Matrix::colMultiply(real v, int c)
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		cublasDscal(cublasHandle, row, &v, getDataPointer(0, c), 1);
+		CUBLAS_FUNC(scal)(cublasHandle, row, &v, getDataPointer(0, c), 1);
 	}
 	else
 	{
-		cblas_dscal(row, v, getDataPointer(0, c), 1);
+		CBLAS_FUNC(scal)(row, v, getDataPointer(0, c), 1);
 	}
 }
 
 //复制数据，只处理较少的
 void Matrix::cpyData(Matrix* dst, Matrix* src)
 {
-	auto size = sizeof(double)*std::min(dst->row*dst->col, src->row*src->col);
+	auto size = sizeof(real)*std::min(dst->row*dst->col, src->row*src->col);
 	if (dst->UseCuda == mc_UseCuda && src->UseCuda == mc_UseCuda)
 	{
 		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToDevice);
@@ -474,7 +474,7 @@ MatrixCudaType Matrix::selectUseCuda(Matrix* A1 /*= nullptr*/, Matrix* A2 /*= nu
 
 //矩阵乘，R = aAB+cR
 void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
-	double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/, MatrixTransType tb /*= NoTrans*/)
+	real a /*= 1*/, real c /*= 0*/, MatrixTransType ta /*= NoTrans*/, MatrixTransType tb /*= NoTrans*/)
 {
 	int m = R->row;
 	int n = R->col;
@@ -486,18 +486,18 @@ void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	{
 		auto ta1 = get_cublas_trans(ta);
 		auto tb1 = get_cublas_trans(tb);
-		cublasDgemm(cublasHandle, ta1, tb1, m, n, k, &a, A->data, lda, B->data, ldb, &c, R->data, m);
+		CUBLAS_FUNC(gemm)(cublasHandle, ta1, tb1, m, n, k, &a, A->data, lda, B->data, ldb, &c, R->data, m);
 	}
 	else
 	{
 		auto ta1 = get_cblas_trans(ta);
 		auto tb1 = get_cblas_trans(tb);
-		cblas_dgemm(CblasColMajor, ta1, tb1, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
+		CBLAS_FUNC(gemm)(CblasColMajor, ta1, tb1, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
 	}
 }
 
 //矩阵乘以向量，R = aAB+cR
-void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
+void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, real a /*= 1*/, real c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
@@ -505,17 +505,17 @@ void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, do
 	if (R->UseCuda == mc_UseCuda)
 	{
 		auto ta1 = get_cublas_trans(ta);
-		cublasDgemv(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
+		CUBLAS_FUNC(gemv)(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
 	}
 	else
 	{
 		auto ta1 = get_cblas_trans(ta);
-		cblas_dgemv(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
+		CBLAS_FUNC(gemv)(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
 	}
 }
 
 //没什么用，废弃
-void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, double c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
+void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, real a /*= 1*/, real c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
 	int m = A->row, n = A->col;
 	if (ta == mt_Trans) { std::swap(m, n); };
@@ -524,13 +524,13 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, double a /*= 1*/, d
 	{
 		auto ta1 = get_cublas_trans(ta);
 		for (int i = 0; i <= R->col; i++)
-			cublasDgemv(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1);
+			CUBLAS_FUNC(gemv)(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1);
 	}
 	else
 	{
 		auto ta1 = get_cblas_trans(ta);
 		for (int i = 0; i <= R->col; i++)
-			cblas_dgemv(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->getDataPointer(0, i), 1);
+			CBLAS_FUNC(gemv)(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->getDataPointer(0, i), 1);
 	}
 }
 
@@ -539,8 +539,8 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (R->UseCuda == mc_UseCuda)
 	{
-		double a1 = 1, a2 = 1, b = 0;
-		cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_MUL, CUDNN_DATA_DOUBLE, CUDNN_NOT_PROPAGATE_NAN);
+		real a1 = 1, a2 = 1, b = 0;
+		cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_MUL, CUDNN_DATA_real, CUDNN_NOT_PROPAGATE_NAN);
 		cudnnOpTensor(cudnnHandle, od, &a1, A->tensorDes, A->data, &a2, B->tensorDes, B->data, &b, R->tensorDes, R->data);
 	}
 	else
@@ -558,19 +558,20 @@ void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (R->UseCuda == mc_UseCuda)
 	{
-		double a = -1;
-		cublasDcopy(cublasHandle, R->max_script, A->data, 1, R->data, 1);
-		cublasDaxpy(cublasHandle, R->max_script, &a, B->data, 1, R->data, 1);
+		real a = -1;
+		CUBLAS_FUNC(copy)(cublasHandle, R->max_script, A->data, 1, R->data, 1);
+		CUBLAS_FUNC(axpy)(cublasHandle, R->max_script, &a, B->data, 1, R->data, 1);
 
-		//double a1 = 1, a2 = -1, b = 0;
+		//real a1 = 1, a2 = -1, b = 0;
 		//setTensor(td, 1, 1, R->col, R->row);
-		//cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_ADD, CUDNN_DATA_DOUBLE, CUDNN_NOT_PROPAGATE_NAN);
+		//cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_ADD, CUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN);
 		//cudnnOpTensor(cudnnHandle, od, &a1, td, A->data, &a2, td, B->data, &b, td, R->data);
 	}
 	else
 	{
-		cblas_dcopy(R->max_script, A->data, 1, R->data, 1);
-		cblas_daxpy(R->max_script, -1, B->data, 1, R->data, 1);
+		CBLAS_FUNC(copy)(R->max_script, A->data, 1, R->data, 1);
+		CBLAS_FUNC(axpy)(R->max_script, -1, B->data, 1, R->data, 1);
+
 		// #pragma loop(hint_parallel(8))
 		// 	for (int i = 0; i < R->max_script; i++)
 		// 	{
@@ -580,12 +581,12 @@ void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 }
 
 
-double* Matrix::mallocData(int size)
+real* Matrix::mallocData(int size)
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		double* d = nullptr;
-		if (cudaMalloc((void **)&d, size * sizeof(double)) == cudaSuccess)
+		real* d = nullptr;
+		if (cudaMalloc((void **)&d, size * sizeof(real)) == cudaSuccess)
 		{
 			//dataIsWhere = DataInDevice;
 		}
@@ -593,7 +594,7 @@ double* Matrix::mallocData(int size)
 	}
 	else
 	{
-		return new double[size];
+		return new real[size];
 	}
 }
 
@@ -613,12 +614,12 @@ void Matrix::freeData()
 	data = nullptr;
 }
 
-double* Matrix::malloc_getDataFromDevice()
+real* Matrix::malloc_getDataFromDevice()
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		auto temp = new double[max_script];
-		cudaMemcpy(temp, data, sizeof(double)*max_script, cudaMemcpyDeviceToHost);
+		auto temp = new real[max_script];
+		cudaMemcpy(temp, data, sizeof(real)*max_script, cudaMemcpyDeviceToHost);
 		return temp;
 	}
 	else
@@ -627,7 +628,7 @@ double* Matrix::malloc_getDataFromDevice()
 	}
 }
 
-void Matrix::freeDataForDevice(double* temp)
+void Matrix::freeDataForDevice(real* temp)
 {
 	if (UseCuda == mc_UseCuda)
 	{
@@ -635,11 +636,11 @@ void Matrix::freeDataForDevice(double* temp)
 	}
 }
 
-double* Matrix::mallocDataForDevice()
+real* Matrix::mallocDataForDevice()
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		return new double[max_script];
+		return new real[max_script];
 	}
 	else
 	{
@@ -647,11 +648,11 @@ double* Matrix::mallocDataForDevice()
 	}
 }
 
-void Matrix::set_freeDataToDevice(double* temp)
+void Matrix::set_freeDataToDevice(real* temp)
 {
 	if (UseCuda == mc_UseCuda)
 	{
-		cudaMemcpy(data, temp, sizeof(double)*max_script, cudaMemcpyHostToDevice);
+		cudaMemcpy(data, temp, sizeof(real)*max_script, cudaMemcpyHostToDevice);
 		delete temp;
 	}
 }
@@ -660,7 +661,7 @@ void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, i
 {
 	if (tensor && globalUseCuda == mc_UseCuda)
 	{
-		cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_DOUBLE, n, c, h, w);
+		cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_real, n, c, h, w);
 	}
 }
 
@@ -671,7 +672,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 {
 	if (Y->UseCuda == mc_UseCuda)
 	{
-		double a = 1, b = 0;
+		real a = 1, b = 0;
 		cudnnSetPooling2dDescriptor(pd, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
 		cudnnPoolingForward(cudnnHandle, pd, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
 	}
@@ -683,7 +684,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 			{
 				for (int j_Y = 0; j_Y < Y->H; j_Y++)
 				{
-					double v = 0;
+					real v = 0;
 					//if (re == re_Average)v = 0;
 					if (re == re_Max) v = -DBL_MAX;
 					int n = 0;
@@ -730,7 +731,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 	if (dX->UseCuda == mc_UseCuda)
 	{
 		//这个怎么看都快不了
-		double a = 1, b = 0;
+		real a = 1, b = 0;
 		cudnnSetPooling2dDescriptor(pd, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
 		cudnnPoolingBackward(cudnnHandle, pd, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data, X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 	}
@@ -770,7 +771,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 						{
 							n = window_w * window_h;
 						}
-						double v = dY->getData(i_DY, j_DY, p) / n;
+						real v = dY->getData(i_DY, j_DY, p) / n;
 						for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
 						{
 							for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)
@@ -798,7 +799,7 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m
 			{
 				for (int j_R = 0; j_R < Y->H; j_R++)
 				{
-					double v = 0;
+					real v = 0;
 					for (int i_A = i_R; i_A < std::min(X->W, i_R + conv_kernel->row); i_A++)
 					{
 						for (int j_A = j_R; j_A < std::min(X->H, j_R + conv_kernel->col); j_A++)
@@ -814,8 +815,8 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m
 }
 
 //这里应该有优化的办法，再说
-void Matrix::selectFunction(MatrixCudaType useCuda, double* x, double* y, int size,
-	std::function<int(double*, double*, int)> f1, std::function<int(double*, double*, int)> f2)
+void Matrix::selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
+	std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2)
 {
 	if (useCuda == mc_UseCuda)
 	{
@@ -836,7 +837,7 @@ void Matrix::setActive(cudnnActivationMode_t am)
 
 void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 {
-	double a = 1, b = 0;
+	real a = 1, b = 0;
 	MatrixCudaType useCuda = Y->UseCuda;
 	// 	if (X->UseCuda != mc_UseCuda || Y->UseCuda != mc_UseCuda)
 	// 	{
@@ -870,7 +871,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 			MyMath::exp_v(X->data, Y->data, Y->max_script);
 			for (int i = 0; i < Y->col; i++)
 			{
-				double sum = Y->sumColAbs(i);
+				real sum = Y->sumColAbs(i);
 				if (sum == 0) continue;
 				Y->colMultiply(1 / sum, i);
 			}
@@ -936,7 +937,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 
 void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* dX)
 {
-	double a = 1, b = 0;
+	real a = 1, b = 0;
 	MatrixCudaType useCuda = dX->UseCuda;
 	// 	if (X->UseCuda != mc_UseCuda || Y->UseCuda != mc_UseCuda || dX->UseCuda != mc_UseCuda)
 	// 	{

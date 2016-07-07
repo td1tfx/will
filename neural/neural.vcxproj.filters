@@ -70,9 +70,6 @@
     <ClInclude Include="MyMath.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="lib\INIReader.h">
-      <Filter>ext-source</Filter>
-    </ClInclude>
     <ClInclude Include="win.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -102,6 +99,9 @@
     </ClInclude>
     <ClInclude Include="Option.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libconvert.h">
+      <Filter>ext-source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -69,7 +69,7 @@ public:
 	Matrix* getOutputMatrix() { return OutputMatrix; }
 	Matrix* getExpectMatrix() { return ExpectMatrix; }
 	Matrix* getDeltaMatrix() { return DeltaMatrix; }
-	double& getOutputValue(int x, int y) { return OutputMatrix->getData(x, y); }
+	real& getOutputValue(int x, int y) { return OutputMatrix->getData(x, y); }
 
 	virtual void setSubType(ResampleType re) {}
 	virtual void setSubType(ConvolutionType cv) {}
@@ -90,9 +90,9 @@ protected:
 public:
 	virtual void activeOutput() {}
 	virtual void spreadDeltaToPrevLayer() {}
-	virtual void updateWeightBias(double learnSpeed, double lambda) {}
+	virtual void updateWeightBias(real learnSpeed, real lambda) {}
 	virtual int saveInfo(FILE* fout) { return 0; }
-	virtual int loadInfo(double* v, int n) { return 0; }
+	virtual int loadInfo(real* v, int n) { return 0; }
 
 };
 

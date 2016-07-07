@@ -61,7 +61,7 @@ void NeuralLayerPooling::spreadDeltaToPrevLayer()
 }
 
 
-void NeuralLayerPooling::updateWeightBias(double learnSpeed, double lambda)
+void NeuralLayerPooling::updateWeightBias(real learnSpeed, real lambda)
 {
 	//这里好像没什么好练的
 }
@@ -72,7 +72,7 @@ int NeuralLayerPooling::saveInfo(FILE* fout)
 	return 3;
 }
 
-int NeuralLayerPooling::loadInfo(double* v, int n)
+int NeuralLayerPooling::loadInfo(real* v, int n)
 {
 	_resampleType = ResampleType(int(v[0]));
 	window_w = v[1];

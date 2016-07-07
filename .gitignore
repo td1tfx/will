@@ -20,3 +20,4 @@
 *.diagsession
 neural/work/openblas_haswell_lib/
 neural/lib/sdl2/
+*.zip

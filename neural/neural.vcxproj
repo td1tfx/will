@@ -186,7 +186,7 @@
     <ClCompile Include="NeuralNet.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lib\INIReader.h" />
+    <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Random.h" />

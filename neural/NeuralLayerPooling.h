@@ -13,7 +13,7 @@ public:
 	int* recordPos = nullptr;   //记录最大值的位置
 
 	ResampleType _resampleType = re_Max;
-	double Weight, Bias;
+	real Weight, Bias;
 	//所有值为1
 	Matrix* _asBiasMatrix = nullptr;
 
@@ -28,9 +28,9 @@ protected:
 public:
 	void activeOutput() override;
 	void spreadDeltaToPrevLayer() override;
-	void updateWeightBias(double learnSpeed, double lambda) override;
+	void updateWeightBias(real learnSpeed, real lambda) override;
 	int saveInfo(FILE* fout) override;
-	int loadInfo(double* v, int n) override;
+	int loadInfo(real* v, int n) override;
 
 	void setSubType(ResampleType re) override { _resampleType = re; }
 };

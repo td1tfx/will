@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "lib/INIReader.h"
+#include "types.h"
 
 struct Option
 {
@@ -20,7 +21,7 @@ public:
 	{
 		return int(_ini->GetReal("will", name, v));
 	}
-	double getDouble(const char* name, double v = 0)
+	real getReal(const char* name, real v = 0)
 	{
 		return _ini->GetReal("will", name, v);
 	}

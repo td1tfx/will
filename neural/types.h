@@ -1,8 +1,6 @@
 #pragma once
 
-#ifdef _MSC_VER
 #define _USE_CUDA
-#endif
 
 #include "lib/cuda/cuda_runtime.h"
 #include "lib/cuda/cublas_v2.h"
@@ -65,11 +63,16 @@ int _stdcall cuda_exp(double *A, double *B, unsigned int size);
 #define cudnnActivationForward
 #define cudnnActivationBackward
 
-
 #endif
 
 #define varName(a) #a
-typedef double DataType;
+
+#ifndef _DOUBLE_PRECISION
+#define _SINGLE_PRECISION 
+typedef float real;
+#else 
+typedef double real;
+#endif
 
 
 //激活函数种类
@@ -105,3 +108,23 @@ typedef enum
 	cf_RMSE,
 	cf_CrossEntropy,
 } CostFunctionType;
+
+
+#ifdef _SINGLE_PRECISION
+#define CUDNN_DATA_real CUDNN_DATA_FLOAT  //大小写不同以区别
+#define CBLAS_FUNC(func) cblas_s##func
+#define CBLAS_FUNC_I(func) cblas_is##func
+#define CUBLAS_FUNC(func) cublasS##func
+#define CUBLAS_FUNC_I(func) cublasIs##func
+#else
+#define CUDNN_DATA_real CUDNN_DATA_DOUBLE
+#define CBLAS_FUNC(func) cblas_d##func
+#define CBLAS_FUNC_I(func) cblas_id##func
+#define CUBLAS_FUNC(func) cublasD##func
+#define CUBLAS_FUNC_I(func) cublasId##func
+#endif 
+
+#ifndef _USE_CUDA
+#define CUBLAS_FUNC(func) 
+#define CUBLAS_FUNC_I(func) 
+#endif

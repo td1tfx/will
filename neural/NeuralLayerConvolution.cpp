@@ -27,7 +27,7 @@ int NeuralLayerConvolution::saveInfo(FILE* fout)
 	return 4 + kernelCount*kernelRow*kernelCol;
 }
 
-int NeuralLayerConvolution::loadInfo(double* v, int n)
+int NeuralLayerConvolution::loadInfo(real* v, int n)
 {
 	int k = 0;
 	_convolutionType = ConvolutionType(int(v[k++]));

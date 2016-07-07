@@ -22,8 +22,8 @@ protected:
 public:
 	void activeOutput() override;
 	void spreadDeltaToPrevLayer() override;
-	void updateWeightBias(double learnSpeed, double lambda) override;
+	void updateWeightBias(real learnSpeed, real lambda) override;
 	int saveInfo(FILE* fout) override;
-	int loadInfo(double* v, int n) override;
+	int loadInfo(real* v, int n) override;
 };
 

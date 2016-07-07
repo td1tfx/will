@@ -13,17 +13,17 @@ Random::~Random()
 
 }
 
-void Random::set_uniform(double a, double b)
+void Random::set_uniform(real a, real b)
 {
-	uniform_dist = std::uniform_real_distribution<double>(a, b);
+	uniform_dist = std::uniform_real_distribution<real>(a, b);
 }
 
-double Random::rand_uniform()
+real Random::rand_uniform()
 {
 	return uniform_dist(generator);
 }
 
-double Random::rand_normal()
+real Random::rand_normal()
 {
 	return normal_dist(generator);
 }
