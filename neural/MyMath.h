@@ -5,10 +5,10 @@
 
 namespace MyMath
 {
-#define MyMathFor(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
-#define MyMathVector(fv, f) static int fv(real* x, real* y, int size) { MyMathFor(f); return 0; }
-#define MyMathFor_b(f) do{for(int i=0;i<size;i++){y[i]=f(x[i])*y[i];}}while(0)
-#define MyMathVector_b(fv, f) static int fv(real* x, real* y, int size) { MyMathFor_b(f); return 0; }
+#define MYMATH_FOR(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
+#define MYMATH_VECTOR(fv, f) static int fv(real* x, real* y, int size) { MYMATH_FOR(f); return 0; }
+#define MYMATH_FOR_B(f) do{for(int i=0;i<size;i++){y[i]=f(x[i])*y[i];}}while(0)
+#define MYMATH_VECTOR_B(fv, f) static int fv(real* x, real* y, int size) { MYMATH_FOR_B(f); return 0; }
 
 	static real sigmoid(real x) { return 1 / (1 + exp(-x)); }
 	static real dsigmoid(real x) { real a = 1 + exp(-x); return (a - 1) / (a*a); }
@@ -24,32 +24,32 @@ namespace MyMath
 	static real drelu(real x) { return x > 0 ? 1 : 0; }
 
 
-	MyMathVector(sigmoid_v, sigmoid);
-	MyMathVector_b(sigmoid_vb, dsigmoid);
-	MyMathVector_b(sigmoid_vb2, dsigmoid2);
+	MYMATH_VECTOR(sigmoid_v, sigmoid);
+	MYMATH_VECTOR_B(sigmoid_vb, dsigmoid);
+	MYMATH_VECTOR_B(sigmoid_vb2, dsigmoid2);
 
-	MyMathVector(tanh_v, tanh);
-	MyMathVector_b(tanh_vb, dtanh);
+	MYMATH_VECTOR(tanh_v, tanh);
+	MYMATH_VECTOR_B(tanh_vb, dtanh);
 
-	MyMathVector(exp_v, exp);
-	MyMathVector_b(exp_vb, exp);
+	MYMATH_VECTOR(exp_v, exp);
+	MYMATH_VECTOR_B(exp_vb, exp);
 
-	MyMathVector(softplus_v, softplus);
-	MyMathVector_b(softplus_vb, sigmoid);
+	MYMATH_VECTOR(softplus_v, softplus);
+	MYMATH_VECTOR_B(softplus_vb, sigmoid);
 
-	MyMathVector(relu_v, relu);
-	MyMathVector_b(relu_vb, drelu);
+	MYMATH_VECTOR(relu_v, relu);
+	MYMATH_VECTOR_B(relu_vb, drelu);
 
 	static int linear_v(real* x, real* y, int size) { memcpy(y, x, sizeof(real)*size); }
-	MyMathVector_b(linear_vb, constant);
+	MYMATH_VECTOR_B(linear_vb, constant);
 
 	static int nullfunction(real* x, real* y, int size) { return 0; }
 
 	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
-#undef MyMathFor
-#undef MyMathVector
-#undef MyMathFor_b
-#undef MyMathVector_b
+#undef MYMATH_FOR
+#undef MYMATH_VECTOR
+#undef MYMATH_FOR_B
+#undef MYMATH_VECTOR_B
 
 };
 

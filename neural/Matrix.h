@@ -78,7 +78,9 @@ public:
 	real* getImageDataPointer(int m, int n) { return &getData(n, m); }
 
 	//这个函数可能不安全，慎用！！
-	void resetDataPointer(real* d, int d_in_cuda = 0);
+	//重设数据指针，比较危险，不推荐
+	void resetDataPointer(real* d) { data = d; }
+
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
 	void setInsideData(MatrixDataType id) { insideData = id; }
 

@@ -81,27 +81,6 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 	return 0;
 }
 
-
-//重设数据指针，比较危险，不推荐
-void Matrix::resetDataPointer(real* d, int d_in_cuda /*= 0*/)
-{
-	if (UseCuda == mc_UseCuda)
-	{
-		if (d_in_cuda == 0)
-		{
-			memcpyDataIn(d, max_script);
-		}
-		else
-		{
-			data = d;
-		}
-	}
-	else
-	{
-		data = d;
-	}
-}
-
 //在matrix中初始化Cuda可能不是很好，暂时没想出更好的设计
 void Matrix::initCuda()
 {
@@ -695,7 +674,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 							if (re == re_Average_Padding || re == re_Average_NoPadding)
 							{
 								v += X->getData(i_X, j_X, p);
-								if(recordPos) recordPos[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
+								if (recordPos) recordPos[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*Y->W + p*Y->H*Y->W;
 								n++;
 							}
 							else if (re == re_Max)
@@ -762,10 +741,10 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 				{
 					for (int j_DY = 0; j_DY < dY->H; j_DY++)
 					{
-						int n;						
+						int n;
 						if (re == re_Average_NoPadding)
 						{
-							n = std::min(window_w, dX->W - i_DY*stride_w) * std::min(window_h,dX->H - j_DY*stride_h);
+							n = std::min(window_w, dX->W - i_DY*stride_w) * std::min(window_h, dX->H - j_DY*stride_h);
 						}
 						else
 						{
@@ -790,24 +769,32 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m
 {
 	if (Y->UseCuda == mc_UseCuda)
 	{
+		void* k;
+		cudaMalloc(&k, 100);
+		real a = 1, b = 0;
+		cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION);
+		cudnnSetFilter4dDescriptor(fd, CUDNN_DATA_real, CUDNN_TENSOR_NHWC, 1, 1, conv_kernel->H, conv_kernel->W);
+		cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd, 
+			CUDNN_CONVOLUTION_FWD_ALGO_DIRECT, k, 100, &b, Y->tensorDes, Y->data);
+		cudaFree(k);
 	}
 	else
 	{
 		for (int p = 0; p < Y->N*Y->C; p++)
 		{
-			for (int i_R = 0; i_R < Y->W; i_R++)
+			for (int i_Y = 0; i_Y < Y->W; i_Y++)
 			{
-				for (int j_R = 0; j_R < Y->H; j_R++)
+				for (int j_Y = 0; j_Y < Y->H; j_Y++)
 				{
 					real v = 0;
-					for (int i_A = i_R; i_A < std::min(X->W, i_R + conv_kernel->row); i_A++)
+					for (int i_X = i_Y; i_X < std::min(X->W, i_Y + conv_kernel->W); i_X++)
 					{
-						for (int j_A = j_R; j_A < std::min(X->H, j_R + conv_kernel->col); j_A++)
+						for (int j_X = j_Y; j_X < std::min(X->H, j_Y + conv_kernel->H); j_X++)
 						{
-							v += X->getData(i_A, j_A, p) * conv_kernel->getData(i_A - i_R, j_A - j_R);
+							v += X->getData(i_X, j_X, p) * conv_kernel->getData(i_X - i_Y, j_X - j_Y);
 						}
 					}
-					Y->getData(i_R, j_R, p) = v;
+					Y->getData(i_Y, j_Y, p) = v;
 				}
 			}
 		}
@@ -838,11 +825,7 @@ void Matrix::setActive(cudnnActivationMode_t am)
 void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 {
 	real a = 1, b = 0;
-	MatrixCudaType useCuda = Y->UseCuda;
-	// 	if (X->UseCuda != mc_UseCuda || Y->UseCuda != mc_UseCuda)
-	// 	{
-	// 		useCuda = mc_NoCuda;
-	// 	}
+	auto useCuda = Y->UseCuda;
 	switch (af)
 	{
 	case af_Sigmoid:
@@ -938,11 +921,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* dX)
 {
 	real a = 1, b = 0;
-	MatrixCudaType useCuda = dX->UseCuda;
-	// 	if (X->UseCuda != mc_UseCuda || Y->UseCuda != mc_UseCuda || dX->UseCuda != mc_UseCuda)
-	// 	{
-	// 		useCuda = mc_NoCuda;
-	// 	}
+	auto useCuda = dX->UseCuda;
 	switch (af)
 	{
 	case af_Sigmoid:
