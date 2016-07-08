@@ -86,8 +86,9 @@ int Test::MNIST_readLabelFile(const char* filename, real* expect)
 void Test::test()
 {
 	//Matrix::initCuda();
-	printf("\npooling test:\n");
+	if (false)
 	{
+		printf("\npooling test:\n");
 		Matrix A(3, 3, 1, 1);
 		A.initRandom();
 		A.print();
@@ -112,28 +113,30 @@ void Test::test()
 		delete m;
 	}
 
-	printf("\nconvolution test:\n");
+	if(true)
 	{
-		Matrix A = Matrix(4, 4, 1, 1);
+		printf("\nconvolution test:\n");
+		int c = 2;
+		Matrix A = Matrix(4, 4, c, c);
 		Matrix a(4, 4, md_Outside);
 		A.initInt();
 		Matrix K(2, 2, 1, 1);
-		K.initData(1);
-		Matrix R(3, 3, 1, 1);
+		K.initInt(1);
+		Matrix R(3, 3, c, c);
 		Matrix r(3, 3, md_Outside);
 		Matrix::convolutionForward(&A, &K, &R, 4, 4, 3, 3, 2);
-		A.print();
+		//A.print();
 		K.print();
+		//R.print();
 		printf("\n");
-		for (int i = 0; i < 1; i++)
+		for (int i = 0; i < c*c; i++)
 		{
-			a.resetDataPointer(A.getDataPointer(i*16));
+			a.resetDataPointer(A.getDataPointer(i * 16));
 			a.print();
-			r.resetDataPointer(R.getDataPointer(i*9));
+			r.resetDataPointer(R.getDataPointer(i * 9));
 			r.print();
 			printf("\n");
 		}
 	}
 	//Matrix::destroyCuda();
-
 }

@@ -64,14 +64,16 @@ public:
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
 	int xy2i(int m, int n) { return m + n*row; }
+	int whp2i(int w, int h, int p) { return w + h*W + p*W*H; }
+	int whcn2i(int w, int h, int c, int n) { return w + h*W + c*W*H + n*C*W*H; }
 	real& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }
 	real& getData(int i) { return data[std::min(i, max_script - 1)]; }
 	real* getDataPointer(int m, int n) { return &getData(m, n); }
 	real* getDataPointer(int i) { return &getData(i); }
 	real* getDataPointer() { return data; }
 	int resize(int m, int n, int force = 0);
-	real& getData(int w, int h, int p) { return data[w + h*W + p*W*H]; }
-	real& getData(int w, int h, int c, int n) { return getData(w, h, c + C*n); }
+	real& getData(int w, int h, int p) { return data[whp2i(w, h, p)]; }
+	real& getData(int w, int h, int c, int n) { return data[whcn2i(w, h, c, n)]; }
 
 	//这两个不推荐使用，比较乱
 	real& getImageData(int m, int n) { return getData(n, m); }
@@ -104,7 +106,7 @@ public:
 
 	void initData(real v);
 	void initRandom();
-	void initInt();
+	void initInt(int a = 0);
 	void multiply(real v);
 	void colMultiply(real v, int c);
 
@@ -144,7 +146,7 @@ private:
 	//必须配对！
 	real* mallocData(int size);
 	void freeData();
-	
+
 	//这两组好像必须交叉配对！
 	real* malloc_getDataFromDevice();
 	void freeDataForDevice(real* temp);
@@ -154,9 +156,9 @@ private:
 public:
 	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 
-	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y, 
+	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
-	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX, 
+	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
 	static void convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y,

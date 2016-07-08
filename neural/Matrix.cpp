@@ -41,8 +41,9 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 }
 
 //4阶张量形式构造函数，用于池化和卷积
+//当矩阵是张量时，实际上原本的列数毫无意义，这样写是为了n和c都是1的情况下与原矩阵等价
 Matrix::Matrix(int w, int h, int c, int n, MatrixDataType tryInside /*= md_Inside*/, MatrixCudaType tryCuda /*= mc_UseCuda*/)
-	:Matrix(w*h*c, n, tryInside, tryCuda)
+	:Matrix(w, h*n*c, tryInside, tryCuda)
 {
 	W = w;
 	H = h;
@@ -139,15 +140,19 @@ void Matrix::destroyCuda()
 void Matrix::print(FILE* fout)
 {
 	auto temp = malloc_getDataFromDevice();
-	for (int i = 0; i < row; i++)
+	for (int p = 0; p < C*N; p++)
 	{
-		for (int j = 0; j < col; j++)
+		for (int i = 0; i < H; i++)
 		{
-			real v = temp[xy2i(i, j)];
-			if (std::abs(v) > 1e10)
-				fprintf(fout, "%14.11e ", v);
-			else
-				fprintf(fout, "%14.11f ", v);
+			for (int j = 0; j < W; j++)
+			{
+				auto v = temp[whp2i(j,i,p)];
+				if (std::abs(v) > 1e10)
+					fprintf(fout, "%14.11e ", v);
+				else
+					fprintf(fout, "%14.11f ", v);
+			}
+			fprintf(fout, "\n");
 		}
 		fprintf(fout, "\n");
 	}
@@ -158,12 +163,15 @@ int Matrix::load(real* v, int n)
 {
 	auto temp = mallocDataForDevice();
 	int k = 0;
-	for (int i = 0; i < row; i++)
+	for (int p = 0; p < C*N; p++)
 	{
-		for (int j = 0; j < col; j++)
+		for (int i = 0; i < row; i++)
 		{
-			temp[xy2i(i, j)] = v[k++];
-			if (k >= n) break;
+			for (int j = 0; j < col; j++)
+			{
+				temp[whp2i(j, i, p)] = v[k++];
+				if (k >= n) break;
+			}
 		}
 	}
 	set_freeDataToDevice(temp);
@@ -337,13 +345,13 @@ void Matrix::initRandom()
 }
 
 //用连续整数初始化，仅用于测试
-void Matrix::initInt()
+void Matrix::initInt(int a)
 {
 	auto temp = mallocDataForDevice();
 	//#pragma loop(hint_parallel(8))
 	for (int i = 0; i < max_script; i++)
 	{
-		temp[i] = i;
+		temp[i] = i + a;
 	}
 	set_freeDataToDevice(temp);
 }
@@ -770,12 +778,16 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m
 	if (Y->UseCuda == mc_UseCuda)
 	{
 		void* k;
+		cudnnConvolutionFwdAlgoPerf_t cwa[8];
 		cudaMalloc(&k, 100);
 		real a = 1, b = 0;
-		cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CONVOLUTION);
-		cudnnSetFilter4dDescriptor(fd, CUDNN_DATA_real, CUDNN_TENSOR_NHWC, 1, 1, conv_kernel->H, conv_kernel->W);
-		cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd, 
-			CUDNN_CONVOLUTION_FWD_ALGO_DIRECT, k, 100, &b, Y->tensorDes, Y->data);
+		int n;
+		auto s1 = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
+		cudnnSetFilter4dDescriptor(fd, CUDNN_DATA_real, CUDNN_TENSOR_NCHW, 1, 1, conv_kernel->H, conv_kernel->W);
+		cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, Y->tensorDes, 8, &n, cwa);
+		auto s2 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd,
+			CUDNN_CONVOLUTION_FWD_ALGO_FFT, k, 100, &b, Y->tensorDes, Y->data);
+		printf("%d,%d\n", s1, s2);
 		cudaFree(k);
 	}
 	else
