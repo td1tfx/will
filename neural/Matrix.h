@@ -4,8 +4,8 @@
 #include <cstdlib>
 #include <algorithm>
 #include <functional>
-#include <float.h>
-#include "lib/cblas.h"
+#include <cfloat>
+#include "cblas.h"
 #include "types.h"
 #include "MyMath.h"
 #include "Random.h"

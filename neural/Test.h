@@ -1,5 +1,5 @@
 #pragma once
-#include "lib/libconvert.h"
+#include "libconvert.h"
 #include <string.h>
 #include "types.h"
 

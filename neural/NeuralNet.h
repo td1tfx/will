@@ -3,7 +3,7 @@
 #include <vector>
 #include <string.h>
 #include <cmath>
-#include "lib/libconvert.h"
+#include "libconvert.h"
 #include "Option.h"
 #include "NeuralLayerFactory.h"
 #include "Test.h"

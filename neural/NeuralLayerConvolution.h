@@ -1,5 +1,6 @@
 #pragma once
 #include "NeuralLayer.h"
+
 class NeuralLayerConvolution :
 	public NeuralLayer
 {

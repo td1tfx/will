@@ -2,10 +2,10 @@
 
 #define _USE_CUDA
 
-#include "lib/cuda/cuda_runtime.h"
-#include "lib/cuda/cublas_v2.h"
-#include "lib/cuda/helper_cuda.h"
-#include "lib/cuda/cudnn.h"
+#include "cuda_runtime.h"
+#include "cublas_v2.h"
+#include "helper_cuda.h"
+#include "cudnn.h"
 
 #ifdef _USE_CUDA
 #pragma comment (lib, "cudart.lib")

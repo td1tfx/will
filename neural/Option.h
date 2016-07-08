@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "lib/INIReader.h"
+#include "INIReader.h"
 #include "types.h"
 
 struct Option

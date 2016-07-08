@@ -1,7 +1,7 @@
 #include "NeuralNet.h"
 #include "Matrix.h"
 #include "Option.h"
-#include "lib/Timer.h"
+#include "Timer.h"
 
 int main(int argc, char* argv[])
 {
