@@ -86,7 +86,8 @@ int Test::MNIST_readLabelFile(const char* filename, real* expect)
 void Test::test()
 {
 	//Matrix::initCuda();
-	if (false)
+	int testp = 0, testc = 1;
+	if (testp)
 	{
 		printf("\npooling test:\n");
 		Matrix A(3, 3, 1, 1);
@@ -113,7 +114,7 @@ void Test::test()
 		delete m;
 	}
 
-	if(true)
+	if(testc)
 	{
 		printf("\nconvolution test:\n");
 		int c = 2;

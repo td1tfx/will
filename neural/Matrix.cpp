@@ -787,7 +787,7 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m
 		cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, Y->tensorDes, 8, &n, cwa);
 		auto s2 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd,
 			CUDNN_CONVOLUTION_FWD_ALGO_FFT, k, 100, &b, Y->tensorDes, Y->data);
-		printf("%d,%d\n", s1, s2);
+		printf("%d, %d\n", s1, s2);
 		cudaFree(k);
 	}
 	else
@@ -957,9 +957,9 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		if (useCuda == mc_UseCuda)
 		{
 			setTensorDes(td, X->col, 1, 1, X->row);
-			//TODO: wei wan cheng
+			//TODO: unfinished
 			//cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
-			//	&alpha, td, A->data, &beta, td, R->data);
+			//	&a, td, A->data, &b, td, R->data);
 		}
 		else
 		{
