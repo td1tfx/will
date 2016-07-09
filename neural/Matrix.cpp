@@ -146,7 +146,7 @@ void Matrix::print(FILE* fout)
 		{
 			for (int j = 0; j < W; j++)
 			{
-				auto v = temp[whp2i(j,i,p)];
+				auto v = temp[whp2i(j, i, p)];
 				if (std::abs(v) > 1e10)
 					fprintf(fout, "%14.11e ", v);
 				else
@@ -527,7 +527,7 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 	if (R->UseCuda == mc_UseCuda)
 	{
 		real a1 = 1, a2 = 1, b = 0;
-		cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_MUL, CUDNN_DATA_real, CUDNN_NOT_PROPAGATE_NAN);
+		cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_MUL, MYCUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN);
 		cudnnOpTensor(cudnnHandle, od, &a1, A->tensorDes, A->data, &a2, B->tensorDes, B->data, &b, R->tensorDes, R->data);
 	}
 	else
@@ -648,7 +648,7 @@ void Matrix::setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, i
 {
 	if (tensor && globalUseCuda == mc_UseCuda)
 	{
-		cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, CUDNN_DATA_real, n, c, h, w);
+		cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, MYCUDNN_DATA_REAL, n, c, h, w);
 	}
 }
 
@@ -773,7 +773,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 	}
 }
 
-void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup)
+void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 {
 	if (Y->UseCuda == mc_UseCuda)
 	{
@@ -783,34 +783,42 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y, int m
 		real a = 1, b = 0;
 		int n;
 		auto s1 = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
-		cudnnSetFilter4dDescriptor(fd, CUDNN_DATA_real, CUDNN_TENSOR_NCHW, 1, 1, conv_kernel->H, conv_kernel->W);
+		auto s2 = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, Y->C, X->C, conv_kernel->H, conv_kernel->W);
 		cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, Y->tensorDes, 8, &n, cwa);
-		auto s2 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd,
-			CUDNN_CONVOLUTION_FWD_ALGO_FFT, k, 100, &b, Y->tensorDes, Y->data);
-		printf("%d, %d\n", s1, s2);
+		auto s3 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd,
+			CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, k, 100, &b, Y->tensorDes, Y->data);
+		printf("%d, %d, %d\n", s1, s2, s3);
 		cudaFree(k);
 	}
 	else
 	{
-		for (int p = 0; p < Y->N*Y->C; p++)
+		//只处理1NN和NN1，其他的不管了
+		if (X->C != 1 && Y->C != 1) return;
+		int C = conv_kernel->C / X->C;
+		for (int n = 0; n < Y->N; n++)
 		{
 			for (int i_Y = 0; i_Y < Y->W; i_Y++)
 			{
 				for (int j_Y = 0; j_Y < Y->H; j_Y++)
 				{
 					real v = 0;
-					for (int i_X = i_Y; i_X < std::min(X->W, i_Y + conv_kernel->W); i_X++)
+					for (int c = 0; c < conv_kernel->C; c++)
 					{
-						for (int j_X = j_Y; j_X < std::min(X->H, j_Y + conv_kernel->H); j_X++)
-						{
-							v += X->getData(i_X, j_X, p) * conv_kernel->getData(i_X - i_Y, j_X - j_Y);
-						}
+						v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
+							conv_kernel->W, conv_kernel->W, conv_kernel->H);
 					}
-					Y->getData(i_Y, j_Y, p) = v;
+					Y->getData(i_Y, j_Y, 0, n) = v;
 				}
 			}
 		}
 	}
+}
+
+void Matrix::convolutionBackward(Matrix* Y, Matrix* dY, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB)
+{
+	// 	cudnnConvolutionBackwardData();
+	// 	cudnnConvolutionBackwardBias();
+	// 	cudnnConvolutionBackwardFilter();
 }
 
 //这里应该有优化的办法，再说

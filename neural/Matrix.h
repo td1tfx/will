@@ -61,27 +61,29 @@ public:
 	Matrix(int m, int n, MatrixDataType tryInside = md_Inside, MatrixCudaType tryCuda = mc_UseCuda);
 	Matrix(int w, int h, int c, int n, MatrixDataType tryInside = md_Inside, MatrixCudaType tryCuda = mc_UseCuda);
 	~Matrix();
+private:
+	int xy2i(int m, int n) { return m + n*row; }
+	int whp2i(int w, int h, int p) { return w + h*W + p*W*H; }
+public:
 	int getRow() { return row; }
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
-	int xy2i(int m, int n) { return m + n*row; }
-	int whp2i(int w, int h, int p) { return w + h*W + p*W*H; }
 	int whcn2i(int w, int h, int c, int n) { return w + h*W + c*W*H + n*C*W*H; }
-	real& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }
+	
+	//以下4个函数注意如果数据在显存中，一般来说是无法赋值和输出的
 	real& getData(int i) { return data[std::min(i, max_script - 1)]; }
-	real* getDataPointer(int m, int n) { return &getData(m, n); }
-	real* getDataPointer(int i) { return &getData(i); }
-	real* getDataPointer() { return data; }
-	int resize(int m, int n, int force = 0);
+	real& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }	
 	real& getData(int w, int h, int p) { return data[whp2i(w, h, p)]; }
-	real& getData(int w, int h, int c, int n) { return data[whcn2i(w, h, c, n)]; }
+	real& getData(int w, int h, int c, int n) { return data[whcn2i(w, h, c, n)]; }	
+	
+	real* getDataPointer() { return data; }
+	real* getDataPointer(int i) { return &getData(i); }
+	real* getDataPointer(int m, int n) { return &getData(m, n); }
+	real* getDataPointer(int w, int h, int c, int n) { return &getData(w, h, c, n); }
+public:
+	int resize(int m, int n, int force = 0);
 
-	//这两个不推荐使用，比较乱
-	real& getImageData(int m, int n) { return getData(n, m); }
-	real* getImageDataPointer(int m, int n) { return &getData(n, m); }
-
-	//这个函数可能不安全，慎用！！
-	//重设数据指针，比较危险，不推荐
+	//重设数据指针，这个函数可能不安全，慎用！！
 	void resetDataPointer(real* d) { data = d; }
 
 	//使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
@@ -162,8 +164,9 @@ public:
 	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
-	static void convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y,
-		int m_subA, int n_subA, int m_subR, int n_subR, int countPerGroup);
+	static void convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y);
+
+	static void convolutionBackward(Matrix* Y, Matrix* dY, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB);
 
 	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);

@@ -45,6 +45,19 @@ namespace MyMath
 
 	static int nullfunction(real* x, real* y, int size) { return 0; }
 
+	static real conv(real* x, int x_stride, real* k, int k_stride, int w, int h)
+	{
+		real v = 0;
+		for (int i = 0; i < w; i++)
+		{
+			for (int j = 0; j < h; j++)
+			{
+				v += x[i + j*x_stride] * k[i + j*k_stride];
+			}
+		}
+		return v;
+	}
+
 	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 #undef MYMATH_FOR
 #undef MYMATH_VECTOR
