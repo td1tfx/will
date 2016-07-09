@@ -793,7 +793,9 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 	else
 	{
 		//只处理1NN和NN1，其他的不管了
+		//未完成
 		if (X->C != 1 && Y->C != 1) return;
+		Y->initData(0);
 		int C = conv_kernel->C / X->C;
 		for (int n = 0; n < Y->N; n++)
 		{
@@ -804,7 +806,9 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 					real v = 0;
 					for (int c = 0; c < conv_kernel->C; c++)
 					{
-						v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
+						int c_Y = 0;
+						if (Y->C == 1) c_Y = c;
+						v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c_Y, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
 							conv_kernel->W, conv_kernel->W, conv_kernel->H);
 					}
 					Y->getData(i_Y, j_Y, 0, n) = v;

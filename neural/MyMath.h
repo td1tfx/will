@@ -1,27 +1,26 @@
 #pragma once
-#include <math.h>
-#include <string.h>
-#include "types.h"
+#include <cmath>
+#include <cstring>
 
 namespace MyMath
 {
 #define MYMATH_FOR(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
-#define MYMATH_VECTOR(fv, f) static int fv(real* x, real* y, int size) { MYMATH_FOR(f); return 0; }
+#define MYMATH_VECTOR(fv, f) template<typename T> inline int fv(T* x, T* y, int size) { MYMATH_FOR(f); return 0; }
 #define MYMATH_FOR_B(f) do{for(int i=0;i<size;i++){y[i]=f(x[i])*y[i];}}while(0)
-#define MYMATH_VECTOR_B(fv, f) static int fv(real* x, real* y, int size) { MYMATH_FOR_B(f); return 0; }
+#define MYMATH_VECTOR_B(fv, f) template<typename T> inline int fv(T* x, T* y, int size) { MYMATH_FOR_B(f); return 0; }
 
-	static real sigmoid(real x) { return 1 / (1 + exp(-x)); }
-	static real dsigmoid(real x) { real a = 1 + exp(-x); return (a - 1) / (a*a); }
-	static real dsigmoid2(real y) { return y*(1-y); }
-	static real constant(real x) { return 1; }
-	static real dtanh(real x) { return 1 / cosh(x) / cosh(x); }
-	static real sign1(real x) { return x > 0 ? 1 : -1; }
-	static real dsign1(real x) { return 1; }
-	static real is(real x) { return x > 0.5 ? 1 : 0; }
-	static real dis(real x) { return 1; }
-	static real softplus(real x) { return log(1 + exp(x)); }
-	static real relu(real x) { return x > 0 ? x : 0; }
-	static real drelu(real x) { return x > 0 ? 1 : 0; }
+	template<typename T> inline T sigmoid(T x) { return 1 / (1 + exp(-x)); }
+	template<typename T> inline T dsigmoid(T x) { T a = 1 + exp(-x); return (a - 1) / (a*a); }
+	template<typename T> inline T dsigmoid2(T y) { return y*(1 - y); }
+	template<typename T> inline T constant(T x) { return 1; }
+	template<typename T> inline T dtanh(T x) { return 1 / cosh(x) / cosh(x); }
+	template<typename T> inline T sign1(T x) { return x > 0 ? 1 : -1; }
+	template<typename T> inline T dsign1(T x) { return 1; }
+	template<typename T> inline T is(T x) { return x > 0.5 ? 1 : 0; }
+	template<typename T> inline T dis(T x) { return 1; }
+	template<typename T> inline T softplus(T x) { return log(1 + exp(x)); }
+	template<typename T> inline T relu(T x) { return x > 0 ? x : 0; }
+	template<typename T> inline T drelu(T x) { return x > 0 ? 1 : 0; }
 
 
 	MYMATH_VECTOR(sigmoid_v, sigmoid);
@@ -40,14 +39,14 @@ namespace MyMath
 	MYMATH_VECTOR(relu_v, relu);
 	MYMATH_VECTOR_B(relu_vb, drelu);
 
-	static int linear_v(real* x, real* y, int size) { memcpy(y, x, sizeof(real)*size); }
+	template<typename T> inline int linear_v(T* x, T* y, int size) { memcpy(y, x, sizeof(T)*size); }
 	MYMATH_VECTOR_B(linear_vb, constant);
 
-	static int nullfunction(real* x, real* y, int size) { return 0; }
+	template<typename T> inline int nullfunction(T* x, T* y, int size) { return 0; }
 
-	static real conv(real* x, int x_stride, real* k, int k_stride, int w, int h)
+	template<typename T> inline T conv(T* x, int x_stride, T* k, int k_stride, int w, int h)
 	{
-		real v = 0;
+		T v = 0;
 		for (int i = 0; i < w; i++)
 		{
 			for (int j = 0; j < h; j++)
@@ -58,7 +57,7 @@ namespace MyMath
 		return v;
 	}
 
-	//static void swap(int &a, int &b) { auto t = a; a = b; b = t; }
+	// void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 #undef MYMATH_FOR
 #undef MYMATH_VECTOR
 #undef MYMATH_FOR_B
