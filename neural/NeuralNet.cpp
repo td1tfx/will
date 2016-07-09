@@ -60,7 +60,7 @@ void NeuralNet::run(Option* op)
 
 	//selectTest();
 	train(op->getInt("TrainTimes", 1000), op->getInt("OutputInterval", 1000),
-		op->getReal("Tol", 1e-3), op->getReal("Dtol", 0));
+		op->getReal("Tol", 1e-3), op->getReal("Dtol", 0.0));
 	if (op->getString("SaveFile") != "")
 	{
 		saveInfo(op->getString("SaveFile").c_str());
@@ -161,7 +161,7 @@ void NeuralNet::train(int times, int interval, real tol, real dtol)
 void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupCount, int batchCount,
 	bool learn /*= false*/, real* error /*= nullptr*/)
 {
-	Random r;
+	Random<real> r;
 	r.reset();
 	if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)

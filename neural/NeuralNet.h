@@ -1,7 +1,7 @@
 #pragma once
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
-#include <string.h>
+#include <cstring>
 #include <cmath>
 #include "libconvert.h"
 #include "Option.h"

@@ -332,7 +332,7 @@ void Matrix::initData(real v)
 //随机数初始化矩阵，注意这个函数调用次数很少
 void Matrix::initRandom()
 {
-	Random r;
+	Random<real> r;
 	//r.set_uniform(0, 1);
 	auto temp = mallocDataForDevice();
 	//#pragma loop(hint_parallel(8))

@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 #include "INIReader.h"
-#include "types.h"
 
 struct Option
 {
@@ -21,10 +20,15 @@ public:
 	{
 		return int(_ini->GetReal("will", name, v));
 	}
-	real getReal(const char* name, real v = 0)
+	//注意这里只获取双精度数，如果是单精度模式会包含隐式转换
+	double getReal(const char* name, double v = 0.0)
 	{
 		return _ini->GetReal("will", name, v);
 	}
+	/*float getReal(const char* name, float v = 0.0f)
+	{
+		return _ini->GetReal("will", name, v);
+	}*/
 	std::string getString(const char* name, std::string v = "")
 	{
 		return _ini->Get("will", name, v);

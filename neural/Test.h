@@ -1,6 +1,5 @@
 #pragma once
 #include "libconvert.h"
-#include <string.h>
 #include "types.h"
 
 class Test

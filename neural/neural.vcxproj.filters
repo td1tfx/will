@@ -29,9 +29,6 @@
     <ClCompile Include="NeuralNet.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MyMath.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="lib\Timer.cpp">
       <Filter>ext-source</Filter>
     </ClCompile>
@@ -54,9 +51,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Test.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Random.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
 
 	op.loadIni(argc > 1 ? argv[1] : "p.ini");
 
-	int useCuda = op.getInt("UseCuda");
+	auto useCuda = op.getInt("UseCuda");
 	if (useCuda) Matrix::initCuda();
 
 	t.start();
