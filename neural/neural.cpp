@@ -15,11 +15,11 @@ int main(int argc, char* argv[])
 	
 	if (useCuda) Matrix::initCuda();
 	t.start();
-	//net.run(&op);
+	net.run(&op);
 	t.stop();
 	if (useCuda) Matrix::destroyCuda();
 
-	Test::test2();
+	//Test::test2();
 
 	fprintf(stdout, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());	
 
