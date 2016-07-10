@@ -26,9 +26,10 @@ void NeuralLayer::setImageMode(int w, int h, int count)
 
 void NeuralLayer::deleteData()
 {
-	if (UnactivedMatrix) { delete UnactivedMatrix; }
-	if (OutputMatrix) { delete OutputMatrix; }
-	if (DeltaMatrix) { delete DeltaMatrix; }
+	if (XMatrix) { delete XMatrix; }
+	if (YMatrix) { delete YMatrix; }
+	if (dXMatrix) { delete dXMatrix; }
+	if (dYMatrix) { delete dYMatrix; }
 	if (ExpectMatrix) { delete ExpectMatrix; }
 }
 
@@ -41,9 +42,10 @@ void NeuralLayer::connetPrevlayer(NeuralLayer* prevLayer)
 
 void NeuralLayer::resetGroupCount()
 {
-	UnactivedMatrix->resize(OutputCountPerGroup, GroupCount);
-	OutputMatrix->resize(OutputCountPerGroup, GroupCount);
-	DeltaMatrix->resize(OutputCountPerGroup, GroupCount);
+	XMatrix->resize(OutputCountPerGroup, GroupCount);
+	YMatrix->resize(OutputCountPerGroup, GroupCount);
+	dXMatrix->resize(OutputCountPerGroup, GroupCount);
+	dYMatrix->resize(OutputCountPerGroup, GroupCount);
 	ExpectMatrix->resize(OutputCountPerGroup, GroupCount);
 	resetGroupCount2();
 }
@@ -56,19 +58,19 @@ void NeuralLayer::updateDelta()
 		switch (_costFunctionType)
 		{
 		case cf_RMSE:
-			Matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
-			Matrix::activeBackward(_activeFunctionType, OutputMatrix, UnactivedMatrix, DeltaMatrix);
+			Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
+			Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dYMatrix);
 			break;
 		case cf_CrossEntropy:
 			if (_activeFunctionType == af_Sigmoid)
 			{
 				//交叉熵和Sigmoid同时使用，则有此简化方法
-				Matrix::minus(ExpectMatrix, OutputMatrix, DeltaMatrix);
+				Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
 			}
 			else
 			{
 				//其余情况需自行推导
-				Matrix::activeBackward(_activeFunctionType, OutputMatrix, UnactivedMatrix, DeltaMatrix);
+				Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dXMatrix);
 			}
 			break;
 		default:

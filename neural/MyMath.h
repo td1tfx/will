@@ -5,23 +5,22 @@
 namespace MyMath
 {
 #define MYMATH_FOR(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
-#define MYMATH_VECTOR(fv, f) template<typename T> inline int fv(T* x, T* y, int size) { MYMATH_FOR(f); return 0; }
+#define MYMATH_VECTOR(fv, f) template<typename T> int fv(T* x, T* y, int size) { MYMATH_FOR(f); return 0; }
 #define MYMATH_FOR_B(f) do{for(int i=0;i<size;i++){y[i]=f(x[i])*y[i];}}while(0)
-#define MYMATH_VECTOR_B(fv, f) template<typename T> inline int fv(T* x, T* y, int size) { MYMATH_FOR_B(f); return 0; }
+#define MYMATH_VECTOR_B(fv, f) template<typename T> int fv(T* x, T* y, int size) { MYMATH_FOR_B(f); return 0; }
 
-	template<typename T> inline T sigmoid(T x) { return 1 / (1 + exp(-x)); }
-	template<typename T> inline T dsigmoid(T x) { T a = 1 + exp(-x); return (a - 1) / (a*a); }
-	template<typename T> inline T dsigmoid2(T y) { return y*(1 - y); }
-	template<typename T> inline T constant(T x) { return 1; }
-	template<typename T> inline T dtanh(T x) { return 1 / cosh(x) / cosh(x); }
-	template<typename T> inline T sign1(T x) { return x > 0 ? 1 : -1; }
-	template<typename T> inline T dsign1(T x) { return 1; }
-	template<typename T> inline T is(T x) { return x > 0.5 ? 1 : 0; }
-	template<typename T> inline T dis(T x) { return 1; }
-	template<typename T> inline T softplus(T x) { return log(1 + exp(x)); }
-	template<typename T> inline T relu(T x) { return x > 0 ? x : 0; }
-	template<typename T> inline T drelu(T x) { return x > 0 ? 1 : 0; }
-
+	template<typename T> T sigmoid(T x) { return 1 / (1 + exp(-x)); }
+	template<typename T> T dsigmoid(T x) { T a = 1 + exp(-x); return (a - 1) / (a*a); }
+	template<typename T> T dsigmoid2(T y) { return y*(1 - y); }
+	template<typename T> T constant(T x) { return 1; }
+	template<typename T> T dtanh(T x) { return 1 / cosh(x) / cosh(x); }
+	template<typename T> T sign1(T x) { return x > 0 ? 1 : -1; }
+	template<typename T> T dsign1(T x) { return 1; }
+	template<typename T> T is(T x) { return x > 0.5 ? 1 : 0; }
+	template<typename T> T dis(T x) { return 1; }
+	template<typename T> T softplus(T x) { return log(1 + exp(x)); }
+	template<typename T> T relu(T x) { return x > 0 ? x : 0; }
+	template<typename T> T drelu(T x) { return x > 0 ? 1 : 0; }
 
 	MYMATH_VECTOR(sigmoid_v, sigmoid);
 	MYMATH_VECTOR_B(sigmoid_vb, dsigmoid);
@@ -39,12 +38,12 @@ namespace MyMath
 	MYMATH_VECTOR(relu_v, relu);
 	MYMATH_VECTOR_B(relu_vb, drelu);
 
-	template<typename T> inline int linear_v(T* x, T* y, int size) { memcpy(y, x, sizeof(T)*size); }
+	template<typename T> int linear_v(T* x, T* y, int size) { memcpy(y, x, sizeof(T)*size); }
 	MYMATH_VECTOR_B(linear_vb, constant);
 
-	template<typename T> inline int nullfunction(T* x, T* y, int size) { return 0; }
+	template<typename T> int nullfunction(T* x, T* y, int size) { return 0; }
 
-	template<typename T> inline T conv(T* x, int x_stride, T* k, int k_stride, int w, int h)
+	template<typename T> T conv(T* x, int x_stride, T* k, int k_stride, int w, int h)
 	{
 		T v = 0;
 		for (int i = 0; i < w; i++)

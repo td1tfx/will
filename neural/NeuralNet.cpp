@@ -174,7 +174,7 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 		int n = resetGroupCount(std::min(batchCount, groupCount - selectgroup));
 		if (input)
 		{
-			getFirstLayer()->OutputMatrix->shareData(input, 0, selectgroup);
+			getFirstLayer()->YMatrix->shareData(input, 0, selectgroup);
 		}
 		if (expect)
 		{
@@ -444,7 +444,7 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 		}
 
 		real n = 0;
-		Matrix::minus(outputMax, expect, outputMax);
+		Matrix::add(outputMax, -1, expect, outputMax);
 		n = outputMax->sumAbs() / 2;
 		delete outputMax;
 		fprintf(stdout, "Error of max value position: %d, %5.2f%%\n", int(n), n / groupCount * 100);

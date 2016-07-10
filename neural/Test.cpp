@@ -114,30 +114,30 @@ void Test::test()
 		delete m;
 	}
 
-	if(testc)
+	if (testc)
 	{
 		printf("\nconvolution test:\n");
 		int c = 1;
 		int n = 1;
 		int kc = 3;
-		Matrix A = Matrix(4, 4, 2, n);
+		Matrix A = Matrix(4, 4, 1, n);
 		Matrix a(4, 4, md_Outside);
 		A.initInt(0);
 		Matrix K(2, 2, 2, 1);
 		K.initInt(1);
-		Matrix R(3, 3, 1, n);
+		Matrix R(3, 3, 2, n);
 		Matrix r(3, 3, md_Outside);
 		Matrix::convolutionForward(&A, &K, &R);
 		//A.print();
 		K.print();
 		//R.print();
 		printf("\n");
-		for (int i = 0; i < 4*n; i++)
+		for (int i = 0; i < 4 * n; i++)
 		{
-				a.resetDataPointer(A.getDataPointer(i * 16));
-				a.print();
-				r.resetDataPointer(R.getDataPointer(i * 9));
-				r.print();
+			a.resetDataPointer(A.getDataPointer(i * 16));
+			a.print();
+			r.resetDataPointer(R.getDataPointer(i * 9));
+			r.print();
 			printf("\n");
 		}
 	}

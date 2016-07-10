@@ -541,13 +541,12 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 }
 
 //矩阵减
-void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
+void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
 {
 	if (R->UseCuda == mc_UseCuda)
 	{
-		real a = -1;
 		CUBLAS_FUNC(copy)(cublasHandle, R->max_script, A->data, 1, R->data, 1);
-		CUBLAS_FUNC(axpy)(cublasHandle, R->max_script, &a, B->data, 1, R->data, 1);
+		CUBLAS_FUNC(axpy)(cublasHandle, R->max_script, &b, B->data, 1, R->data, 1);
 
 		//real a1 = 1, a2 = -1, b = 0;
 		//setTensor(td, 1, 1, R->col, R->row);
@@ -557,7 +556,7 @@ void Matrix::minus(Matrix* A, Matrix* B, Matrix* R)
 	else
 	{
 		CBLAS_FUNC(copy)(R->max_script, A->data, 1, R->data, 1);
-		CBLAS_FUNC(axpy)(R->max_script, -1, B->data, 1, R->data, 1);
+		CBLAS_FUNC(axpy)(R->max_script, b, B->data, 1, R->data, 1);
 
 		// #pragma loop(hint_parallel(8))
 		// 	for (int i = 0; i < R->max_script; i++)
@@ -733,6 +732,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 				dX->getData(recordPos[i]) = dY->getData(i);
 			}
 		}
+		//对于平均值池化，两种算法实际上遍历元素的数目是相同的
 		else if (re == re_Average_Padding && recordPos)
 		{
 			for (int i = 0; i < dX->getDataCount(); i++)
@@ -741,8 +741,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 			}
 		}
 		else if ((re == re_Average_Padding && recordPos == nullptr) || re == re_Average_NoPadding)
-		{
-			//以下两种算法实际上遍历元素的数目是相同的
+		{			
 			for (int p = 0; p < dY->N*dY->C; p++)
 			{
 				for (int i_DY = 0; i_DY < dY->W; i_DY++)
@@ -784,10 +783,10 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 		int n;
 		auto s1 = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
 		auto s2 = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, Y->C, X->C, conv_kernel->H, conv_kernel->W);
-		cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, Y->tensorDes, 8, &n, cwa);
+		//cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, Y->tensorDes, 8, &n, cwa);
 		auto s3 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd,
 			CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, k, 100, &b, Y->tensorDes, Y->data);
-		printf("%d, %d, %d\n", s1, s2, s3);
+		//printf("%d, %d, %d\n", s1, s2, s3);
 		cudaFree(k);
 	}
 	else
@@ -795,23 +794,30 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 		//只处理1NN和NN1，其他的不管了
 		//未完成
 		if (X->C != 1 && Y->C != 1) return;
-		Y->initData(0);
-		int C = conv_kernel->C / X->C;
 		for (int n = 0; n < Y->N; n++)
 		{
 			for (int i_Y = 0; i_Y < Y->W; i_Y++)
 			{
 				for (int j_Y = 0; j_Y < Y->H; j_Y++)
 				{
-					real v = 0;
-					for (int c = 0; c < conv_kernel->C; c++)
+					if (X->C == 1)
 					{
-						int c_Y = 0;
-						if (Y->C == 1) c_Y = c;
-						v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c_Y, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
-							conv_kernel->W, conv_kernel->W, conv_kernel->H);
+						for (int c = 0; c < conv_kernel->C; c++)
+						{
+							Y->getData(i_Y, j_Y, c, n) = MyMath::conv(X->getDataPointer(i_Y, j_Y, 0, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
+								conv_kernel->W, conv_kernel->W, conv_kernel->H);
+						}						
 					}
-					Y->getData(i_Y, j_Y, 0, n) = v;
+					else if(Y->C == 1)
+					{
+						real v = 0;
+						for (int c = 0; c < conv_kernel->C; c++)
+						{
+							v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
+								conv_kernel->W, conv_kernel->W, conv_kernel->H);
+						}
+						Y->getData(i_Y, j_Y, 0, n) = v;
+					}
 				}
 			}
 		}
@@ -942,7 +948,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 	}
 }
 
-void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* dX)
+void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX)
 {
 	real a = 1, b = 0;
 	auto useCuda = dX->UseCuda;
@@ -952,7 +958,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data,
 				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else
@@ -965,7 +971,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		dX->initData(1);
 		break;
 	case af_Softmax:
-		//softmax一般是最后一层，可能无用
+		//todo: 这里不正确，待查
 		if (useCuda == mc_UseCuda)
 		{
 			setTensorDes(td, X->col, 1, 1, X->row);
@@ -982,7 +988,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_TANH);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data,
 				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else
@@ -991,16 +997,20 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		}
 		break;
 	case af_Findmax:
+		//太麻烦了，用sigmoid代替
 		if (useCuda == mc_UseCuda)
 		{
-
+			setActive(CUDNN_ACTIVATION_SIGMOID);
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data,
+				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else
 		{
-
+			MyMath::sigmoid_vb2(Y->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Softplus:
+		//该函数导数就是sigmoid
 		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_SIGMOID);
@@ -1015,7 +1025,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix*
 		if (useCuda == mc_UseCuda)
 		{
 			setActive(CUDNN_ACTIVATION_RELU);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dX->tensorDes, dX->data,
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data,
 				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
 		}
 		else

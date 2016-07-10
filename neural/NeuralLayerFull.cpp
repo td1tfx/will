@@ -19,23 +19,24 @@ NeuralLayerFull::~NeuralLayerFull()
 void NeuralLayerFull::initData2(int x1, int x2)
 {
 	//deleteData();
-	this->OutputCountPerGroup = x1;
+	auto outputCount = x1;
+	this->OutputCountPerGroup = outputCount;
 
 	if (Type == lt_Input)
 	{
-		OutputMatrix = new Matrix(x1, GroupCount, md_Outside);
+		YMatrix = new Matrix(outputCount, GroupCount, md_Outside);
 	}
 	else
 	{
-		OutputMatrix = new Matrix(x1, GroupCount);
-		UnactivedMatrix = new Matrix(x1, GroupCount);
+		YMatrix = new Matrix(outputCount, GroupCount);
+		XMatrix = new Matrix(outputCount, GroupCount);
 	}
 	if (Type == lt_Output)
 	{
-		ExpectMatrix = new Matrix(x1, GroupCount, md_Outside);
+		ExpectMatrix = new Matrix(outputCount, GroupCount, md_Outside);
 	}
-
-	DeltaMatrix = new Matrix(x1, GroupCount);
+	dXMatrix = new Matrix(outputCount, GroupCount);
+	dYMatrix = new Matrix(outputCount, GroupCount);
 	_asBiasVector = new Matrix(GroupCount, 1);
 	_asBiasVector->initData(1);
 	//output->print();
@@ -60,28 +61,27 @@ void NeuralLayerFull::updateDelta2()
 	NextLayer->spreadDeltaToPrevLayer();
 	//UnactivedMatrix->dactiveFunction(_activeFunctionType);
 	//Matrix::hadamardProduct(DeltaMatrix, UnactivedMatrix, DeltaMatrix);
-	Matrix::activeBackward(_activeFunctionType, OutputMatrix, UnactivedMatrix, DeltaMatrix);
+	Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dXMatrix);
 }
 
 void NeuralLayerFull::activeOutput()
 {
-	Matrix::cpyData(UnactivedMatrix, BiasVector);
-	UnactivedMatrix->expand();
-	Matrix::product(this->WeightMatrix, PrevLayer->OutputMatrix, this->UnactivedMatrix, 1, 1);
-	//d_matrix::productVector2(this->WeightMatrix, PrevLayer->OutputMatrix, this->InputMatrix, 1, 1);
-	Matrix::activeForward(_activeFunctionType, UnactivedMatrix, OutputMatrix);
+	Matrix::cpyData(XMatrix, BiasVector);
+	XMatrix->expand();
+	Matrix::product(this->WeightMatrix, PrevLayer->YMatrix, this->XMatrix, 1, 1);
+	Matrix::activeForward(_activeFunctionType, XMatrix, YMatrix);
 }
 
 void NeuralLayerFull::spreadDeltaToPrevLayer()
 {
-	Matrix::product(WeightMatrix, DeltaMatrix, PrevLayer->DeltaMatrix, 1, 0, mt_Trans, mt_NoTrans);
+	Matrix::product(WeightMatrix, dXMatrix, PrevLayer->dYMatrix, 1, 0, mt_Trans, mt_NoTrans);
 }
 
 void NeuralLayerFull::updateWeightBias(real learnSpeed, real lambda)
 {
-	Matrix::product(DeltaMatrix, PrevLayer->OutputMatrix, WeightMatrix,
+	Matrix::product(dXMatrix, PrevLayer->YMatrix, WeightMatrix,
 		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, mt_NoTrans, mt_Trans);
-	Matrix::productVector(DeltaMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, mt_NoTrans);
+	Matrix::productVector(dXMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, mt_NoTrans);
 }
 
 int NeuralLayerFull::saveInfo(FILE* fout)

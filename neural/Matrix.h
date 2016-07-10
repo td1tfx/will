@@ -129,7 +129,7 @@ public:
 	static void productVector2(Matrix* A, Matrix* B, Matrix* R,
 		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
 	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
-	static void minus(Matrix* A, Matrix* B, Matrix* R);
+	static void add(Matrix* A, real b, Matrix* B, Matrix* R);
 
 private:
 	static cublasHandle_t cublasHandle;
@@ -173,7 +173,7 @@ public:
 
 	static void setActive(cudnnActivationMode_t am);
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y);
-	static void activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* X, Matrix* dX);
+	static void activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX);
 
 };
 
