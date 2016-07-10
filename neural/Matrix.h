@@ -130,6 +130,7 @@ public:
 		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
 	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
 	static void add(Matrix* A, real b, Matrix* B, Matrix* R);
+	static real dot(Matrix* A, int cA, Matrix* B, int cB);
 
 private:
 	static cublasHandle_t cublasHandle;
@@ -164,7 +165,7 @@ public:
 	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
-	static void convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y);
+	static void convolutionForward(Matrix* X, Matrix* filter, Matrix* Y);
 
 	static void convolutionBackward(Matrix* Y, Matrix* dY, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB);
 

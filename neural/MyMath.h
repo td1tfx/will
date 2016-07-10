@@ -45,7 +45,7 @@ namespace MyMath
 	}
 
 	MYMATH_VECTOR(exp_v, exp);
-	MYMATH_VECTOR_B(exp_vb, exp);
+	//MYMATH_VECTOR_B(exp_vb, exp);
 
 	MYMATH_VECTOR(softplus_v, softplus);
 	MYMATH_VECTOR_B(softplus_vb, sigmoid);
@@ -56,14 +56,7 @@ namespace MyMath
 	template<typename T> int linear_v(T* x, T* y, int size) { memcpy(y, x, sizeof(T)*size); }
 	MYMATH_VECTOR_B(linear_vb, constant);
 
-	template<typename T> int softmax_vb(const T* y, const T* dy, const T* x, T* dx, int size)
-	{
-		for (int i = 0; i < size; i++)
-		{
-			dx[i] = y[i] * dy[i];
-		}
-		return 0;
-	}
+
 
 	template<typename T> int nullfunction(T* x, T* y, int size) { return 0; }
 
@@ -80,6 +73,24 @@ namespace MyMath
 		return v;
 	}
 
+	template<typename T> int softmax_vb_sub(const T* y, const T* dy, T v, T* dx, int size)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			dx[i] = y[i] * (dy[i] - v);
+		}
+		return 0;
+	}
+
+	template<typename T> int softmaxloss_vb_sub(const T* dy, T v, T* dx, int size)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			dx[i] = dy[i] - v;
+		}
+		return 0;
+	}
+	MYMATH_VECTOR(log_v, log);
 	// void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 #undef MYMATH_FOR
 #undef MYMATH_VECTOR

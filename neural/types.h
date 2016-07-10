@@ -69,6 +69,7 @@ typedef enum
 	af_Tanh = CUDNN_ACTIVATION_TANH,
 	af_ClippedReLU = CUDNN_ACTIVATION_CLIPPED_RELU,
 	af_Softmax,
+	af_SoftmaxLoss,
 	af_Linear,
 	af_Findmax,
 	af_Softplus,

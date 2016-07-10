@@ -568,6 +568,21 @@ void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
 }
 
 
+real Matrix::dot(Matrix* A, int cA, Matrix* B, int cB)
+{
+	if (A->UseCuda == mc_UseCuda)
+	{
+		real r;
+		CUBLAS_FUNC(dot)(cublasHandle, A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1, &r);
+		return r;
+
+	}
+	else
+	{
+		return CBLAS_FUNC(dot)(A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1);
+	}
+}
+
 real* Matrix::mallocData(int size)
 {
 	if (UseCuda == mc_UseCuda)
@@ -773,7 +788,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 	}
 }
 
-void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
+void Matrix::convolutionForward(Matrix* X, Matrix* filter, Matrix* Y)
 {
 	if (Y->UseCuda == mc_UseCuda)
 	{
@@ -783,17 +798,17 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 		real a = 1, b = 0;
 		int n;
 		auto s1 = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
-		auto s2 = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, Y->C, X->C, conv_kernel->H, conv_kernel->W);
+		auto s2 = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, Y->C, X->C, filter->H, filter->W);
 		//cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, Y->tensorDes, 8, &n, cwa);
-		auto s3 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, conv_kernel->data, cd,
+		auto s3 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, filter->data, cd,
 			CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, k, 100, &b, Y->tensorDes, Y->data);
 		//printf("%d, %d, %d\n", s1, s2, s3);
 		cudaFree(k);
 	}
 	else
 	{
+		//实际上可以处理为一个大稀疏矩阵乘，太麻烦也不见得会快，不管了
 		//只处理1NN和NN1，其他的不管了
-		//未完成
 		if (X->C != 1 && Y->C != 1) return;
 		for (int n = 0; n < Y->N; n++)
 		{
@@ -803,19 +818,19 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 				{
 					if (X->C == 1)
 					{
-						for (int c = 0; c < conv_kernel->C; c++)
+						for (int c = 0; c < filter->C; c++)
 						{
-							Y->getData(i_Y, j_Y, c, n) = MyMath::conv(X->getDataPointer(i_Y, j_Y, 0, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
-								conv_kernel->W, conv_kernel->W, conv_kernel->H);
+							Y->getData(i_Y, j_Y, c, n) = MyMath::conv(X->getDataPointer(i_Y, j_Y, 0, n), X->W, filter->getDataPointer(0, 0, c, 0),
+								filter->W, filter->W, filter->H);
 						}
 					}
 					else if (Y->C == 1)
 					{
 						real v = 0;
-						for (int c = 0; c < conv_kernel->C; c++)
+						for (int c = 0; c < filter->C; c++)
 						{
-							v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
-								conv_kernel->W, conv_kernel->W, conv_kernel->H);
+							v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c, n), X->W, filter->getDataPointer(0, 0, c, 0),
+								filter->W, filter->W, filter->H);
 						}
 						Y->getData(i_Y, j_Y, 0, n) = v;
 					}
@@ -895,11 +910,12 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		if (useCuda == mc_UseCuda)
 		{
 			setTensorDes(td, X->col, 1, 1, X->row);
-			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
+			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE,
 				&a, td, X->data, &b, td, Y->data);
 		}
 		else
 		{
+			//因为数值问题，可能需要减去每列最大值
 			MyMath::exp_v(X->data, Y->data, Y->max_script);
 			for (int i = 0; i < Y->col; i++)
 			{
@@ -907,6 +923,19 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 				if (sum == 0) continue;
 				Y->colMultiply(1 / sum, i);
 			}
+		}
+		break;
+	case af_SoftmaxLoss:
+		if (useCuda == mc_UseCuda)
+		{
+			setTensorDes(td, Y->col, 1, 1, Y->row);
+			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_LOG, CUDNN_SOFTMAX_MODE_INSTANCE,
+				&a, td, X->data, &b, td, Y->data);
+		}
+		else
+		{			
+			activeForward(af_Softmax, X, Y);
+			MyMath::log_v(Y->data, Y->data, Y->max_script);
 		}
 		break;
 	case af_Linear:
@@ -997,15 +1026,35 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 	case af_Softmax:
 		if (useCuda == mc_UseCuda)
 		{
-			setTensorDes(td, X->col, 1, 1, X->row);
-			auto s=cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
+			setTensorDes(td, dX->col, 1, 1, dX->row);
+			auto s = cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE,
 				&a, td, Y->data, td, dY->data, &b, td, dX->data);
 		}
 		else
 		{
-			//这里直接推导应该是与sigmoid反向用Y计算一致，但是实际上分类问题中一般会用log-likelihood代价函数，会有区别
-			//先这么糊弄吧
-			MyMath::softmax_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
+			for (int i = 0; i < dX->col; i++)
+			{
+				auto v = dot(Y,i,dY,i);
+				MyMath::softmax_vb_sub(Y->getDataPointer(0, i), dY->getDataPointer(0, i), v, dX->getDataPointer(0, i), dX->row);
+			}
+		}
+		break;
+	case af_SoftmaxLoss:
+		if (useCuda == mc_UseCuda)
+		{
+			setTensorDes(td, X->col, 1, 1, X->row);
+			auto s = cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_LOG, CUDNN_SOFTMAX_MODE_INSTANCE,
+				&a, td, Y->data, td, dY->data, &b, td, dX->data);
+		}
+		else
+		{
+			//todo：不正确
+			MyMath::exp_v(Y->data, dX->data, dX->max_script);
+			for (int i = 0; i < dX->col; i++)
+			{
+				auto v = dot(dX, i, dY, i);
+				MyMath::softmaxloss_vb_sub(dY->getDataPointer(0, i), v, dX->getDataPointer(0, i), dX->row);
+			}
 		}
 		break;
 	case af_Linear:
@@ -1019,7 +1068,6 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 		//该函数导数就是sigmoid
 		activeForward(af_Sigmoid, X, dX);
 		break;
-
 	}
 }
 

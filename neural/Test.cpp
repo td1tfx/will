@@ -144,17 +144,36 @@ void Test::test()
 	{
 		Matrix X(4, 4), Y(4, 4);
 		Matrix dX(4, 4), dY(4, 4);
-		dY.initData(0.5);
+		Matrix E(4, 4, md_Inside, mc_NoCuda);
+		E.initData(0);
+		for (int i = 0; i < 4; i++) E.getData(i, i) = 1;
+		E.tryUploadToCuda();
+		E.print();
+
 		dX.initData(1);
-		X.initInt(1);
-		Matrix::activeForward(af_Softmax, &X, &Y);
-		printf("X:\n");
-		X.print();
+		X.initData(1);
+		X.initRandom();
+		Matrix::activeForward(af_SoftmaxLoss, &X, &Y);
+		Matrix::add(&E, -1, &Y, &dY);
+
 		printf("Y:\n");
 		Y.print();
-		Matrix::activeBackward(af_Softmax, &Y, &dY, &X, &dX);
+		printf("dY:\n");
+		dY.print();
+		printf("X:\n");
+		X.print();
+
+		Matrix::activeBackward(af_SoftmaxLoss, &Y, &dY, &X, &dX);
 		printf("dX:\n");
 		dX.print();
 	}
 	//Matrix::destroyCuda();
+}
+
+void Test::test2()
+{
+	Matrix::initCuda();
+	test();
+	Matrix::destroyCuda();
+	test();
 }
