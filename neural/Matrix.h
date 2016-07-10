@@ -166,7 +166,6 @@ public:
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
 	static void convolutionForward(Matrix* X, Matrix* filter, Matrix* A);
-
 	static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB);
 
 	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,

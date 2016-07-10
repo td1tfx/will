@@ -683,22 +683,22 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 	{
 		for (int p = 0; p < A->N*A->C; p++)
 		{
-			for (int i_Y = 0; i_Y < A->W; i_Y++)
+			for (int i_A = 0; i_A < A->W; i_A++)
 			{
-				for (int j_Y = 0; j_Y < A->H; j_Y++)
+				for (int j_A = 0; j_A < A->H; j_A++)
 				{
 					real v = 0;
 					//if (re == re_Average)v = 0;
 					if (re == re_Max) v = -REAL_MAX;
 					int n = 0;
-					for (int i_X = i_Y*stride_w; i_X < std::min(X->W, i_Y*stride_w + window_w); i_X++)
+					for (int i_X = i_A*stride_w; i_X < std::min(X->W, i_A*stride_w + window_w); i_X++)
 					{
-						for (int j_X = j_Y*stride_h; j_X < std::min(X->H, j_Y*stride_h + window_h); j_X++)
+						for (int j_X = j_A*stride_h; j_X < std::min(X->H, j_A*stride_h + window_h); j_X++)
 						{
 							if (re == re_Average_Padding || re == re_Average_NoPadding)
 							{
 								v += X->getData(i_X, j_X, p);
-								if (recordPos) recordPos[i_X + j_X*X->W + p*X->H*X->W] = i_Y + j_Y*A->W + p*A->H*A->W;
+								if (recordPos) recordPos[i_X + j_X*X->W + p*X->H*X->W] = i_A + j_A*A->W + p*A->H*A->W;
 								n++;
 							}
 							else if (re == re_Max)
@@ -707,7 +707,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 								if (x > v)
 								{
 									v = x;
-									if (recordPos) recordPos[i_Y + j_Y*A->W + p*A->H*A->W] = i_X + j_X*X->W + p*X->H*X->W;
+									if (recordPos) recordPos[i_A + j_A*A->W + p*A->H*A->W] = i_X + j_X*X->W + p*X->H*X->W;
 								}
 							}
 						}
@@ -720,7 +720,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 					{
 						v /= n;
 					}
-					A->getData(i_Y, j_Y, p) = v;
+					A->getData(i_A, j_A, p) = v;
 				}
 			}
 		}
@@ -761,23 +761,23 @@ void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, 
 		{
 			for (int p = 0; p < dA->N*dA->C; p++)
 			{
-				for (int i_DY = 0; i_DY < dA->W; i_DY++)
+				for (int i_dA = 0; i_dA < dA->W; i_dA++)
 				{
-					for (int j_DY = 0; j_DY < dA->H; j_DY++)
+					for (int j_dA = 0; j_dA < dA->H; j_dA++)
 					{
 						int n;
 						if (re == re_Average_NoPadding)
 						{
-							n = std::min(window_w, dX->W - i_DY*stride_w) * std::min(window_h, dX->H - j_DY*stride_h);
+							n = std::min(window_w, dX->W - i_dA*stride_w) * std::min(window_h, dX->H - j_dA*stride_h);
 						}
 						else
 						{
 							n = window_w * window_h;
 						}
-						real v = dA->getData(i_DY, j_DY, p) / n;
-						for (int i_DX = i_DY*stride_w; i_DX < std::min(dX->W, i_DY*stride_w + window_w); i_DX++)
+						real v = dA->getData(i_dA, j_dA, p) / n;
+						for (int i_DX = i_dA*stride_w; i_DX < std::min(dX->W, i_dA*stride_w + window_w); i_DX++)
 						{
-							for (int j_DX = j_DY*stride_h; j_DX < std::min(dX->H, j_DY*stride_h + window_h); j_DX++)
+							for (int j_DX = j_dA*stride_h; j_DX < std::min(dX->H, j_dA*stride_h + window_h); j_DX++)
 							{
 								dX->getData(i_DX, j_DX, p) = v;
 							}
@@ -813,15 +813,15 @@ void Matrix::convolutionForward(Matrix* X, Matrix* filter, Matrix* A)
 		if (X->C != 1 && A->C != 1) return;
 		for (int n = 0; n < A->N; n++)
 		{
-			for (int i_Y = 0; i_Y < A->W; i_Y++)
+			for (int i_A = 0; i_A < A->W; i_A++)
 			{
-				for (int j_Y = 0; j_Y < A->H; j_Y++)
+				for (int j_A = 0; j_A < A->H; j_A++)
 				{
 					if (X->C == 1)
 					{
 						for (int c = 0; c < filter->C; c++)
 						{
-							A->getData(i_Y, j_Y, c, n) = MyMath::conv(X->getDataPointer(i_Y, j_Y, 0, n), X->W, filter->getDataPointer(0, 0, c, 0),
+							A->getData(i_A, j_A, c, n) = MyMath::conv(X->getDataPointer(i_A, j_A, 0, n), X->W, filter->getDataPointer(0, 0, c, 0),
 								filter->W, filter->W, filter->H);
 						}
 					}
@@ -830,10 +830,10 @@ void Matrix::convolutionForward(Matrix* X, Matrix* filter, Matrix* A)
 						real v = 0;
 						for (int c = 0; c < filter->C; c++)
 						{
-							v += MyMath::conv(X->getDataPointer(i_Y, j_Y, c, n), X->W, filter->getDataPointer(0, 0, c, 0),
+							v += MyMath::conv(X->getDataPointer(i_A, j_A, c, n), X->W, filter->getDataPointer(0, 0, c, 0),
 								filter->W, filter->W, filter->H);
 						}
-						A->getData(i_Y, j_Y, 0, n) = v;
+						A->getData(i_A, j_A, 0, n) = v;
 					}
 				}
 			}
