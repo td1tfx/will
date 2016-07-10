@@ -147,7 +147,7 @@ void Matrix::print(FILE* fout)
 		{
 			for (int j = 0; j < W; j++)
 			{
-				auto v = temp[whp2i(j, i, p)];
+				auto v = temp[whp2i(i, j, p)];
 				if (std::abs(v) > 1e10)
 					fprintf(fout, "%14.11e ", v);
 				else
@@ -166,11 +166,11 @@ int Matrix::load(real* v, int n)
 	int k = 0;
 	for (int p = 0; p < C*N; p++)
 	{
-		for (int i = 0; i < row; i++)
+		for (int i = 0; i < H; i++)
 		{
-			for (int j = 0; j < col; j++)
+			for (int j = 0; j < W; j++)
 			{
-				temp[whp2i(j, i, p)] = v[k++];
+				temp[whp2i(i, j, p)] = v[k++];
 				if (k >= n) break;
 			}
 		}
@@ -1005,7 +1005,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 		{
 			//这里直接推导应该是与sigmoid反向用Y计算一致，但是实际上分类问题中一般会用log-likelihood代价函数，会有区别
 			//先这么糊弄吧
-			MyMath::sigmoid_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
+			MyMath::softmax_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Linear:

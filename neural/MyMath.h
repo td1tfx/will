@@ -30,7 +30,7 @@ namespace MyMath
 		for (int i = 0; i < size; i++)
 		{
 			dx[i] = y[i] * (1 - y[i]) * dy[i];
-		} 
+		}
 		return 0;
 	}
 
@@ -39,7 +39,7 @@ namespace MyMath
 	{
 		for (int i = 0; i < size; i++)
 		{
-			dx[i] = (1 - y[i]*y[i]) * dy[i];
+			dx[i] = (1 - y[i] * y[i]) * dy[i];
 		}
 		return 0;
 	}
@@ -55,6 +55,15 @@ namespace MyMath
 
 	template<typename T> int linear_v(T* x, T* y, int size) { memcpy(y, x, sizeof(T)*size); }
 	MYMATH_VECTOR_B(linear_vb, constant);
+
+	template<typename T> int softmax_vb(const T* y, const T* dy, const T* x, T* dx, int size)
+	{
+		for (int i = 0; i < size; i++)
+		{
+			dx[i] = y[i] * dy[i];
+		}
+		return 0;
+	}
 
 	template<typename T> int nullfunction(T* x, T* y, int size) { return 0; }
 
