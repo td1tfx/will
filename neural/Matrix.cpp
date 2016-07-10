@@ -846,7 +846,6 @@ void Matrix::selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
 }
 
 
-
 void Matrix::setActive(cudnnActivationMode_t am)
 {
 	cudnnSetActivationDescriptor(ad, am, CUDNN_NOT_PROPAGATE_NAN, 1);
@@ -964,7 +963,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 		else
 		{
 			//MyMath::sigmoid_vb(X->data, dX->data, dX->max_script);
-			MyMath::sigmoid_vb2(Y->data, dX->data, dX->max_script);
+			MyMath::sigmoid_vb(Y->data,dY->data,X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Linear:
@@ -993,33 +992,16 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 		}
 		else
 		{
-			MyMath::tanh_vb(X->data, dX->data, dX->max_script);
+			MyMath::tanh_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Findmax:
-		//太麻烦了，用sigmoid代替
-		if (useCuda == mc_UseCuda)
-		{
-			setActive(CUDNN_ACTIVATION_SIGMOID);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data,
-				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
-		}
-		else
-		{
-			MyMath::sigmoid_vb2(Y->data, dX->data, dX->max_script);
-		}
+		//似乎应该是返回一个常数矩阵，若考虑效率应当留空此处在外部处理
+		dX->initData(1);
 		break;
 	case af_Softplus:
 		//该函数导数就是sigmoid
-		if (useCuda == mc_UseCuda)
-		{
-			setActive(CUDNN_ACTIVATION_SIGMOID);
-			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
-		}
-		else
-		{
-			MyMath::softplus_vb(X->data, dX->data, dX->max_script);
-		}
+		activeForward(af_Sigmoid, X, dX);
 		break;
 	case af_ReLU:
 		if (useCuda == mc_UseCuda)
@@ -1030,7 +1012,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 		}
 		else
 		{
-			MyMath::relu_vb(X->data, dX->data, dX->max_script);
+			MyMath::relu_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
 		}
 		break;
 	}

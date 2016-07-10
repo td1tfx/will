@@ -10,9 +10,9 @@ NeuralLayerFull::NeuralLayerFull()
 
 NeuralLayerFull::~NeuralLayerFull()
 {
-	if (WeightMatrix) { delete WeightMatrix; }
-	if (BiasVector) { delete BiasVector; }
-	if (_asBiasVector) { delete _asBiasVector; }
+	safe_delete(WeightMatrix);
+	safe_delete(BiasVector);
+	safe_delete(_asBiasVector);
 }
 
 //全连接层中，x1是本层输出数
@@ -36,7 +36,9 @@ void NeuralLayerFull::initData2(int x1, int x2)
 		ExpectMatrix = new Matrix(outputCount, GroupCount, md_Outside);
 	}
 	dXMatrix = new Matrix(outputCount, GroupCount);
+	dXMatrix->initData(1);
 	dYMatrix = new Matrix(outputCount, GroupCount);
+	dYMatrix->initData(0);
 	_asBiasVector = new Matrix(GroupCount, 1);
 	_asBiasVector->initData(1);
 	//output->print();
@@ -45,7 +47,9 @@ void NeuralLayerFull::initData2(int x1, int x2)
 void NeuralLayerFull::resetGroupCount2()
 {
 	if (_asBiasVector->resize(GroupCount, 1) > 0)
+	{
 		_asBiasVector->initData(1);
+	}
 }
 
 void NeuralLayerFull::connetPrevlayer2()

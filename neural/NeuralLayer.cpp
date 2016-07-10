@@ -26,11 +26,11 @@ void NeuralLayer::setImageMode(int w, int h, int count)
 
 void NeuralLayer::deleteData()
 {
-	if (XMatrix) { delete XMatrix; }
-	if (YMatrix) { delete YMatrix; }
-	if (dXMatrix) { delete dXMatrix; }
-	if (dYMatrix) { delete dYMatrix; }
-	if (ExpectMatrix) { delete ExpectMatrix; }
+	safe_delete(XMatrix);
+	safe_delete(YMatrix);
+	safe_delete(dXMatrix);
+	safe_delete(dYMatrix);
+	safe_delete(ExpectMatrix);
 }
 
 void NeuralLayer::connetPrevlayer(NeuralLayer* prevLayer)
@@ -59,13 +59,15 @@ void NeuralLayer::updateDelta()
 		{
 		case cf_RMSE:
 			Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
-			Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dYMatrix);
+			Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dXMatrix);
 			break;
 		case cf_CrossEntropy:
 			if (_activeFunctionType == af_Sigmoid)
 			{
 				//交叉熵和Sigmoid同时使用，则有此简化方法
 				Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
+				//如果dX和dY用同一矩阵，则不需要这次复制，为通用性保留
+				Matrix::cpyData(dXMatrix, dYMatrix);
 			}
 			else
 			{

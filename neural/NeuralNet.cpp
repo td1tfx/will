@@ -6,22 +6,17 @@ NeuralNet::NeuralNet()
 
 }
 
-
 NeuralNet::~NeuralNet()
 {
 	for (int i = 0; i < LayerCount; i++)
 	{
-		delete Layers[i];
+		safe_delete(Layers[i]);
 	}
 	delete[] Layers;
-	if (train_input)
-		delete train_input;
-	if (train_expect)
-		delete train_expect;
-	if (test_input)
-		delete test_input;
-	if (test_expect)
-		delete test_expect;
+	safe_delete(train_input);
+	safe_delete(train_expect);
+	safe_delete(test_input);
+	safe_delete(test_expect);
 }
 
 //运行，注意容错保护较弱
