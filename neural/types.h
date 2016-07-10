@@ -1,6 +1,7 @@
 #pragma once
 
 #define _USE_CUDA
+//#define _DOUBLE_PRECISION
 
 #include "cuda_runtime.h"
 #include "cublas_v2.h"
@@ -11,21 +12,6 @@
 #pragma comment (lib, "cudart.lib")
 #pragma comment (lib, "cublas.lib")
 #pragma comment (lib, "cudnn.lib")
-
-/*
-#pragma comment (lib, "neural-cuda.lib")
-
-#ifdef __cplusplus
-#define HBAPI extern "C" __declspec (dllimport)
-#else
-#define HBAPI __declspec (dllimport)
-#endif
-
-int _stdcall cuda_hadamardProduct(const double *A, const double *B, double *R, unsigned int size);
-int _stdcall cuda_sigmoid(double *A, double *B, unsigned int size);
-int _stdcall cuda_dsigmoid(double *A, double *B, unsigned int size);
-int _stdcall cuda_exp(double *A, double *B, unsigned int size);
-*/
 #else
 //在cuda不生效的时候，屏蔽所有使用过的cuda函数
 //这个方法不知道好不好
@@ -66,7 +52,7 @@ int _stdcall cuda_exp(double *A, double *B, unsigned int size);
 #endif
 
 #define varName(a) #a
-
+ 
 #ifndef _DOUBLE_PRECISION
 #define _SINGLE_PRECISION 
 typedef float real;
@@ -78,13 +64,14 @@ typedef double real;
 //激活函数种类
 typedef enum
 {
-	af_Sigmoid = 0,
-	af_Linear,
+	af_Sigmoid = CUDNN_ACTIVATION_SIGMOID,
+	af_ReLU = CUDNN_ACTIVATION_RELU, 
+	af_Tanh = CUDNN_ACTIVATION_TANH,
+	af_ClippedReLU = CUDNN_ACTIVATION_CLIPPED_RELU,
 	af_Softmax,
-	af_Tanh,
+	af_Linear,
 	af_Findmax,
 	af_Softplus,
-	af_ReLU,
 } ActiveFunctionType;
 
 //采样种类，与cuDNN直接对应，可以类型转换

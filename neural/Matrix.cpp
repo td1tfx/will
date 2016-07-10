@@ -741,7 +741,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, 
 			}
 		}
 		else if ((re == re_Average_Padding && recordPos == nullptr) || re == re_Average_NoPadding)
-		{			
+		{
 			for (int p = 0; p < dY->N*dY->C; p++)
 			{
 				for (int i_DY = 0; i_DY < dY->W; i_DY++)
@@ -806,9 +806,9 @@ void Matrix::convolutionForward(Matrix* X, Matrix* conv_kernel, Matrix* Y)
 						{
 							Y->getData(i_Y, j_Y, c, n) = MyMath::conv(X->getDataPointer(i_Y, j_Y, 0, n), X->W, conv_kernel->getDataPointer(0, 0, c, 0),
 								conv_kernel->W, conv_kernel->W, conv_kernel->H);
-						}						
+						}
 					}
-					else if(Y->C == 1)
+					else if (Y->C == 1)
 					{
 						real v = 0;
 						for (int c = 0; c < conv_kernel->C; c++)
@@ -868,8 +868,27 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 			MyMath::sigmoid_v(X->data, Y->data, Y->max_script);
 		}
 		break;
-	case af_Linear:
-		cpyData(Y, X);
+	case af_ReLU:
+		if (useCuda == mc_UseCuda)
+		{
+			setActive(CUDNN_ACTIVATION_RELU);
+			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
+		}
+		else
+		{
+			MyMath::relu_v(X->data, Y->data, Y->max_script);
+		}
+		break;
+	case af_Tanh:
+		if (useCuda == mc_UseCuda)
+		{
+			setActive(CUDNN_ACTIVATION_TANH);
+			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
+		}
+		else
+		{
+			MyMath::tanh_v(X->data, Y->data, Y->max_script);
+		}
 		break;
 	case af_Softmax:
 		if (useCuda == mc_UseCuda)
@@ -889,23 +908,16 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 			}
 		}
 		break;
-	case af_Tanh:
-		if (useCuda == mc_UseCuda)
-		{
-			setActive(CUDNN_ACTIVATION_TANH);
-			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
-		}
-		else
-		{
-			MyMath::tanh_v(X->data, Y->data, Y->max_script);
-		}
+	case af_Linear:
+		cpyData(Y, X);
 		break;
 	case af_Findmax:
+		//计算时尽量不要使用，只用在验证时
 		if (Y->max_script <= 0) return;
-		Y->initData(0);
 		if (useCuda == mc_UseCuda)
 		{
 			auto T = new Matrix(Y->row, Y->col, md_Inside, mc_NoCuda);
+			T->initData(0);
 			for (int i_group = 0; i_group < Y->col; i_group++)
 			{
 				int index = X->indexColMaxAbs(i_group);
@@ -916,6 +928,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		}
 		else
 		{
+			Y->initData(0);
 			for (int i_group = 0; i_group < Y->col; i_group++)
 			{
 				int index = X->indexColMaxAbs(i_group);
@@ -924,6 +937,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		}
 		break;
 	case af_Softplus:
+		//GPU部分不支持
 		if (useCuda == mc_UseCuda)
 		{
 
@@ -931,17 +945,6 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y)
 		else
 		{
 			MyMath::softplus_v(X->data, Y->data, Y->max_script);
-		}
-		break;
-	case af_ReLU:
-		if (useCuda == mc_UseCuda)
-		{
-			setActive(CUDNN_ACTIVATION_RELU);
-			cudnnActivationForward(cudnnHandle, ad, &a, X->tensorDes, X->data, &b, Y->tensorDes, Y->data);
-		}
-		else
-		{
-			MyMath::relu_v(X->data, Y->data, Y->max_script);
 		}
 		break;
 	}
@@ -962,46 +965,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 		}
 		else
 		{
-			//MyMath::sigmoid_vb(X->data, dX->data, dX->max_script);
-			MyMath::sigmoid_vb(Y->data,dY->data,X->data, dX->data, dX->max_script);
+			MyMath::sigmoid_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
 		}
-		break;
-	case af_Linear:
-		dX->initData(1);
-		break;
-	case af_Softmax:
-		//todo: 这里不正确，待查
-		if (useCuda == mc_UseCuda)
-		{
-			setTensorDes(td, X->col, 1, 1, X->row);
-			//TODO: unfinished
-			//cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
-			//	&a, td, A->data, &b, td, R->data);
-		}
-		else
-		{
-			MyMath::exp_v(X->data, dX->data, dX->max_script);
-		}
-		break;
-	case af_Tanh:
-		if (useCuda == mc_UseCuda)
-		{
-			setActive(CUDNN_ACTIVATION_TANH);
-			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data,
-				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
-		}
-		else
-		{
-			MyMath::tanh_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
-		}
-		break;
-	case af_Findmax:
-		//似乎应该是返回一个常数矩阵，若考虑效率应当留空此处在外部处理
-		dX->initData(1);
-		break;
-	case af_Softplus:
-		//该函数导数就是sigmoid
-		activeForward(af_Sigmoid, X, dX);
 		break;
 	case af_ReLU:
 		if (useCuda == mc_UseCuda)
@@ -1015,6 +980,45 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 			MyMath::relu_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
 		}
 		break;
+	case af_Tanh:
+		//两者结果在1e-10的精度有区别
+		if (useCuda == mc_UseCuda)
+		{
+			setActive(CUDNN_ACTIVATION_TANH);
+			cudnnActivationBackward(cudnnHandle, ad, &a, Y->tensorDes, Y->data, dY->tensorDes, dY->data,
+				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
+		}
+		else
+		{
+			MyMath::tanh_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
+		}
+		break;
+	case af_Softmax:
+		if (useCuda == mc_UseCuda)
+		{
+			setTensorDes(td, X->col, 1, 1, X->row);
+			cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
+				&a, td, Y->data, td, dY->data, &b, td, dX->data);
+		}
+		else
+		{
+			//这里直接推导应该是与sigmoid反向用Y计算一致，但是结果不一样
+			//先这么糊弄吧
+			MyMath::sigmoid_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
+		}
+		break;
+	case af_Linear:
+		dX->initData(1);
+		break;
+	case af_Findmax:
+		//似乎应该是返回一个常数矩阵，若考虑效率应当留空此处在外部处理
+		dX->initData(1);
+		break;
+	case af_Softplus:
+		//该函数导数就是sigmoid
+		activeForward(af_Sigmoid, X, dX);
+		break;
+
 	}
 }
 

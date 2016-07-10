@@ -72,6 +72,7 @@ void NeuralLayer::updateDelta()
 			else
 			{
 				//其余情况需自行推导
+				Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
 				Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dXMatrix);
 			}
 			break;

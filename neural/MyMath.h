@@ -5,9 +5,9 @@
 namespace MyMath
 {
 #define MYMATH_FOR(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
-#define MYMATH_VECTOR(fv, f) template<typename T> int fv(T* x, T* y, int size) { MYMATH_FOR(f); return 0; }
+#define MYMATH_VECTOR(fv, f) template<typename T> int fv(const T* x, T* y, int size) { MYMATH_FOR(f); return 0; }
 #define MYMATH_FOR_B(df) do{for(int i=0;i<size;i++){dx[i]=df(x[i])*dy[i];}}while(0)
-#define MYMATH_VECTOR_B(fv, df) template<typename T> int fv(T* y, T* dy, T* x, T* dx, int size) { MYMATH_FOR_B(df); return 0; }
+#define MYMATH_VECTOR_B(fv, df) template<typename T> int fv(const T* y,const T* dy,const T* x, T* dx, int size) { MYMATH_FOR_B(df); return 0; }
 
 	template<typename T> T sigmoid(T x) { return 1 / (1 + exp(-x)); }
 	template<typename T> T dsigmoid(T x) { T a = 1 + exp(-x); return (a - 1) / (a*a); }
@@ -25,7 +25,7 @@ namespace MyMath
 	MYMATH_VECTOR(sigmoid_v, sigmoid);
 	//MYMATH_VECTOR_B(sigmoid_vb, dsigmoid);
 	//为sigmoid特别处理直接使用y加速
-	template<typename T> int sigmoid_vb(T* y, T* dy, T* x, T* dx, int size) 
+	template<typename T> int sigmoid_vb(const T* y, const T* dy, const T* x, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
@@ -35,7 +35,7 @@ namespace MyMath
 	}
 
 	MYMATH_VECTOR(tanh_v, tanh);
-	template<typename T> int tanh_vb(T* y, T* dy, T* x, T* dx, int size)
+	template<typename T> int tanh_vb(const T* y, const T* dy, const T* x, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{

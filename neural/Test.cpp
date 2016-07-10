@@ -86,7 +86,7 @@ int Test::MNIST_readLabelFile(const char* filename, real* expect)
 void Test::test()
 {
 	//Matrix::initCuda();
-	int testp = 0, testc = 1;
+	int testp = 0, testc = 0;
 	if (testp)
 	{
 		printf("\npooling test:\n");
@@ -140,6 +140,21 @@ void Test::test()
 			r.print();
 			printf("\n");
 		}
+	}
+	{
+		Matrix X(4, 4), Y(4, 4);
+		Matrix dX(4, 4), dY(4, 4);
+		dY.initRandom();
+		dX.initData(1);
+		X.initRandom();
+		Matrix::activeForward(af_Softmax, &X, &Y);
+		printf("X:\n");
+		X.print();
+		printf("Y:\n");
+		Y.print();
+		Matrix::activeBackward(af_Softmax, &Y, &dY, &X, &dX);
+		printf("dX:\n");
+		dX.print();
 	}
 	//Matrix::destroyCuda();
 }

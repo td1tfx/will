@@ -53,6 +53,8 @@ void NeuralNet::run(Option* op)
 	else
 		createByLoad(op->getString("LoadFile").c_str());
 
+	setWorkType(NeuralNetWorkType(op->getInt("WorkType", 0)));
+
 	//selectTest();
 	train(op->getInt("TrainTimes", 1000), op->getInt("OutputInterval", 1000),
 		op->getReal("Tol", 1e-3), op->getReal("Dtol", 0.0));
