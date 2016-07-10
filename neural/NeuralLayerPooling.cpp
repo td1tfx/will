@@ -34,8 +34,8 @@ void NeuralLayerPooling::connetPrevlayer2()
 	ImageCol = (PrevLayer->ImageCol + window_h - 1) / window_h;
 	OutputCountPerGroup = ImageCountPerGroup*ImageRow*ImageCol;
 	//UnactivedMatrix = new d_matrix(OutputCount, GroupCount);
-	dYMatrix = new Matrix(OutputCountPerGroup, GroupCount);
-	YMatrix = new Matrix(OutputCountPerGroup, GroupCount);
+	dAMatrix = new Matrix(OutputCountPerGroup, GroupCount);
+	AMatrix = new Matrix(OutputCountPerGroup, GroupCount);
 	recordPos = new int[OutputCountPerGroup*GroupCount];
 }
 
@@ -47,7 +47,7 @@ void NeuralLayerPooling::updateDelta2()
 //直接硬上
 void NeuralLayerPooling::activeOutput()
 {
-	Matrix::poolingForward(_resampleType, PrevLayer->YMatrix, XMatrix, window_w, window_h, w_stride, h_stride, recordPos);
+	Matrix::poolingForward(_resampleType, PrevLayer->AMatrix, XMatrix, window_w, window_h, w_stride, h_stride, recordPos);
 	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说
 	//d_matrix::activeFunction(UnactivedMatrix, OutputMatrix, _activeFunctionType);
 }
@@ -56,7 +56,7 @@ void NeuralLayerPooling::activeOutput()
 //平均值模式未完成，先不管了
 void NeuralLayerPooling::spreadDeltaToPrevLayer()
 {
-	Matrix::poolingBackward(_resampleType, YMatrix, dYMatrix, PrevLayer->YMatrix, PrevLayer->dYMatrix,
+	Matrix::poolingBackward(_resampleType, AMatrix, dAMatrix, PrevLayer->AMatrix, PrevLayer->dAMatrix,
 		window_w, window_h, w_stride, h_stride, recordPos);
 }
 

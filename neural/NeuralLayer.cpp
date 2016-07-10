@@ -27,10 +27,10 @@ void NeuralLayer::setImageMode(int w, int h, int count)
 void NeuralLayer::deleteData()
 {
 	safe_delete(XMatrix);
-	safe_delete(YMatrix);
+	safe_delete(AMatrix);
 	safe_delete(dXMatrix);
-	safe_delete(dYMatrix);
-	safe_delete(ExpectMatrix);
+	safe_delete(dAMatrix);
+	safe_delete(YMatrix);
 }
 
 void NeuralLayer::connetPrevlayer(NeuralLayer* prevLayer)
@@ -43,10 +43,10 @@ void NeuralLayer::connetPrevlayer(NeuralLayer* prevLayer)
 void NeuralLayer::resetGroupCount()
 {
 	XMatrix->resize(OutputCountPerGroup, GroupCount);
-	YMatrix->resize(OutputCountPerGroup, GroupCount);
+	AMatrix->resize(OutputCountPerGroup, GroupCount);
 	dXMatrix->resize(OutputCountPerGroup, GroupCount);
-	dYMatrix->resize(OutputCountPerGroup, GroupCount);
-	ExpectMatrix->resize(OutputCountPerGroup, GroupCount);
+	dAMatrix->resize(OutputCountPerGroup, GroupCount);
+	YMatrix->resize(OutputCountPerGroup, GroupCount);
 	resetGroupCount2();
 }
 
@@ -58,29 +58,29 @@ void NeuralLayer::updateDelta()
 		switch (_costFunctionType)
 		{
 		case cf_RMSE:
-			Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
-			Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dXMatrix);
+			Matrix::add(YMatrix, -1, AMatrix, dAMatrix);
+			Matrix::activeBackward(_activeFunctionType, AMatrix, dAMatrix, XMatrix, dXMatrix);
 			break;
 		case cf_CrossEntropy:
 			if (_activeFunctionType == af_Sigmoid)
 			{
 				//交叉熵和Sigmoid同时使用，则有此简化方法
-				Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
+				Matrix::add(YMatrix, -1, AMatrix, dAMatrix);
 				//如果dX和dY用同一矩阵，则不需要这次复制，为通用性保留
-				Matrix::cpyData(dXMatrix, dYMatrix);
+				Matrix::cpyData(dXMatrix, dAMatrix);
 			}
 			else
 			{
 				//其余情况需自行推导
-				Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
-				Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dXMatrix);
+				Matrix::add(YMatrix, -1, AMatrix, dAMatrix);
+				Matrix::activeBackward(_activeFunctionType, AMatrix, dAMatrix, XMatrix, dXMatrix);
 			}
 			break;
 		case cf_LogLikelihood:
 			if (_activeFunctionType == af_Softmax)
 			{
-				Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
-				Matrix::cpyData(dXMatrix, dYMatrix);
+				Matrix::add(YMatrix, -1, AMatrix, dAMatrix);
+				Matrix::cpyData(dXMatrix, dAMatrix);
 			}
 			break;
 		default:

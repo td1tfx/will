@@ -47,9 +47,9 @@ public:
 	//对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数
 	//Expect仅输出层使用，输入层需要直接设置Y
 	//XMatrix收集上一层的输出，激活函数作用之后就是本层输出
-	Matrix *XMatrix = nullptr, *YMatrix = nullptr;
-	Matrix *dXMatrix = nullptr, *dYMatrix = nullptr;
-	Matrix* ExpectMatrix = nullptr;
+	Matrix *XMatrix = nullptr, *AMatrix = nullptr;
+	Matrix *dXMatrix = nullptr, *dAMatrix = nullptr;
+	Matrix* YMatrix = nullptr;
 
 	int ImageRow = 1, ImageCol = 1, ImageCountPerGroup;
 
@@ -68,10 +68,10 @@ public:
 	void setCostFunction(CostFunctionType cf) { _costFunctionType = cf; }
 
 	//以下函数仅建议使用在输入和输出层，隐藏层不建议使用！
-	Matrix* getOutputMatrix() { return YMatrix; }
-	Matrix* getExpectMatrix() { return ExpectMatrix; }
-	Matrix* getDeltaMatrix() { return dYMatrix; }
-	real& getOutputValue(int x, int y) { return YMatrix->getData(x, y); }
+	Matrix* getOutputMatrix() { return AMatrix; }
+	Matrix* getExpectMatrix() { return YMatrix; }
+	Matrix* getDeltaMatrix() { return dAMatrix; }
+	real& getOutputValue(int x, int y) { return AMatrix->getData(x, y); }
 
 	virtual void setSubType(ResampleType re) {}
 	virtual void setSubType(ConvolutionType cv) {}

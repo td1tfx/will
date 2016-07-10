@@ -160,21 +160,21 @@ private:
 public:
 	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 
-	static void poolingForward(ResampleType re, Matrix* X, Matrix* Y,
+	static void poolingForward(ResampleType re, Matrix* X, Matrix* A,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
-	static void poolingBackward(ResampleType re, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX,
+	static void poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
-	static void convolutionForward(Matrix* X, Matrix* filter, Matrix* Y);
+	static void convolutionForward(Matrix* X, Matrix* filter, Matrix* A);
 
-	static void convolutionBackward(Matrix* Y, Matrix* dY, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB);
+	static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB);
 
 	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);
 
 	static void setActive(cudnnActivationMode_t am);
-	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* Y);
-	static void activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix* X, Matrix* dX);
+	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
+	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
 };
 

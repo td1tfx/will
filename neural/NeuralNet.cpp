@@ -172,11 +172,11 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 		int n = resetGroupCount(std::min(batchCount, groupCount - selectgroup));
 		if (input)
 		{
-			getFirstLayer()->YMatrix->shareData(input, 0, selectgroup);
+			getFirstLayer()->AMatrix->shareData(input, 0, selectgroup);
 		}
 		if (expect)
 		{
-			getLastLayer()->ExpectMatrix->shareData(expect, 0, selectgroup);
+			getLastLayer()->YMatrix->shareData(expect, 0, selectgroup);
 		}
 
 		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)

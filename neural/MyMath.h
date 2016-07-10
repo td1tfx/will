@@ -6,12 +6,12 @@ namespace MyMath
 {
 #define MYMATH_FOR(f) do{for(int i=0;i<size;i++){y[i]=f(x[i]);}}while(0)
 #define MYMATH_VECTOR(fv, f) template<typename T> int fv(const T* x, T* y, int size) { MYMATH_FOR(f); return 0; }
-#define MYMATH_FOR_B(df) do{for(int i=0;i<size;i++){dx[i]=df(x[i])*dy[i];}}while(0)
-#define MYMATH_VECTOR_B(fv, df) template<typename T> int fv(const T* y,const T* dy,const T* x, T* dx, int size) { MYMATH_FOR_B(df); return 0; }
+#define MYMATH_FOR_B(df) do{for(int i=0;i<size;i++){dx[i]=df(x[i])*da[i];}}while(0)
+#define MYMATH_VECTOR_B(fv, df) template<typename T> int fv(const T* a,const T* da,const T* x, T* dx, int size) { MYMATH_FOR_B(df); return 0; }
 
 	template<typename T> T sigmoid(T x) { return 1 / (1 + exp(-x)); }
-	template<typename T> T dsigmoid(T x) { T a = 1 + exp(-x); return (a - 1) / (a*a); }
-	template<typename T> T dsigmoid2(T y) { return y*(1 - y); }
+	template<typename T> T dsigmoid(T x) { T t = 1 + exp(-x); return (t - 1) / (t*t); }
+	template<typename T> T dsigmoid2(T a) { return a*(1 - a); }
 	template<typename T> T constant(T x) { return 1; }
 	template<typename T> T dtanh(T x) { return 1 / cosh(x) / cosh(x); }
 	template<typename T> T sign1(T x) { return x > 0 ? 1 : -1; }
@@ -22,24 +22,25 @@ namespace MyMath
 	template<typename T> T relu(T x) { return x > 0 ? x : 0; }
 	template<typename T> T drelu(T x) { return x > 0 ? 1 : 0; }
 
+	MYMATH_VECTOR(log_v, log);
 	MYMATH_VECTOR(sigmoid_v, sigmoid);
 	//MYMATH_VECTOR_B(sigmoid_vb, dsigmoid);
 	//sigmoid导数直接使用y计算
-	template<typename T> int sigmoid_vb(const T* y, const T* dy, const T* x, T* dx, int size)
+	template<typename T> int sigmoid_vb(const T* a, const T* da, const T* x, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
-			dx[i] = y[i] * (1 - y[i]) * dy[i];
+			dx[i] = a[i] * (1 - a[i]) * da[i];
 		}
 		return 0;
 	}
 
 	MYMATH_VECTOR(tanh_v, tanh);
-	template<typename T> int tanh_vb(const T* y, const T* dy, const T* x, T* dx, int size)
+	template<typename T> int tanh_vb(const T* a, const T* da, const T* x, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
-			dx[i] = (1 - y[i] * y[i]) * dy[i];
+			dx[i] = (1 - a[i] * a[i]) * da[i];
 		}
 		return 0;
 	}
@@ -53,12 +54,12 @@ namespace MyMath
 	MYMATH_VECTOR(relu_v, relu);
 	MYMATH_VECTOR_B(relu_vb, drelu);
 
-	template<typename T> int linear_v(T* x, T* y, int size) { memcpy(y, x, sizeof(T)*size); }
+	template<typename T> int linear_v(T* x, T* a, int size) { memcpy(a, x, sizeof(T)*size); }
 	MYMATH_VECTOR_B(linear_vb, constant);
 
 
 
-	template<typename T> int nullfunction(T* x, T* y, int size) { return 0; }
+	template<typename T> int nullfunction(T* x, T* a, int size) { return 0; }
 
 	template<typename T> T conv(T* x, int x_stride, T* k, int k_stride, int w, int h)
 	{
@@ -73,24 +74,23 @@ namespace MyMath
 		return v;
 	}
 
-	template<typename T> int softmax_vb_sub(const T* y, const T* dy, T v, T* dx, int size)
+	template<typename T> int softmax_vb_sub(const T* a, const T* da, T v, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
-			dx[i] = y[i] * (dy[i] - v);
+			dx[i] = a[i] * (da[i] - v);
 		}
 		return 0;
 	}
 
-	template<typename T> int softmaxloss_vb_sub(const T* dy, T v, T* dx, int size)
+	template<typename T> int softmaxloss_vb_sub(const T* a, const T* da, T v, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
-			dx[i] = dy[i] - v;
+			dx[i] = da[i] - v*exp(a[i]);
 		}
 		return 0;
 	}
-	MYMATH_VECTOR(log_v, log);
 	// void swap(int &a, int &b) { auto t = a; a = b; b = t; }
 #undef MYMATH_FOR
 #undef MYMATH_VECTOR
