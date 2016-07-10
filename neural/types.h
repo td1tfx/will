@@ -94,6 +94,7 @@ typedef enum
 {
 	cf_RMSE,
 	cf_CrossEntropy,
+	cf_LogLikelihood,
 } CostFunctionType;
 
 

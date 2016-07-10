@@ -124,6 +124,7 @@ void Matrix::initCuda()
 void Matrix::destroyCuda()
 {
 	inited = false;
+	globalUseCuda = mc_NoCuda;
 #ifdef _USE_CUDA
 	cudnnDestroyTensorDescriptor(td);
 	cudnnDestroyActivationDescriptor(ad);
@@ -997,12 +998,12 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* Y, Matrix* dY, Matrix
 		if (useCuda == mc_UseCuda)
 		{
 			setTensorDes(td, X->col, 1, 1, X->row);
-			cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
+			auto s=cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_FAST, CUDNN_SOFTMAX_MODE_INSTANCE,
 				&a, td, Y->data, td, dY->data, &b, td, dX->data);
 		}
 		else
 		{
-			//这里直接推导应该是与sigmoid反向用Y计算一致，但是结果不一样
+			//这里直接推导应该是与sigmoid反向用Y计算一致，但是实际上分类问题中一般会用log-likelihood代价函数，会有区别
 			//先这么糊弄吧
 			MyMath::sigmoid_vb(Y->data, dY->data, X->data, dX->data, dX->max_script);
 		}

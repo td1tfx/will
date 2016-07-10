@@ -18,9 +18,13 @@ int main(int argc, char* argv[])
 	net.run(&op);
 	Test::test();
 	t.stop();
+	if (useCuda) Matrix::destroyCuda();
+	net.run(&op);
+	Test::test();
 
 	fprintf(stdout, "Run neural net end. Time is %lf s.\n", t.getElapsedTime());
-	if (useCuda) Matrix::destroyCuda();
+	
+	
 
 #ifdef _WIN32
 	fprintf(stderr, "\nPress any key to exit.\n");

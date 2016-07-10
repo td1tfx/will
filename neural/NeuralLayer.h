@@ -60,7 +60,7 @@ public:
 
 	void deleteData();
 
-	//dactive是active的导数
+	//active函数形式
 	ActiveFunctionType _activeFunctionType = af_Sigmoid;
 	void setActiveFunction(ActiveFunctionType af) { _activeFunctionType = af; }
 

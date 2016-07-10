@@ -144,9 +144,9 @@ void Test::test()
 	{
 		Matrix X(4, 4), Y(4, 4);
 		Matrix dX(4, 4), dY(4, 4);
-		dY.initRandom();
+		dY.initData(0.5);
 		dX.initData(1);
-		X.initRandom();
+		X.initInt(1);
 		Matrix::activeForward(af_Softmax, &X, &Y);
 		printf("X:\n");
 		X.print();

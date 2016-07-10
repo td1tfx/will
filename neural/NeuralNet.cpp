@@ -86,6 +86,7 @@ void NeuralNet::setLearnType(NeuralNetLearnType lm, int lb /*= -1*/)
 void NeuralNet::setWorkType(NeuralNetWorkType wm)
 {
 	WorkType = wm;
+	getLastLayer()->setActiveFunction(af_Sigmoid);
 	if (wm == nw_Probability)
 	{
 		getLastLayer()->setActiveFunction(af_Softmax);

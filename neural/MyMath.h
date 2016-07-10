@@ -24,7 +24,7 @@ namespace MyMath
 
 	MYMATH_VECTOR(sigmoid_v, sigmoid);
 	//MYMATH_VECTOR_B(sigmoid_vb, dsigmoid);
-	//为sigmoid特别处理直接使用y加速
+	//sigmoid导数直接使用y计算
 	template<typename T> int sigmoid_vb(const T* y, const T* dy, const T* x, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)

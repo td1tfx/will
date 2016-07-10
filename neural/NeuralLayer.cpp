@@ -76,6 +76,13 @@ void NeuralLayer::updateDelta()
 				Matrix::activeBackward(_activeFunctionType, YMatrix, dYMatrix, XMatrix, dXMatrix);
 			}
 			break;
+		case cf_LogLikelihood:
+			if (_activeFunctionType == af_Softmax)
+			{
+				Matrix::add(ExpectMatrix, -1, YMatrix, dYMatrix);
+				Matrix::cpyData(dXMatrix, dYMatrix);
+			}
+			break;
 		default:
 			break;
 		}
