@@ -17,17 +17,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="NeuralLayer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="neural.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="lib\libconvert.cpp">
       <Filter>ext-source</Filter>
-    </ClCompile>
-    <ClCompile Include="NeuralNet.cpp">
-      <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="lib\Timer.cpp">
       <Filter>ext-source</Filter>
@@ -35,72 +26,81 @@
     <ClCompile Include="lib\INIReader.cpp">
       <Filter>ext-source</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralLayerFull.cpp">
+    <ClCompile Include="src\Matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralLayerFactory.cpp">
+    <ClCompile Include="src\neural.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralLayerConvolution.cpp">
+    <ClCompile Include="src\NeuralLayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Matrix.cpp">
+    <ClCompile Include="src\NeuralLayerConvolution.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="NeuralLayerPooling.cpp">
+    <ClCompile Include="src\NeuralLayerFactory.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Test.cpp">
+    <ClCompile Include="src\NeuralLayerFull.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NeuralLayerPooling.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NeuralNet.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="NeuralNet.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralLayer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MyMath.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="win.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralLayerFull.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralLayerFactory.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralLayerConvolution.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="types.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NeuralLayerPooling.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Test.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Random.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Option.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="lib\libconvert.h">
       <Filter>ext-source</Filter>
     </ClInclude>
+    <ClInclude Include="src\Matrix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\MyMath.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeuralLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeuralLayerConvolution.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeuralLayerFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeuralLayerFull.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeuralLayerPooling.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\NeuralNet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Option.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Random.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Test.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\types.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\win.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Makefile" />
     <None Include="..\README.md" />
+    <None Include="src\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\libopenblas64.dll.a">

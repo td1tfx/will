@@ -172,35 +172,35 @@
     <ClCompile Include="lib\INIReader.cpp" />
     <ClCompile Include="lib\Timer.cpp" />
     <ClCompile Include="lib\libconvert.cpp" />
-    <ClCompile Include="Matrix.cpp" />
-    <ClCompile Include="Test.cpp" />
-    <ClCompile Include="neural.cpp" />
-    <ClCompile Include="NeuralLayer.cpp" />
-    <ClCompile Include="NeuralLayerConvolution.cpp" />
-    <ClCompile Include="NeuralLayerFactory.cpp" />
-    <ClCompile Include="NeuralLayerFull.cpp" />
-    <ClCompile Include="NeuralLayerPooling.cpp" />
-    <ClCompile Include="NeuralNet.cpp" />
+    <ClCompile Include="src\Matrix.cpp" />
+    <ClCompile Include="src\neural.cpp" />
+    <ClCompile Include="src\NeuralLayer.cpp" />
+    <ClCompile Include="src\NeuralLayerConvolution.cpp" />
+    <ClCompile Include="src\NeuralLayerFactory.cpp" />
+    <ClCompile Include="src\NeuralLayerFull.cpp" />
+    <ClCompile Include="src\NeuralLayerPooling.cpp" />
+    <ClCompile Include="src\NeuralNet.cpp" />
+    <ClCompile Include="src\Test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="lib\libconvert.h" />
-    <ClInclude Include="MyMath.h" />
-    <ClInclude Include="Matrix.h" />
-    <ClInclude Include="Random.h" />
-    <ClInclude Include="Test.h" />
-    <ClInclude Include="NeuralLayerConvolution.h" />
-    <ClInclude Include="NeuralLayerFactory.h" />
-    <ClInclude Include="NeuralLayerFull.h" />
-    <ClInclude Include="NeuralLayerPooling.h" />
-    <ClInclude Include="NeuralNet.h" />
-    <ClInclude Include="NeuralLayer.h" />
-    <ClInclude Include="Option.h" />
-    <ClInclude Include="types.h" />
-    <ClInclude Include="win.h" />
+    <ClInclude Include="src\Matrix.h" />
+    <ClInclude Include="src\MyMath.h" />
+    <ClInclude Include="src\NeuralLayer.h" />
+    <ClInclude Include="src\NeuralLayerConvolution.h" />
+    <ClInclude Include="src\NeuralLayerFactory.h" />
+    <ClInclude Include="src\NeuralLayerFull.h" />
+    <ClInclude Include="src\NeuralLayerPooling.h" />
+    <ClInclude Include="src\NeuralNet.h" />
+    <ClInclude Include="src\Option.h" />
+    <ClInclude Include="src\Random.h" />
+    <ClInclude Include="src\Test.h" />
+    <ClInclude Include="src\types.h" />
+    <ClInclude Include="src\win.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
-    <None Include="Makefile" />
+    <None Include="src\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\libopenblas64.dll.a" />
