@@ -19,7 +19,7 @@ typedef enum
 {
 	lc_Full,
 	lc_Convolution,
-	lc_Resample,
+	lc_Pooling,
 } NeuralLayerConnectionType;
 
 //Éñ¾­²ã

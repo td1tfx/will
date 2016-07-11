@@ -1,6 +1,8 @@
 #include "NeuralNet.h"
 #include "Random.h"
 
+
+
 NeuralNet::NeuralNet()
 {
 
@@ -67,6 +69,28 @@ void NeuralNet::run(Option* op)
 	extraTest(op->getString("ExtraTestDataFile").c_str(),op->getInt("ForceOutput"), op->getInt("TestMax"));
 }
 
+//这里代替工厂了
+NeuralLayer* NeuralNet::createLayer(NeuralLayerConnectionType mode)
+{
+	NeuralLayer* layer = nullptr;
+
+	switch (mode)
+	{
+	case lc_Full:
+		layer = new NeuralLayerFull();
+		break;
+	case lc_Convolution:
+		layer = new NeuralLayerConvolution();
+		break;
+	case lc_Pooling:
+		layer = new NeuralLayerPooling();
+		break;
+	default:
+		break;
+	}
+	return layer;
+}
+
 //设置学习模式
 void NeuralNet::setLearnType(NeuralNetLearnType lm, int lb /*= -1*/)
 {
@@ -104,7 +128,7 @@ void NeuralNet::createLayers(int layerCount)
 	LayerCount = layerCount;
 	for (int i = 0; i < layerCount; i++)
 	{
-		auto layer = NeuralLayerFactory::createLayer(lc_Full);
+		auto layer = createLayer(lc_Full);
 		layer->Id = i;
 		Layers[i] = layer;
 	}

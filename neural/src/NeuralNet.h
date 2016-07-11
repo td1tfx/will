@@ -5,7 +5,10 @@
 #include <cmath>
 #include "libconvert.h"
 #include "Option.h"
-#include "NeuralLayerFactory.h"
+#include "NeuralLayer.h"
+#include "NeuralLayerConvolution.h"
+#include "NeuralLayerFull.h"
+#include "NeuralLayerPooling.h"
 #include "Test.h"
 
 
@@ -59,6 +62,8 @@ public:
 	NeuralLayer*& getFirstLayer() { return Layers[0]; }
 	NeuralLayer*& getLastLayer() { return Layers[LayerCount - 1]; }
 	int getLayerCount() { return LayerCount; };
+
+	NeuralLayer* createLayer(NeuralLayerConnectionType mode);
 
 	NeuralNetLearnType BatchMode = nl_Whole;
 	int MiniBatchCount = -1;

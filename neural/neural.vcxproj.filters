@@ -38,9 +38,6 @@
     <ClCompile Include="src\NeuralLayerConvolution.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\NeuralLayerFactory.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\NeuralLayerFull.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -68,9 +65,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\NeuralLayerConvolution.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NeuralLayerFactory.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\NeuralLayerFull.h">
