@@ -38,6 +38,8 @@ typedef enum
 	mc_UseCuda,
 } MatrixCudaType;
 
+//矩阵和张量
+//该类更大的意义是封装cuda运算
 struct Matrix
 {
 private:
@@ -176,4 +178,6 @@ public:
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
 };
+
+typedef Matrix Tensor;
 
