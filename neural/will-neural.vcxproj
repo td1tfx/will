@@ -90,14 +90,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib;lib/cuda;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>libopenblas32.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -127,7 +127,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>lib;lib/cuda;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <EnablePREfast>false</EnablePREfast>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
@@ -140,7 +140,7 @@
       <AdditionalDependencies>libopenblas32.dll.a;%(AdditionalDependencies)</AdditionalDependencies>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <LargeAddressAware>true</LargeAddressAware>
-      <AdditionalLibraryDirectories>./lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -182,6 +182,7 @@
     <ClCompile Include="src\Test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\INIReader.h" />
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="src\Matrix.h" />
     <ClInclude Include="src\MyMath.h" />

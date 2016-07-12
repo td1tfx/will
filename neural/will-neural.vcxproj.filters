@@ -91,6 +91,9 @@
     <ClInclude Include="src\win.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="lib\INIReader.h">
+      <Filter>ext-source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
