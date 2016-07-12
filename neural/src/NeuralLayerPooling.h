@@ -5,9 +5,6 @@ class NeuralLayerPooling :
 	public NeuralLayer
 {
 public:
-
-	//在处理图像模式的时候，上一层output的向量在这里被转为矩阵
-
 	NeuralLayerPooling();
 	virtual ~NeuralLayerPooling();
 
@@ -19,10 +16,10 @@ public:
 	Matrix* _asBiasMatrix = nullptr;
 
 	int window_w, window_h;  //pooling窗口尺寸
-	int w_stride, h_stride;  //pooling步长
+	int stride_w, stride_h;  //pooling步长
 
 protected:
-	void initData2(int x1, int x2) override;
+	void initData2(NeuralLayerInitInfo* info) override;
 	void resetGroupCount2() override;
 	void connetPrevlayer2() override;
 	void updateDelta2() override;

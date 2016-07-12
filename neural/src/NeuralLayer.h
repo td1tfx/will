@@ -22,6 +22,17 @@ typedef enum
 	lc_Pooling,
 } NeuralLayerConnectionType;
 
+typedef union  
+{
+	//full
+	int outputCount;
+	//Convolution
+
+	//Pooling
+	int window_w, window_h; 
+	int stride_w, stride_h;
+} NeuralLayerInitInfo;
+
 //神经层
 class NeuralLayer
 {
@@ -79,13 +90,13 @@ public:
 	//下面凡是有两个函数的，在无后缀函数中有公共部分，在带后缀函数中是各自子类的功能
 	void resetGroupCount();
 	void connetPrevlayer(NeuralLayer* prevLayer);
-	void initData(NeuralLayerType type, int x1, int x2) { this->Type = type; initData2(x1, x2); }
+	void initData(NeuralLayerType type, NeuralLayerInitInfo* info) { this->Type = type; initData2(info); }
 	void updateDelta();  //这里实际只包含了作为输出层的实现，即代价函数的形式，其他层交给各自的子类
 
 	//基类的实现里只处理公共部分，不处理任何算法，即使算法有重复的部分仍然在子类处理！！
 	//算法相关是updateDelta2，activeOutputValue，spreadDeltaToPrevLayer，backPropagate
 protected:
-	virtual void initData2(int x1, int x2) {}
+	virtual void initData2(NeuralLayerInitInfo* info) {}
 	virtual void resetGroupCount2() {}
 	virtual void connetPrevlayer2() {}
 	virtual void updateDelta2() {}

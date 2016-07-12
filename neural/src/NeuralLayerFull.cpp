@@ -12,14 +12,14 @@ NeuralLayerFull::~NeuralLayerFull()
 {
 	safe_delete(WeightMatrix);
 	safe_delete(BiasVector);
-	safe_delete(_asBiasVector);
+	safe_delete(asBiasVector);
 }
 
 //全连接层中，x1是本层输出数
-void NeuralLayerFull::initData2(int x1, int x2)
+void NeuralLayerFull::initData2(NeuralLayerInitInfo* info)
 {
 	//deleteData();
-	auto outputCount = x1;
+	auto outputCount = info->outputCount;
 	this->OutputCountPerGroup = outputCount;
 
 	if (Type == lt_Input)
@@ -39,16 +39,16 @@ void NeuralLayerFull::initData2(int x1, int x2)
 	dXMatrix->initData(1);
 	dAMatrix = new Matrix(outputCount, GroupCount);
 	dAMatrix->initData(0);
-	_asBiasVector = new Matrix(GroupCount, 1);
-	_asBiasVector->initData(1);
+	asBiasVector = new Matrix(GroupCount, 1);
+	asBiasVector->initData(1);
 	//output->print();
 }
 
 void NeuralLayerFull::resetGroupCount2()
 {
-	if (_asBiasVector->resize(GroupCount, 1) > 0)
+	if (asBiasVector->resize(GroupCount, 1) > 0)
 	{
-		_asBiasVector->initData(1);
+		asBiasVector->initData(1);
 	}
 }
 
@@ -85,7 +85,7 @@ void NeuralLayerFull::updateWeightBias(real learnSpeed, real lambda)
 {
 	Matrix::product(dXMatrix, PrevLayer->AMatrix, WeightMatrix,
 		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, mt_NoTrans, mt_Trans);
-	Matrix::productVector(dXMatrix, _asBiasVector, BiasVector, learnSpeed / GroupCount, 1, mt_NoTrans);
+	Matrix::productVector(dXMatrix, asBiasVector, BiasVector, learnSpeed / GroupCount, 1, mt_NoTrans);
 }
 
 int NeuralLayerFull::saveInfo(FILE* fout)
