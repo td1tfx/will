@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS=-I. -I./lib -O3 -std=c++11 $(EXCPPFLAGS)
+CPPFLAGS=-I. -I./lib -I./lib/cuda -O3 -std=c++11 $(EXCPPFLAGS)
 LDFLAGS=-L. -lcudart -lcublas -lcudnn $(EXLDFLAGS)
 SOURCES=$(wildcard *.cpp) $(wildcard lib/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
