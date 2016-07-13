@@ -235,7 +235,7 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 
 void NeuralNet::getOutputData(Matrix* output, int groupCount, int col/*= 0*/)
 {
-	getLastLayer()->getOutputMatrix()->memcpyDataOut(output->getDataPointer(0, col), OutputNodeCount*groupCount);
+	getLastLayer()->getOutputMatrix()->memcpyDataOutToHost(output->getDataPointer(0, col), OutputNodeCount*groupCount);
 }
 
 

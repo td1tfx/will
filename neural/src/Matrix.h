@@ -101,17 +101,16 @@ public:
 	void printAsVector(FILE* fout = stdout);
 	int loadAsVector(real* v, int n);
 
-	void memcpyDataIn(real* src, int size);
-	void memcpyDataOut(real* dst, int size);
+	void memcpyDataInFromHost(real* src, int size);
+	void memcpyDataOutToHost(real* dst, int size);
 	void expand();
 	int indexColMaxAbs(int c);
 	real sumAbs();
 	real sumColAbs(int c);
 	real ddot();
 
-	void initData(real v);
+	void initData(real v, int inc = 0);
 	void initRandom();
-	void initInt(int a = 0);
 	void multiply(real v);
 	void colMultiply(real v, int c);
 
@@ -171,7 +170,7 @@ public:
 
 	static void convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX = nullptr, int* recordW = nullptr);
 	static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* W, Matrix* dW, Matrix* dB);
-	static void convolution_sub(Matrix* A, Matrix* B, Matrix* C, Matrix* R, int count, int plus);
+	static void convolution_sub(Matrix* X, Matrix* Y, Matrix* Z, Matrix* R, int C, int N, int plus);
 
 	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);

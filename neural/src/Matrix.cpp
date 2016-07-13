@@ -214,7 +214,7 @@ int Matrix::loadAsVector(real* v, int n)
 }
 
 //将外界的值复制到矩阵，参数指针必须指向Host内存！
-void Matrix::memcpyDataIn(real* src, int size)
+void Matrix::memcpyDataInFromHost(real* src, int size)
 {
 	if (UseCuda == mc_UseCuda)
 	{
@@ -227,7 +227,7 @@ void Matrix::memcpyDataIn(real* src, int size)
 }
 
 //将矩阵的值复制到外界，参数指针必须指向Host内存！
-void Matrix::memcpyDataOut(real* dst, int size)
+void Matrix::memcpyDataOutToHost(real* dst, int size)
 {
 	if (UseCuda == mc_UseCuda)
 	{
@@ -321,20 +321,26 @@ real Matrix::ddot()
 }
 
 //以同一个值初始化矩阵
-void Matrix::initData(real v)
+//inc不为零时仅用于测试，不要用于实际计算！
+void Matrix::initData(real v, int inc/*=0*/)
 {
-	if (UseCuda == mc_UseCuda)
+	if (UseCuda == mc_UseCuda && inc == 0)
 	{
-		setTensorDes(td, 1, 1, col, row);
-		cudnnSetTensor(cudnnHandle, td, data, &v);
+		if (UseCuda == mc_UseCuda)
+		{
+			setTensorDes(td, 1, 1, col, row);
+			cudnnSetTensor(cudnnHandle, td, data, &v);
+		}
 	}
 	else
 	{
-#pragma loop(hint_parallel(8))
+		auto temp = mallocDataForDevice();
+		//#pragma loop(hint_parallel(8))
 		for (int i = 0; i < max_script; i++)
 		{
-			data[i] = v;
+			temp[i] = i*inc + v;
 		}
+		set_freeDataToDevice(temp);
 	}
 }
 
@@ -354,17 +360,8 @@ void Matrix::initRandom()
 	set_freeDataToDevice(temp);
 }
 
-//用连续整数初始化，仅用于测试
-void Matrix::initInt(int a)
-{
-	auto temp = mallocDataForDevice();
-	//#pragma loop(hint_parallel(8))
-	for (int i = 0; i < max_script; i++)
-	{
-		temp[i] = i + a;
-	}
-	set_freeDataToDevice(temp);
-}
+
+
 
 //数乘
 void Matrix::multiply(real v)
@@ -820,7 +817,7 @@ void Matrix::convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX /*
 		//除了1CC和CC1，其他的不保证与GPU结果一致
 		//if (X->C != 1 && A->C != 1) return;
 		A->initData(0);
-		convolution_sub(A, W, X, A, W->C, 1);
+		convolution_sub(A, W, X, A, W->C, X->N, 1);
 	}
 }
 
@@ -863,14 +860,14 @@ void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, M
 		if (dX)
 		{
 			dX->initData(0);
-			convolution_sub(dA, W, dX, dX, W->C, 1);
+			convolution_sub(dA, W, dX, dX, W->C, dX->N, 1);
 		}
 		if (dW)
 		{
 			//N不为1情况下不一致
 			dW->initData(0);
-			convolution_sub(dA, dW, X, dW, dW->C, 1);
-			dW->multiply(1.0f/dA->N);
+			convolution_sub(dA, dW, X, dW, dW->C, X->N, 1);
+			//dW->multiply(1.0f*dA->N);
 		}
 		if (dB)
 		{
@@ -893,50 +890,50 @@ void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, M
 	}
 }
 
-//R必须是ABC其中之一！A外循环，B内循环，C判断坐标，plus是加减法
-//一般来说应选择维度较小的作为循环
+//R必须是XYZ其中之一！XY循环遍历，，坐标运算X在前，Z判断坐标，plus是加减法
+//一般来说应选择维度较小的作为X和Y
 //只在CPU运算中起作用
-void Matrix::convolution_sub(Matrix* A, Matrix* B, Matrix* C, Matrix* R, int count, int plus)
+void Matrix::convolution_sub(Matrix* X, Matrix* Y, Matrix* Z, Matrix* R, int C, int N, int plus)
 {
 	if (R->UseCuda == mc_UseCuda) return;
 
-	for (int n = 0; n < R->N; n++)
+	for (int n = 0; n < N; n++)
 	{
-		int nA = n % A->N;
-		int nB = n % B->N;
-		int nC = n % C->N;
-		for (int c = 0; c < count; c++)
+		int nX = n % X->N;
+		int nY = n % Y->N;
+		int nZ = n % Z->N;
+		for (int c = 0; c < C; c++)
 		{
-			int cA = c % A->C;
-			int cB = c % B->C;
-			int cC = c % C->C;
-			for (int wA = 0; wA < A->W; wA++)
+			int cX = c % X->C;
+			int cY = c % Y->C;
+			int cZ = c % Z->C;
+			for (int wX = 0; wX < X->W; wX++)
 			{
-				for (int hA = 0; hA < A->H; hA++)
+				for (int hX = 0; hX < X->H; hX++)
 				{
-					for (int wB = 0; wB < B->W; wB++)
+					for (int wY = 0; wY < Y->W; wY++)
 					{
-						for (int hB = 0; hB < B->H; hB++)
+						for (int hY = 0; hY < Y->H; hY++)
 						{
-							int wC, hC;
+							int wZ, hZ;
 							if (plus == 1)
 							{
-								wC = wA + wB;
-								hC = hA + hB;
+								wZ = wX + wY;
+								hZ = hX + hY;
 							}
 							else if (plus == -1)
 							{
-								wC = wA - wB;
-								hC = hA - hB;
+								wZ = wX - wY;
+								hZ = hX - hY;
 							}
-							if (wC >= 0 && hC >= 0 && wC < C->W && hC < C->H)
+							if (wZ >= 0 && hZ >= 0 && wZ < Z->W && hZ < Z->H)
 							{
-								if (R == A)
-									A->getData(wA, hA, cA, nA) += B->getData(wB, hB, cB, nB)*C->getData(wC, hC, cC, nC);
-								else if (R == B)
-									B->getData(wB, hB, cB, nB) += A->getData(wA, hA, cA, nA)*C->getData(wC, hC, cC, nC);
-								else if (R == C)
-									C->getData(wC, hC, cC, nC) += A->getData(wA, hA, cA, nA)*B->getData(wB, hB, cB, nB);
+								if (R == X)
+									X->getData(wX, hX, cX, nX) += Y->getData(wY, hY, cY, nY)*Z->getData(wZ, hZ, cZ, nZ);
+								else if (R == Y)
+									Y->getData(wY, hY, cY, nY) += X->getData(wX, hX, cX, nX)*Z->getData(wZ, hZ, cZ, nZ);
+								else if (R == Z)
+									Z->getData(wZ, hZ, cZ, nZ) += X->getData(wX, hX, cX, nX)*Y->getData(wY, hY, cY, nY);
 							}
 						}
 					}

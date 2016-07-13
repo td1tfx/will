@@ -136,9 +136,9 @@ void Test::testConvolution(int testc)
 
 		A.initData(0);
 		dX.initData(12);
-		X.initInt(0);
+		X.initData(1, 1);
 		W.initData(1);
-		dA.initRandom();
+		dA.initData(1);
 		Matrix::convolutionForward(&X, &W, &A);
 
 		printf("X\n");
@@ -193,7 +193,7 @@ void Test::testPooling(int testp)
 		printf("\n");
 		Matrix dX(3, 3, 1, 1);
 		Matrix dA(2, 2, 1, 1);
-		dA.initInt();
+		dA.initData(0, 1);
 		Matrix::poolingBackward(re, &A, &dA, &X, &dX, 2, 2, 2, 2, m);
 		dA.print();
 		printf("\n");

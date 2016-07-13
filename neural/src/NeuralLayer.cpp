@@ -54,6 +54,10 @@ void NeuralLayer::updateDelta()
 {
 	if (this->Type == lt_Output)
 	{
+		//实际上代价函数的导数形式不必拘泥于具体的推导，用这个就够了
+		Matrix::add(YMatrix, -1, AMatrix, dAMatrix);
+		Matrix::cpyData(dXMatrix, dAMatrix);
+		return;
 		//代价函数由这里决定！
 		switch (_costFunctionType)
 		{
