@@ -27,22 +27,33 @@ namespace VectorMath
 	VECTOR_B(softplus_vb, sigmoid(x[i]));
 	VECTOR_B(linear_vb, 1);
 
-	template<typename T> int softmax_vb_sub(const T* a, const T* da, T v, T* dx, int size)
+	template<typename T> void sub_max(T* x, int size)
+	{
+		auto m = x[0];
+		for (int i = 1; i < size; i++)
+		{
+			m = std::max(x[i], m);
+		}
+		for (int i = 0; i < size; i++)
+		{
+			x[i] -= m;
+		}
+	}
+
+	template<typename T> void softmax_vb_sub(const T* a, const T* da, T v, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
 			dx[i] = a[i] * (da[i] - v);
 		}
-		return 0;
 	}
 
-	template<typename T> int softmaxloss_vb_sub(const T* a, const T* da, T v, T* dx, int size)
+	template<typename T> void softmaxloss_vb_sub(const T* a, const T* da, T v, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
 		{
 			dx[i] = da[i] - v*exp(a[i]);
 		}
-		return 0;
 	}
 
 	template<typename T> bool inbox(T _x, T _y, T x, T y, T w, T h)

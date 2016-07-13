@@ -1011,7 +1011,12 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		else
 		{
 			//因为数值问题，可能需要减去每列最大值
-			VectorMath::exp_v(X->data, A->data, A->max_script);
+			Matrix::cpyData(A, X);
+			for (int i = 0; i < A->col; i++)
+			{
+				VectorMath::sub_max(A->getDataPointer(0, i), A->row);
+			}
+			VectorMath::exp_v(A->data, A->data, A->max_script);
 			for (int i = 0; i < A->col; i++)
 			{
 				real sum = A->sumColAbs(i);

@@ -104,9 +104,9 @@ void Test::testSoftmax(int tests)
 		Matrix::activeForward(af_SoftmaxLoss, &X, &A);
 		Matrix::add(&E, -1, &A, &dA);
 
-		fprintf(stdout, "Y:\n");
+		fprintf(stdout, "A:\n");
 		A.print();
-		fprintf(stdout, "dY:\n");
+		fprintf(stdout, "dA:\n");
 		dA.print();
 		fprintf(stdout, "X:\n");
 		X.print();
@@ -206,8 +206,8 @@ void Test::testPooling(int testp)
 void Test::test()
 {
 	testPooling(0);
-	testConvolution(1);
-	testSoftmax(0);
+	testConvolution(0);
+	testSoftmax(1);
 }
 
 void Test::test2()
@@ -218,5 +218,5 @@ void Test::test2()
 	Matrix::destroyCuda();
 	fprintf(stdout, "No Cuda\n");
 	test();
-	printf();
+	//printf();
 }
