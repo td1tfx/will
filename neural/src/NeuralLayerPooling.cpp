@@ -16,10 +16,10 @@ NeuralLayerPooling::~NeuralLayerPooling()
 //采样层，参数为本层横向和纵向的采样像素个数
 void NeuralLayerPooling::initData2(NeuralLayerInitInfo* info)
 {
-	window_w = info->window_w;
-	window_h = info->window_h;
-	stride_w = info->stride_w;
-	stride_w = info->stride_h;
+	window_w = info->pooling.window_w;
+	window_h = info->pooling.window_h;
+	stride_w = info->pooling.stride_w;
+	stride_w = info->pooling.stride_h;
 }
 
 void NeuralLayerPooling::resetGroupCount2()

@@ -2,9 +2,7 @@
 #include <vector>
 #include <functional>
 #include <string>
-#include "MyMath.h"
 #include "Matrix.h"
-
 
 //隐藏，输入，输出
 typedef enum
@@ -22,15 +20,18 @@ typedef enum
 	lc_Pooling,
 } NeuralLayerConnectionType;
 
-typedef union  
+typedef union
 {
-	//full
-	int outputCount;
-	//Convolution
-
-	//Pooling
-	int window_w, window_h; 
-	int stride_w, stride_h;
+	struct 
+	{ 
+		int outputCount; 
+	} full;	
+	struct { } Convolution;
+	struct 
+	{
+		int window_w, window_h;
+		int stride_w, stride_h;
+	} pooling;
 } NeuralLayerInitInfo;
 
 //神经层

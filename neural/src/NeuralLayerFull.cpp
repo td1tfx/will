@@ -19,7 +19,7 @@ NeuralLayerFull::~NeuralLayerFull()
 void NeuralLayerFull::initData2(NeuralLayerInitInfo* info)
 {
 	//deleteData();
-	auto outputCount = info->outputCount;
+	auto outputCount = info->full.outputCount;
 	this->OutputCountPerGroup = outputCount;
 
 	if (Type == lt_Input)

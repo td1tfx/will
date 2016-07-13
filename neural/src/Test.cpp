@@ -1,5 +1,6 @@
 #include "Test.h"
 #include "Matrix.h"
+#include "NeuralLayer.h"
 
 unsigned char* Test::readFile(const char* filename)
 {
@@ -54,11 +55,11 @@ int Test::MNIST_readImageFile(const char* filename, real* input)
 	//  	for (int i = 784 * check; i < 784*(check+10); i++)
 	// 	{
 	// 		if (input[i] != 0)
-	// 			printf("1", input[i]);
+	// 			fprintf(stdout,"1", input[i]);
 	// 		else
-	// 			printf(" ");
+	// 			fprintf(stdout," ");
 	// 		if (i % 28 == 27)
-	// 			printf("\n");
+	// 			fprintf(stdout,"\n");
 	// 	}
 
 	delete[] content;
@@ -103,15 +104,15 @@ void Test::testSoftmax(int tests)
 		Matrix::activeForward(af_SoftmaxLoss, &X, &A);
 		Matrix::add(&E, -1, &A, &dA);
 
-		printf("Y:\n");
+		fprintf(stdout, "Y:\n");
 		A.print();
-		printf("dY:\n");
+		fprintf(stdout, "dY:\n");
 		dA.print();
-		printf("X:\n");
+		fprintf(stdout, "X:\n");
 		X.print();
 
 		Matrix::activeBackward(af_SoftmaxLoss, &A, &dA, &X, &dX);
-		printf("dX:\n");
+		fprintf(stdout, "dX:\n");
 		dX.print();
 	}
 }
@@ -120,7 +121,7 @@ void Test::testConvolution(int testc)
 {
 	if (testc)
 	{
-		printf("\nconvolution test:\n");
+		fprintf(stdout, "\nconvolution test:\n");
 		int c = 1;
 		int n = 2;
 		int kc = 1;
@@ -141,22 +142,22 @@ void Test::testConvolution(int testc)
 		dA.initData(1);
 		Matrix::convolutionForward(&X, &W, &A);
 
-		printf("X\n");
+		fprintf(stdout, "X\n");
 		X.print();
-		printf("W\n");
+		fprintf(stdout, "W\n");
 		W.print();
-		printf("A\n");
+		fprintf(stdout, "A\n");
 		A.print();
-		printf("\n");
-		printf("dA\n");
+		fprintf(stdout, "\n");
+		fprintf(stdout, "dA\n");
 		dA.print();
 
 		Matrix::convolutionBackward(&A, &dA, &X, &dX, &W, &dW, &dB);
-		printf("dX\n");
+		fprintf(stdout, "dX\n");
 		dX.print();
-		printf("dW\n");
+		fprintf(stdout, "dW\n");
 		dW.print();
-		printf("dB\n");
+		fprintf(stdout, "dB\n");
 		dB.print();
 
 		Matrix a(4, 4, md_Outside);
@@ -167,7 +168,7 @@ void Test::testConvolution(int testc)
 			// 			a.print();
 			// 			r.resetDataPointer(A.getDataPointer(i * 9));
 			// 			r.print();
-			// 			printf("\n");
+			// 			fprintf(stdout,"\n");
 		}
 	}
 }
@@ -176,7 +177,7 @@ void Test::testPooling(int testp)
 {
 	if (testp)
 	{
-		printf("\npooling test:\n");
+		fprintf(stdout, "\npooling test:\n");
 		Matrix X(3, 3, 1, 1);
 		X.initRandom();
 		X.print();
@@ -184,19 +185,19 @@ void Test::testPooling(int testp)
 		auto m = new int[X.getDataCount()];
 		auto re = re_Average_Padding;
 		Matrix::poolingForward(re, &X, &A, 2, 2, 2, 2, m);
-		printf("\n");
+		fprintf(stdout, "\n");
 		A.print();
 		for (int i = 0; i < X.getDataCount(); i++)
 		{
-			//printf("%d ", m[i]);
+			//fprintf(stdout,"%d ", m[i]);
 		}
-		printf("\n");
+		fprintf(stdout, "\n");
 		Matrix dX(3, 3, 1, 1);
 		Matrix dA(2, 2, 1, 1);
 		dA.initData(0, 1);
 		Matrix::poolingBackward(re, &A, &dA, &X, &dX, 2, 2, 2, 2, m);
 		dA.print();
-		printf("\n");
+		fprintf(stdout, "\n");
 		dX.print();
 		delete m;
 	}
@@ -212,9 +213,10 @@ void Test::test()
 void Test::test2()
 {
 	Matrix::initCuda();
-	printf("Use Cuda\n");
+	fprintf(stdout, "Use Cuda\n");
 	test();
 	Matrix::destroyCuda();
-	printf("No Cuda\n");
+	fprintf(stdout, "No Cuda\n");
 	test();
+	printf();
 }

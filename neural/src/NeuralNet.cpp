@@ -301,16 +301,16 @@ void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 
 	NeuralLayerInitInfo info;
 
-	info.outputCount = InputNodeCount;
+	info.full.outputCount = InputNodeCount;
 	getFirstLayer()->initData(lt_Input, &info);
 	fprintf(stdout, "Layer %d has %d nodes.\n", 0, InputNodeCount);
 	for (int i = 1; i < layerCount - 1; i++)
 	{
-		info.outputCount = nodesPerLayer;
+		info.full.outputCount = nodesPerLayer;
 		getLayer(i)->initData(lt_Hidden, &info);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i, nodesPerLayer);
 	}
-	info.outputCount = OutputNodeCount;
+	info.full.outputCount = OutputNodeCount;
 	getLastLayer()->initData(lt_Output, &info);
 	fprintf(stdout, "Layer %d has %d nodes.\n", layerCount - 1, OutputNodeCount);
 
@@ -370,7 +370,7 @@ void NeuralNet::createByLoad(const char* filename)
 	NeuralLayerInitInfo info;
 	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{
-		info.outputCount = int(v[k]);
+		info.full.outputCount = int(v[k]);
 		getLayer(i_layer)->initData(getLayer(i_layer)->Type, &info);
 		fprintf(stdout, "Layer %d has %d nodes.\n", i_layer, int(v[k]));
 		k += 2;

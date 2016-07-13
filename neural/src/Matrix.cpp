@@ -14,8 +14,6 @@ cudnnConvolutionDescriptor_t Matrix::cd;
 cudnnFilterDescriptor_t Matrix::fd;
 void* Matrix::workspace;
 
-
-
 //普通二维矩阵构造函数
 Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 {
@@ -57,6 +55,7 @@ Matrix::~Matrix()
 {
 	if (insideData == md_Inside) freeData();
 	if (tensorDes) cudnnDestroyTensorDescriptor(tensorDes);
+	//fprintf(stderr, "~Matrix\n");
 }
 
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
@@ -977,7 +976,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		}
 		else
 		{
-			MyMath::sigmoid_v(X->data, A->data, A->max_script);
+			VectorMath::sigmoid_v(X->data, A->data, A->max_script);
 		}
 		break;
 	case af_ReLU:
@@ -988,7 +987,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		}
 		else
 		{
-			MyMath::relu_v(X->data, A->data, A->max_script);
+			VectorMath::relu_v(X->data, A->data, A->max_script);
 		}
 		break;
 	case af_Tanh:
@@ -999,7 +998,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		}
 		else
 		{
-			MyMath::tanh_v(X->data, A->data, A->max_script);
+			VectorMath::tanh_v(X->data, A->data, A->max_script);
 		}
 		break;
 	case af_Softmax:
@@ -1012,7 +1011,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		else
 		{
 			//因为数值问题，可能需要减去每列最大值
-			MyMath::exp_v(X->data, A->data, A->max_script);
+			VectorMath::exp_v(X->data, A->data, A->max_script);
 			for (int i = 0; i < A->col; i++)
 			{
 				real sum = A->sumColAbs(i);
@@ -1031,7 +1030,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		else
 		{
 			activeForward(af_Softmax, X, A);
-			MyMath::log_v(A->data, A->data, A->max_script);
+			VectorMath::log_v(A->data, A->data, A->max_script);
 		}
 		break;
 	case af_Linear:
@@ -1070,7 +1069,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		}
 		else
 		{
-			MyMath::softplus_v(X->data, A->data, A->max_script);
+			VectorMath::softplus_v(X->data, A->data, A->max_script);
 		}
 		break;
 	}
@@ -1091,7 +1090,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		}
 		else
 		{
-			MyMath::sigmoid_vb(A->data, dA->data, X->data, dX->data, dX->max_script);
+			VectorMath::sigmoid_vb(A->data, dA->data, X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_ReLU:
@@ -1103,7 +1102,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		}
 		else
 		{
-			MyMath::relu_vb(A->data, dA->data, X->data, dX->data, dX->max_script);
+			VectorMath::relu_vb(A->data, dA->data, X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Tanh:
@@ -1116,7 +1115,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		}
 		else
 		{
-			MyMath::tanh_vb(A->data, dA->data, X->data, dX->data, dX->max_script);
+			VectorMath::tanh_vb(A->data, dA->data, X->data, dX->data, dX->max_script);
 		}
 		break;
 	case af_Softmax:
@@ -1131,7 +1130,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 			for (int i = 0; i < dX->col; i++)
 			{
 				auto v = dot(A, i, dA, i);
-				MyMath::softmax_vb_sub(A->getDataPointer(0, i), dA->getDataPointer(0, i), v, dX->getDataPointer(0, i), dX->row);
+				VectorMath::softmax_vb_sub(A->getDataPointer(0, i), dA->getDataPointer(0, i), v, dX->getDataPointer(0, i), dX->row);
 			}
 		}
 		break;
@@ -1151,7 +1150,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 				{
 					v += dA->getData(i, j);
 				}
-				MyMath::softmaxloss_vb_sub(A->getDataPointer(0, i), dA->getDataPointer(0, i), v, dX->getDataPointer(0, i), dX->row);
+				VectorMath::softmaxloss_vb_sub(A->getDataPointer(0, i), dA->getDataPointer(0, i), v, dX->getDataPointer(0, i), dX->row);
 			}
 		}
 		break;

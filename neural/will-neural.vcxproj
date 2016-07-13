@@ -185,7 +185,7 @@
     <ClInclude Include="lib\INIReader.h" />
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="src\Matrix.h" />
-    <ClInclude Include="src\MyMath.h" />
+    <ClInclude Include="src\VectorMath.h" />
     <ClInclude Include="src\NeuralLayer.h" />
     <ClInclude Include="src\NeuralLayerConvolution.h" />
     <ClInclude Include="src\NeuralLayerFull.h" />

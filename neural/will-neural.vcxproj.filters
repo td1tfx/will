@@ -58,9 +58,6 @@
     <ClInclude Include="src\Matrix.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\MyMath.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\NeuralLayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -85,13 +82,16 @@
     <ClInclude Include="src\Test.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\types.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="lib\INIReader.h">
       <Filter>ext-source</Filter>
     </ClInclude>
     <ClInclude Include="src\platforms.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\types.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\VectorMath.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

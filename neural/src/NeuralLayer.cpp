@@ -1,6 +1,5 @@
 #include "NeuralLayer.h"
 
-
 int NeuralLayer::GroupCount;
 int NeuralLayer::Step;
 
