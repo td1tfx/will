@@ -10,6 +10,12 @@ private:
 public:
 	static int MNIST_readImageFile(const char* filename, real* input);
 	static int MNIST_readLabelFile(const char* filename, real* expect);
+
+
+	static void testSoftmax(int tests);
+	static void testConvolution(int testc);
+	static void testPooling(int testp);
+
 	static void test();
 	static void test2();
 };

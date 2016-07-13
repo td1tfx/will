@@ -83,67 +83,14 @@ int Test::MNIST_readLabelFile(const char* filename, real* expect)
 }
 
 
-void Test::test()
-{
-	//Matrix::initCuda();
-	int testp = 0, testc = 0;
-	if (testp)
-	{
-		printf("\npooling test:\n");
-		Matrix A(3, 3, 1, 1);
-		A.initRandom();
-		A.print();
-		Matrix B(2, 2, 1, 1);
-		auto m = new int[A.getDataCount()];
-		auto re = re_Average_Padding;
-		Matrix::poolingForward(re, &A, &B, 2, 2, 2, 2, m);
-		printf("\n");
-		B.print();
-		for (int i = 0; i < A.getDataCount(); i++)
-		{
-			//printf("%d ", m[i]);
-		}
-		printf("\n");
-		Matrix DA(3, 3, 1, 1);
-		Matrix DB(2, 2, 1, 1);
-		DB.initInt();
-		Matrix::poolingBackward(re, &B, &DB, &A, &DA, 2, 2, 2, 2, m);
-		DB.print();
-		printf("\n");
-		DA.print();
-		delete m;
-	}
 
-	if (testc)
+
+void Test::testSoftmax(int tests)
+{
+	if (tests)
 	{
-		printf("\nconvolution test:\n");
-		int c = 1;
-		int n = 1;
-		int kc = 3;
-		Matrix A = Matrix(4, 4, 1, n);
-		Matrix a(4, 4, md_Outside);
-		A.initInt(0);
-		Matrix K(2, 2, 2, 1);
-		K.initInt(1);
-		Matrix R(3, 3, 2, n);
-		Matrix r(3, 3, md_Outside);
-		Matrix::convolutionForward(&A, &K, &R);
-		//A.print();
-		K.print();
-		//R.print();
-		printf("\n");
-		for (int i = 0; i < 4 * n; i++)
-		{
-			a.resetDataPointer(A.getDataPointer(i * 16));
-			a.print();
-			r.resetDataPointer(R.getDataPointer(i * 9));
-			r.print();
-			printf("\n");
-		}
-	}
-	{
-		Matrix X(4, 4), Y(4, 4);
-		Matrix dX(4, 4), dY(4, 4);
+		Matrix X(4, 4), A(4, 4);
+		Matrix dX(4, 4), dA(4, 4);
 		Matrix E(4, 4, md_Inside, mc_NoCuda);
 		E.initData(0);
 		for (int i = 0; i < 4; i++) E.getData(i, i) = 1;
@@ -153,27 +100,118 @@ void Test::test()
 		dX.initData(1);
 		X.initData(1);
 		X.initRandom();
-		Matrix::activeForward(af_SoftmaxLoss, &X, &Y);
-		Matrix::add(&E, -1, &Y, &dY);
+		Matrix::activeForward(af_SoftmaxLoss, &X, &A);
+		Matrix::add(&E, -1, &A, &dA);
 
 		printf("Y:\n");
-		Y.print();
+		A.print();
 		printf("dY:\n");
-		dY.print();
+		dA.print();
 		printf("X:\n");
 		X.print();
 
-		Matrix::activeBackward(af_SoftmaxLoss, &Y, &dY, &X, &dX);
+		Matrix::activeBackward(af_SoftmaxLoss, &A, &dA, &X, &dX);
 		printf("dX:\n");
 		dX.print();
 	}
-	//Matrix::destroyCuda();
+}
+
+void Test::testConvolution(int testc)
+{
+	if (testc)
+	{
+		printf("\nconvolution test:\n");
+		int c = 1;
+		int n = 2;
+		int kc = 1;
+		Matrix X(4, 4, 2, n);
+		Matrix dX(4, 4, c, n);
+		dX.initData(12);
+		X.initInt(0);
+		Matrix W(2, 2, 2, 1);
+		Matrix dW(2, 2, 1, 1);
+		W.initInt(1);
+		Matrix A(3, 3, 1, n);
+		Matrix dA(3, 3, c, n);
+		dA.initData(1);
+		Matrix dB(1,1,c,1);
+		Matrix::convolutionForward(&X, &W, &A);
+
+		printf("X\n");
+		X.print();
+		printf("W\n");
+		W.print();
+		printf("A\n");
+		A.print();
+		printf("\n");
+		
+		Matrix::convolutionBackward(&A, &dA, &X, &dX, &W, &dW, &dB);
+
+		printf("dA\n");
+		dA.print();
+		printf("dX\n");
+		dX.print();
+		printf("dW\n");
+		dW.print();
+		printf("dB\n");
+		dB.print();
+
+		Matrix a(4, 4, md_Outside);
+		Matrix r(3, 3, md_Outside);
+		for (int i = 0; i < c * n; i++)
+		{
+// 			a.resetDataPointer(X.getDataPointer(i * 16));
+// 			a.print();
+// 			r.resetDataPointer(A.getDataPointer(i * 9));
+// 			r.print();
+// 			printf("\n");
+		}
+	}
+}
+
+void Test::testPooling(int testp)
+{
+	if (testp)
+	{
+		printf("\npooling test:\n");
+		Matrix X(3, 3, 1, 1);
+		X.initRandom();
+		X.print();
+		Matrix A(2, 2, 1, 1);
+		auto m = new int[X.getDataCount()];
+		auto re = re_Average_Padding;
+		Matrix::poolingForward(re, &X, &A, 2, 2, 2, 2, m);
+		printf("\n");
+		A.print();
+		for (int i = 0; i < X.getDataCount(); i++)
+		{
+			//printf("%d ", m[i]);
+		}
+		printf("\n");
+		Matrix dX(3, 3, 1, 1);
+		Matrix dA(2, 2, 1, 1);
+		dA.initInt();
+		Matrix::poolingBackward(re, &A, &dA, &X, &dX, 2, 2, 2, 2, m);
+		dA.print();
+		printf("\n");
+		dX.print();
+		delete m;
+	}
+}
+
+void Test::test()
+{
+	testPooling(0);
+	testConvolution(1);
+	testSoftmax(0);
 }
 
 void Test::test2()
 {
 	Matrix::initCuda();
+	printf("Use Cuda\n");
 	test();
 	Matrix::destroyCuda();
+	printf("No Cuda\n");
 	test();
 }

@@ -71,13 +71,13 @@ public:
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
 	int whcn2i(int w, int h, int c, int n) { return w + h*W + c*W*H + n*C*W*H; }
-	
+
 	//以下4个函数注意如果数据在显存中，一般来说是无法赋值和输出的
 	real& getData(int i) { return data[std::min(i, max_script - 1)]; }
-	real& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }	
+	real& getData(int m, int n) { return data[std::min(xy2i(m, n), max_script - 1)]; }
 	real& getData(int w, int h, int p) { return data[whp2i(w, h, p)]; }
-	real& getData(int w, int h, int c, int n) { return data[whcn2i(w, h, c, n)]; }	
-	
+	real& getData(int w, int h, int c, int n) { return data[whcn2i(w, h, c, n)]; }
+
 	real* getDataPointer() { return data; }
 	real* getDataPointer(int i) { return &getData(i); }
 	real* getDataPointer(int m, int n) { return &getData(m, n); }
@@ -148,6 +148,8 @@ private:
 	static cudnnPoolingDescriptor_t pd;
 	static cudnnConvolutionDescriptor_t cd;
 	static cudnnFilterDescriptor_t fd;
+	static void* workspace;
+	static const int workspace_size = 1024 * 1024 * 32;
 
 	//必须配对！
 	real* mallocData(int size);
@@ -167,8 +169,9 @@ public:
 	static void poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
-	static void convolutionForward(Matrix* X, Matrix* filter, Matrix* A);
-	static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB);
+	static void convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX = nullptr, int* recordW = nullptr);
+	static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* W, Matrix* dW, Matrix* dB);
+	static void convolution_sub(Matrix* A, int cA, Matrix* B, int cB, Matrix* C, int cC, Matrix* R, int n, int plus);
 
 	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);
@@ -176,7 +179,6 @@ public:
 	static void setActive(cudnnActivationMode_t am);
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
-
 };
 
 typedef Matrix Tensor;

@@ -12,8 +12,9 @@ cudnnOpTensorDescriptor_t Matrix::od;
 cudnnPoolingDescriptor_t Matrix::pd;
 cudnnConvolutionDescriptor_t Matrix::cd;
 cudnnFilterDescriptor_t Matrix::fd;
+void* Matrix::workspace;
 
-using namespace MyMath;
+
 
 //普通二维矩阵构造函数
 Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
@@ -118,6 +119,7 @@ void Matrix::initCuda()
 	cudnnCreatePoolingDescriptor(&pd);
 	cudnnCreateConvolutionDescriptor(&cd);
 	cudnnCreateFilterDescriptor(&fd);
+	cudaMalloc(&workspace, workspace_size);
 #endif	
 }
 
@@ -132,6 +134,7 @@ void Matrix::destroyCuda()
 	cudnnDestroyPoolingDescriptor(pd);
 	cudnnDestroyConvolutionDescriptor(cd);
 	cudnnDestroyFilterDescriptor(fd);
+	cudaFree(workspace);
 
 	cublasDestroy(cublasHandle);
 	cudnnDestroy(cudnnHandle);
@@ -789,63 +792,146 @@ void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, 
 	}
 }
 
-void Matrix::convolutionForward(Matrix* X, Matrix* filter, Matrix* A)
+void Matrix::convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX /*= nullptr*/, int* recordW /*= nullptr*/)
 {
 	if (A->UseCuda == mc_UseCuda)
 	{
-		void* k;
-		cudnnConvolutionFwdAlgoPerf_t cwa[8];
-		cudaMalloc(&k, 100);
+		cudnnConvolutionFwdAlgoPerf_t cfap[8];
+		auto cfa = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM;
 		real a = 1, b = 0;
 		int n;
-		auto s1 = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
-		auto s2 = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, A->C, X->C, filter->H, filter->W);
-		//cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, Y->tensorDes, 8, &n, cwa);
-		auto s3 = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, filter->data, cd,
-			CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM, k, 100, &b, A->tensorDes, A->data);
-		//printf("%d, %d, %d\n", s1, s2, s3);
-		cudaFree(k);
+		auto state_setcd = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
+		auto state_setfd = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, A->C, X->C, W->H, W->W);
+		//cudnnGetConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, A->tensorDes, 
+		//CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, workspace_size, &cfa);
+		//cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, A->tensorDes, 8, &n, cfap);
+		auto state_cf = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, W->data, cd,
+			cfa, workspace, workspace_size, &b, A->tensorDes, A->data);
+		//printf("%d, %d, %d\n", state_setcd, state_setfd, state_cf);
 	}
 	else
 	{
 		//实际上可以处理为一个大稀疏矩阵乘，太麻烦也不见得会快，不管了
 		//只处理1NN和NN1，其他的不管了
 		if (X->C != 1 && A->C != 1) return;
+		A->initData(0);
 		for (int n = 0; n < A->N; n++)
 		{
-			for (int i_A = 0; i_A < A->W; i_A++)
+			if (X->C == 1)
 			{
-				for (int j_A = 0; j_A < A->H; j_A++)
+				for (int c = 0; c < A->C; c++)
 				{
-					if (X->C == 1)
-					{
-						for (int c = 0; c < filter->C; c++)
-						{
-							A->getData(i_A, j_A, c, n) = MyMath::conv(X->getDataPointer(i_A, j_A, 0, n), X->W, filter->getDataPointer(0, 0, c, 0),
-								filter->W, filter->W, filter->H);
-						}
-					}
-					else if (A->C == 1)
-					{
-						real v = 0;
-						for (int c = 0; c < filter->C; c++)
-						{
-							v += MyMath::conv(X->getDataPointer(i_A, j_A, c, n), X->W, filter->getDataPointer(0, 0, c, 0),
-								filter->W, filter->W, filter->H);
-						}
-						A->getData(i_A, j_A, 0, n) = v;
-					}
+					convolution_sub(A, c, W, c, X, 0, A, n, 1);
+
+				}
+			}
+			else if (A->C == 1)
+			{
+				for (int c = 0; c < X->C; c++)
+				{
+					convolution_sub(A, 0, W, c, X, c, A, n, 1);
+
 				}
 			}
 		}
 	}
 }
 
-void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* W, Matrix* dW, Matrix* dB)
+void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* W, Matrix* dW, Matrix* dB)
 {
-	// 	cudnnConvolutionBackwardData();
-	// 	cudnnConvolutionBackwardBias();
-	// 	cudnnConvolutionBackwardFilter();
+	if (dX->UseCuda == mc_UseCuda)
+	{
+		real a = 1, b = 0;
+		int n;
+		auto state_setcd = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
+		cudnnStatus_t s1, s2, s3;
+		cudnnConvolutionBwdDataAlgoPerf_t cbdap[8];
+		cudnnFindConvolutionBackwardDataAlgorithm(cudnnHandle, fd, dA->tensorDes, cd, dX->tensorDes, 8, &n, cbdap);
+		cudnnConvolutionBwdFilterAlgoPerf_t cbfap[8];
+		cudnnFindConvolutionBackwardFilterAlgorithm(cudnnHandle, X->tensorDes, dA->tensorDes, cd, fd, 8, &n, cbfap);
+		if (dX)
+		{
+			auto cbda = CUDNN_CONVOLUTION_BWD_DATA_ALGO_0;
+			cudnnGetConvolutionBackwardDataAlgorithm(cudnnHandle, fd, dA->tensorDes, cd, dX->tensorDes,
+				CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST, workspace_size, &cbda);
+			s1 = cudnnConvolutionBackwardData(cudnnHandle, &a, fd, W->data, dA->tensorDes, dA->data, cd,
+				cbda, workspace, workspace_size, &b, dX->tensorDes, dX->data);
+		}
+		if (dW)
+		{
+			auto cbfa = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0;
+			cudnnGetConvolutionBackwardFilterAlgorithm(cudnnHandle, X->tensorDes, dA->tensorDes, cd, fd,
+				CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, workspace_size, &cbfa);
+			s2 = cudnnConvolutionBackwardFilter(cudnnHandle, &a, X->tensorDes, X->data, dA->tensorDes, dA->data, cd,
+				cbfa, workspace, workspace_size, &b, fd, dW->data);
+		}
+		if (dB)
+		{
+			s3 = cudnnConvolutionBackwardBias(cudnnHandle, &a, dA->tensorDes, dA->data, &b, dB->tensorDes, dB->data);
+		}
+		printf("%d, %d, %d\n", s1, s2, s3);
+	}
+	else
+	{
+		if (dX)
+		{
+			dX->initData(0);
+			convolution_sub(dA, 0, W, 0, dX, 0, dX, 0, 1);
+		}
+		if (dW)
+		{
+			dW->initData(0);
+			convolution_sub(dA, 0, dW, 0, X, 0, dW, 0, 1);
+		}
+		if (dB)
+		{
+			//dW->initData(0);
+			//不知这是什么鬼，去死吧
+		}
+	}
+}
+
+//R必须是ABC其中之一！A外循环，B内循环，C判断坐标，plus是加减法
+void Matrix::convolution_sub(Matrix* A, int cA, Matrix* B, int cB, Matrix* C, int cC, Matrix* R, int n, int plus)
+{
+	if (R->UseCuda == mc_UseCuda) return;
+
+	int nR = n % R->N;
+	int nA = n % A->N;
+	int nB = n % B->N;
+	int nC = n % C->N;
+	for (int iA = 0; iA < A->W; iA++)
+	{
+		for (int jA = 0; jA < A->H; jA++)
+		{
+			for (int iB = 0; iB < B->W; iB++)
+			{
+				for (int jB = 0; jB < B->H; jB++)
+				{
+					int iC, jC;
+					if (plus == 1)
+					{
+						iC = iA + iB;
+						jC = jA + jB;
+					}
+					else if (plus == -1)
+					{
+						iC = iA - iB;
+						jC = jA - jB;
+					}
+					if (iC >= 0 && jC >= 0 && iC < C->W && jC < C->H)
+					{
+						if (R == A)
+							A->getData(iA, jA, cA, nA) += B->getData(iB, jB, cB, nB)*C->getData(iC, jC, cC, nC);
+						else if (R == B)
+							B->getData(iB, jB, cB, nB) += A->getData(iA, jA, cA, nA)*C->getData(iC, jC, cC, nC);
+						else if (R == C)
+							C->getData(iC, jC, cC, nC) += A->getData(iA, jA, cA, nA)*B->getData(iB, jB, cB, nB);
+					}
+				}
+			}
+		}
+	}
 }
 
 //这里应该有优化的办法，再说
@@ -1054,7 +1140,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 				real v = 0;
 				for (int j = 0; j < dX->row; j++)
 				{
-					v += dA->getData(i,j);
+					v += dA->getData(i, j);
 				}
 				MyMath::softmaxloss_vb_sub(A->getDataPointer(0, i), dA->getDataPointer(0, i), v, dX->getDataPointer(0, i), dX->row);
 			}

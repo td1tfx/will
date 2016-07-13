@@ -27,19 +27,6 @@ namespace MyMath
 	MYMATH_VECTOR_B(softplus_vb, sigmoid(x[i]));
 	MYMATH_VECTOR_B(linear_vb, 1);
 
-	template<typename T> T conv(T* x, int x_stride, T* k, int k_stride, int w, int h)
-	{
-		T v = 0;
-		for (int i = 0; i < w; i++)
-		{
-			for (int j = 0; j < h; j++)
-			{
-				v += x[i + j*x_stride] * k[i + j*k_stride];
-			}
-		}
-		return v;
-	}
-
 	template<typename T> int softmax_vb_sub(const T* a, const T* da, T v, T* dx, int size)
 	{
 		for (int i = 0; i < size; i++)
@@ -56,6 +43,11 @@ namespace MyMath
 			dx[i] = da[i] - v*exp(a[i]);
 		}
 		return 0;
+	}
+
+	template<typename T> bool inbox(T _x, T _y, T x, T y, T w, T h)
+	{
+		return _x >= x && _y >= y && _x < x + h && _y < y + h;
 	}
 
 #undef MYMATH_VECTOR
