@@ -144,13 +144,18 @@ void Matrix::destroyCuda()
 void Matrix::print(FILE* fout)
 {
 	auto temp = malloc_getDataFromDevice();
+	// 	for (int p = 0; p < C*N*W*H; p++)
+	// 	{
+	// 		fprintf(fout, "%14.11f ", temp[p]);
+	// 	}
+	// 	fprintf(fout, "\n");
 	for (int p = 0; p < C*N; p++)
 	{
-		for (int i = 0; i < H; i++)
+		for (int h = 0; h < H; h++)
 		{
-			for (int j = 0; j < W; j++)
+			for (int w = 0; w < W; w++)
 			{
-				auto v = temp[whp2i(i, j, p)];
+				auto v = temp[whp2i(w, h, p)];
 				if (std::abs(v) > 1e10)
 					fprintf(fout, "%14.11e ", v);
 				else
@@ -169,11 +174,11 @@ int Matrix::load(real* v, int n)
 	int k = 0;
 	for (int p = 0; p < C*N; p++)
 	{
-		for (int i = 0; i < H; i++)
+		for (int h = 0; h < H; h++)
 		{
-			for (int j = 0; j < W; j++)
+			for (int w = 0; w < W; w++)
 			{
-				temp[whp2i(i, j, p)] = v[k++];
+				temp[whp2i(w, h, p)] = v[k++];
 				if (k >= n) break;
 			}
 		}
@@ -686,31 +691,31 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 	{
 		for (int p = 0; p < A->N*A->C; p++)
 		{
-			for (int i_A = 0; i_A < A->W; i_A++)
+			for (int wA = 0; wA < A->W; wA++)
 			{
-				for (int j_A = 0; j_A < A->H; j_A++)
+				for (int hA = 0; hA < A->H; hA++)
 				{
 					real v = 0;
 					//if (re == re_Average)v = 0;
 					if (re == re_Max) v = -REAL_MAX;
 					int n = 0;
-					for (int i_X = i_A*stride_w; i_X < std::min(X->W, i_A*stride_w + window_w); i_X++)
+					for (int wX = wA*stride_w; wX < std::min(X->W, wA*stride_w + window_w); wX++)
 					{
-						for (int j_X = j_A*stride_h; j_X < std::min(X->H, j_A*stride_h + window_h); j_X++)
+						for (int hX = hA*stride_h; hX < std::min(X->H, hA*stride_h + window_h); hX++)
 						{
 							if (re == re_Average_Padding || re == re_Average_NoPadding)
 							{
-								v += X->getData(i_X, j_X, p);
-								if (recordPos) recordPos[i_X + j_X*X->W + p*X->H*X->W] = i_A + j_A*A->W + p*A->H*A->W;
+								v += X->getData(wX, hX, p);
+								if (recordPos) recordPos[wX + hX*X->W + p*X->H*X->W] = wA + hA*A->W + p*A->H*A->W;
 								n++;
 							}
 							else if (re == re_Max)
 							{
-								auto x = X->getData(i_X, j_X, p);
+								auto x = X->getData(wX, hX, p);
 								if (x > v)
 								{
 									v = x;
-									if (recordPos) recordPos[i_A + j_A*A->W + p*A->H*A->W] = i_X + j_X*X->W + p*X->H*X->W;
+									if (recordPos) recordPos[wA + hA*A->W + p*A->H*A->W] = wX + hX*X->W + p*X->H*X->W;
 								}
 							}
 						}
@@ -723,7 +728,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 					{
 						v /= n;
 					}
-					A->getData(i_A, j_A, p) = v;
+					A->getData(wA, hA, p) = v;
 				}
 			}
 		}
@@ -764,25 +769,25 @@ void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, 
 		{
 			for (int p = 0; p < dA->N*dA->C; p++)
 			{
-				for (int i_dA = 0; i_dA < dA->W; i_dA++)
+				for (int wdA = 0; wdA < dA->W; wdA++)
 				{
-					for (int j_dA = 0; j_dA < dA->H; j_dA++)
+					for (int hdA = 0; hdA < dA->H; hdA++)
 					{
 						int n;
 						if (re == re_Average_NoPadding)
 						{
-							n = std::min(window_w, dX->W - i_dA*stride_w) * std::min(window_h, dX->H - j_dA*stride_h);
+							n = std::min(window_w, dX->W - wdA*stride_w) * std::min(window_h, dX->H - hdA*stride_h);
 						}
 						else
 						{
 							n = window_w * window_h;
 						}
-						real v = dA->getData(i_dA, j_dA, p) / n;
-						for (int i_DX = i_dA*stride_w; i_DX < std::min(dX->W, i_dA*stride_w + window_w); i_DX++)
+						real v = dA->getData(wdA, hdA, p) / n;
+						for (int wdX = wdA*stride_w; wdX < std::min(dX->W, wdA*stride_w + window_w); wdX++)
 						{
-							for (int j_DX = j_dA*stride_h; j_DX < std::min(dX->H, j_dA*stride_h + window_h); j_DX++)
+							for (int hdX = hdA*stride_h; hdX < std::min(dX->H, hdA*stride_h + window_h); hdX++)
 							{
-								dX->getData(i_DX, j_DX, p) = v;
+								dX->getData(wdX, hdX, p) = v;
 							}
 						}
 					}
@@ -800,40 +805,22 @@ void Matrix::convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX /*
 		auto cfa = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM;
 		real a = 1, b = 0;
 		int n;
-		auto state_setcd = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
-		auto state_setfd = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, A->C, X->C, W->H, W->W);
+		auto scd = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
+		auto sfd = cudnnSetFilter4dDescriptor(fd, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, A->C, X->C, W->H, W->W);
 		//cudnnGetConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, A->tensorDes, 
 		//CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, workspace_size, &cfa);
 		//cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, A->tensorDes, 8, &n, cfap);
-		auto state_cf = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, W->data, cd,
+		auto scf = cudnnConvolutionForward(cudnnHandle, &a, X->tensorDes, X->data, fd, W->data, cd,
 			cfa, workspace, workspace_size, &b, A->tensorDes, A->data);
-		//printf("%d, %d, %d\n", state_setcd, state_setfd, state_cf);
+		//printf("%d, %d, %d\n", scd, sfd, scf);
 	}
 	else
 	{
 		//实际上可以处理为一个大稀疏矩阵乘，太麻烦也不见得会快，不管了
-		//只处理1NN和NN1，其他的不管了
-		if (X->C != 1 && A->C != 1) return;
+		//除了1CC和CC1，其他的不保证与GPU结果一致
+		//if (X->C != 1 && A->C != 1) return;
 		A->initData(0);
-		for (int n = 0; n < A->N; n++)
-		{
-			if (X->C == 1)
-			{
-				for (int c = 0; c < A->C; c++)
-				{
-					convolution_sub(A, c, W, c, X, 0, A, n, 1);
-
-				}
-			}
-			else if (A->C == 1)
-			{
-				for (int c = 0; c < X->C; c++)
-				{
-					convolution_sub(A, 0, W, c, X, c, A, n, 1);
-
-				}
-			}
-		}
+		convolution_sub(A, W, X, A, W->C, 1);
 	}
 }
 
@@ -843,8 +830,8 @@ void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, M
 	{
 		real a = 1, b = 0;
 		int n;
-		auto state_setcd = cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
-		cudnnStatus_t s1, s2, s3;
+		cudnnSetConvolution2dDescriptor(cd, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
+		cudnnStatus_t scbd, scbf, scbb;
 		cudnnConvolutionBwdDataAlgoPerf_t cbdap[8];
 		cudnnFindConvolutionBackwardDataAlgorithm(cudnnHandle, fd, dA->tensorDes, cd, dX->tensorDes, 8, &n, cbdap);
 		cudnnConvolutionBwdFilterAlgoPerf_t cbfap[8];
@@ -854,7 +841,7 @@ void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, M
 			auto cbda = CUDNN_CONVOLUTION_BWD_DATA_ALGO_0;
 			cudnnGetConvolutionBackwardDataAlgorithm(cudnnHandle, fd, dA->tensorDes, cd, dX->tensorDes,
 				CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST, workspace_size, &cbda);
-			s1 = cudnnConvolutionBackwardData(cudnnHandle, &a, fd, W->data, dA->tensorDes, dA->data, cd,
+			scbd = cudnnConvolutionBackwardData(cudnnHandle, &a, fd, W->data, dA->tensorDes, dA->data, cd,
 				cbda, workspace, workspace_size, &b, dX->tensorDes, dX->data);
 		}
 		if (dW)
@@ -862,71 +849,96 @@ void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, M
 			auto cbfa = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0;
 			cudnnGetConvolutionBackwardFilterAlgorithm(cudnnHandle, X->tensorDes, dA->tensorDes, cd, fd,
 				CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, workspace_size, &cbfa);
-			s2 = cudnnConvolutionBackwardFilter(cudnnHandle, &a, X->tensorDes, X->data, dA->tensorDes, dA->data, cd,
+			scbf = cudnnConvolutionBackwardFilter(cudnnHandle, &a, X->tensorDes, X->data, dA->tensorDes, dA->data, cd,
 				cbfa, workspace, workspace_size, &b, fd, dW->data);
 		}
 		if (dB)
 		{
-			s3 = cudnnConvolutionBackwardBias(cudnnHandle, &a, dA->tensorDes, dA->data, &b, dB->tensorDes, dB->data);
+			scbb = cudnnConvolutionBackwardBias(cudnnHandle, &a, dA->tensorDes, dA->data, &b, dB->tensorDes, dB->data);
 		}
-		printf("%d, %d, %d\n", s1, s2, s3);
+		//printf("%d, %d, %d\n", scbd, scbf, scbb);
 	}
 	else
 	{
 		if (dX)
 		{
 			dX->initData(0);
-			convolution_sub(dA, 0, W, 0, dX, 0, dX, 0, 1);
+			convolution_sub(dA, W, dX, dX, W->C, 1);
 		}
 		if (dW)
 		{
+			//N不为1情况下不一致
 			dW->initData(0);
-			convolution_sub(dA, 0, dW, 0, X, 0, dW, 0, 1);
+			convolution_sub(dA, dW, X, dW, dW->C, 1);
+			dW->multiply(1.0f/dA->N);
 		}
 		if (dB)
 		{
-			//dW->initData(0);
-			//不知这是什么鬼，去死吧
+			dB->initData(0);
+			//这个好像就是对对应的A求和
+			for (int n = 0; n < dA->N; n++)
+			{
+				for (int c = 0; c < dA->C; c++)
+				{
+					for (int h = 0; h < dA->H; h++)
+					{
+						for (int w = 0; w < dA->W; w++)
+						{
+							dB->getData(0, 0, c, 0) += dA->getData(w, h, c, n);
+						}
+					}
+				}
+			}
 		}
 	}
 }
 
 //R必须是ABC其中之一！A外循环，B内循环，C判断坐标，plus是加减法
-void Matrix::convolution_sub(Matrix* A, int cA, Matrix* B, int cB, Matrix* C, int cC, Matrix* R, int n, int plus)
+//一般来说应选择维度较小的作为循环
+//只在CPU运算中起作用
+void Matrix::convolution_sub(Matrix* A, Matrix* B, Matrix* C, Matrix* R, int count, int plus)
 {
 	if (R->UseCuda == mc_UseCuda) return;
 
-	int nR = n % R->N;
-	int nA = n % A->N;
-	int nB = n % B->N;
-	int nC = n % C->N;
-	for (int iA = 0; iA < A->W; iA++)
+	for (int n = 0; n < R->N; n++)
 	{
-		for (int jA = 0; jA < A->H; jA++)
+		int nA = n % A->N;
+		int nB = n % B->N;
+		int nC = n % C->N;
+		for (int c = 0; c < count; c++)
 		{
-			for (int iB = 0; iB < B->W; iB++)
+			int cA = c % A->C;
+			int cB = c % B->C;
+			int cC = c % C->C;
+			for (int wA = 0; wA < A->W; wA++)
 			{
-				for (int jB = 0; jB < B->H; jB++)
+				for (int hA = 0; hA < A->H; hA++)
 				{
-					int iC, jC;
-					if (plus == 1)
+					for (int wB = 0; wB < B->W; wB++)
 					{
-						iC = iA + iB;
-						jC = jA + jB;
-					}
-					else if (plus == -1)
-					{
-						iC = iA - iB;
-						jC = jA - jB;
-					}
-					if (iC >= 0 && jC >= 0 && iC < C->W && jC < C->H)
-					{
-						if (R == A)
-							A->getData(iA, jA, cA, nA) += B->getData(iB, jB, cB, nB)*C->getData(iC, jC, cC, nC);
-						else if (R == B)
-							B->getData(iB, jB, cB, nB) += A->getData(iA, jA, cA, nA)*C->getData(iC, jC, cC, nC);
-						else if (R == C)
-							C->getData(iC, jC, cC, nC) += A->getData(iA, jA, cA, nA)*B->getData(iB, jB, cB, nB);
+						for (int hB = 0; hB < B->H; hB++)
+						{
+							int wC, hC;
+							if (plus == 1)
+							{
+								wC = wA + wB;
+								hC = hA + hB;
+							}
+							else if (plus == -1)
+							{
+								wC = wA - wB;
+								hC = hA - hB;
+							}
+							if (wC >= 0 && hC >= 0 && wC < C->W && hC < C->H)
+							{
+								if (R == A)
+									A->getData(wA, hA, cA, nA) += B->getData(wB, hB, cB, nB)*C->getData(wC, hC, cC, nC);
+								else if (R == B)
+									B->getData(wB, hB, cB, nB) += A->getData(wA, hA, cA, nA)*C->getData(wC, hC, cC, nC);
+								else if (R == C)
+									C->getData(wC, hC, cC, nC) += A->getData(wA, hA, cA, nA)*B->getData(wB, hB, cB, nB);
+							}
+						}
 					}
 				}
 			}

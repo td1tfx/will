@@ -171,7 +171,7 @@ public:
 
 	static void convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX = nullptr, int* recordW = nullptr);
 	static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* W, Matrix* dW, Matrix* dB);
-	static void convolution_sub(Matrix* A, int cA, Matrix* B, int cB, Matrix* C, int cC, Matrix* R, int n, int plus);
+	static void convolution_sub(Matrix* A, Matrix* B, Matrix* C, Matrix* R, int count, int plus);
 
 	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);

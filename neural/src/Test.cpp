@@ -124,17 +124,21 @@ void Test::testConvolution(int testc)
 		int c = 1;
 		int n = 2;
 		int kc = 1;
-		Matrix X(4, 4, 2, n);
-		Matrix dX(4, 4, c, n);
+		Matrix X(4, 4, 1, n);
+		Matrix dX(4, 4, 1, n);
+
+		Matrix W(2, 2, 1, 1);
+		Matrix dW(2, 2, 1, 1);
+
+		Matrix A(3, 3, 1, n);
+		Matrix dA(3, 3, 1, n);
+		Matrix dB(1, 1, 1, 1);
+
+		A.initData(0);
 		dX.initData(12);
 		X.initInt(0);
-		Matrix W(2, 2, 2, 1);
-		Matrix dW(2, 2, 1, 1);
-		W.initInt(1);
-		Matrix A(3, 3, 1, n);
-		Matrix dA(3, 3, c, n);
-		dA.initData(1);
-		Matrix dB(1,1,c,1);
+		W.initData(1);
+		dA.initRandom();
 		Matrix::convolutionForward(&X, &W, &A);
 
 		printf("X\n");
@@ -144,11 +148,10 @@ void Test::testConvolution(int testc)
 		printf("A\n");
 		A.print();
 		printf("\n");
-		
-		Matrix::convolutionBackward(&A, &dA, &X, &dX, &W, &dW, &dB);
-
 		printf("dA\n");
 		dA.print();
+
+		Matrix::convolutionBackward(&A, &dA, &X, &dX, &W, &dW, &dB);
 		printf("dX\n");
 		dX.print();
 		printf("dW\n");
@@ -160,11 +163,11 @@ void Test::testConvolution(int testc)
 		Matrix r(3, 3, md_Outside);
 		for (int i = 0; i < c * n; i++)
 		{
-// 			a.resetDataPointer(X.getDataPointer(i * 16));
-// 			a.print();
-// 			r.resetDataPointer(A.getDataPointer(i * 9));
-// 			r.print();
-// 			printf("\n");
+			// 			a.resetDataPointer(X.getDataPointer(i * 16));
+			// 			a.print();
+			// 			r.resetDataPointer(A.getDataPointer(i * 9));
+			// 			r.print();
+			// 			printf("\n");
 		}
 	}
 }
