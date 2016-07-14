@@ -179,8 +179,19 @@ public:
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);
 
 	static void setActive(cudnnActivationMode_t am);
-	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, void* data= nullptr);
-	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, void* data = nullptr);
+	
+	//激活和反向激活中，输入和输出矩阵都是同维度
+	//重载是为了不让一个函数显得太长
+	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
+	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
+
+	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, real v);
+	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, real v);
+	
+	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, 
+		Matrix * as1, Matrix * as2 = nullptr, Matrix * as3 = nullptr, Matrix * as4 = nullptr);
+	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, 
+		Matrix * as1, Matrix * as2 = nullptr, Matrix * as3 = nullptr, Matrix * as4 = nullptr);
 };
 
 typedef Matrix Tensor;

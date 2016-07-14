@@ -969,9 +969,9 @@ void Matrix::setActive(cudnnActivationMode_t am)
 	cudnnSetActivationDescriptor(ActivationDes, am, CUDNN_NOT_PROPAGATE_NAN, 1);
 }
 
-void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, void* data/*= nullptr*/)
+void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 {
-	real a = 1, b = 0, v = 0;
+	real a = 1, b = 0;
 	auto useCuda = A->UseCuda;
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
 	switch (af)
@@ -1007,18 +1007,6 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, void* da
 		else
 		{
 			VectorMath::tanh_v(X->data, A->data, A->max_script);
-		}
-		break;
-	case af_ClippedReLU:
-		if (data) v = *(real*)data;
-		if (useCuda == mc_UseCuda)
-		{
-			cudnnSetActivationDescriptor(ActivationDes, CUDNN_ACTIVATION_CLIPPED_RELU, nan, v);
-			cudnnActivationForward(cudnnHandle, ActivationDes, &a, X->tensorDes, X->data, &b, A->tensorDes, A->data);
-		}
-		else
-		{
-			VectorMath::clipped_relu_v(X->data, A->data, A->max_script, v);
 		}
 		break;
 	case af_Softmax:
@@ -1097,36 +1085,12 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, void* da
 			VectorMath::softplus_v(X->data, A->data, A->max_script);
 		}
 		break;
-	case af_Dropout:
-		if (data) v = *(real*)data;
-		if (useCuda == mc_UseCuda)
-		{
-			cudnnSetDropoutDescriptor(DropoutDes, cudnnHandle, v, workspace, workspace_size, 9999);
-			cudnnDropoutForward(cudnnHandle, DropoutDes, X->tensorDes, X->data, A->tensorDes, A->data, workspace, workspace_size);
-		}
-		else
-		{
-			Random<real> r;
-			r.reset();
-			for (int i = 0; i < A->max_script; i++)
-			{
-				if (r.rand_uniform() < v)
-				{
-					A->data[i] = 0;
-				}
-				else
-				{
-					A->data[i] = X->data[i] / (1 - v);
-				}
-			}
-		}
-		break;
 	}
 }
 
-void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, void* data /*= nullptr*/)
+void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX)
 {
-	real a = 1, b = 0, v = 0;
+	real a = 1, b = 0;
 	auto useCuda = dX->UseCuda;
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
 	switch (af)
@@ -1166,19 +1130,6 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		else
 		{
 			VectorMath::tanh_vb(A->data, dA->data, X->data, dX->data, dX->max_script);
-		}
-		break;
-	case af_ClippedReLU:
-		if (data) v = *(real*)data;
-		if (useCuda == mc_UseCuda)
-		{
-			cudnnSetActivationDescriptor(ActivationDes, CUDNN_ACTIVATION_CLIPPED_RELU, nan, v);
-			cudnnActivationBackward(cudnnHandle, ActivationDes, &a, A->tensorDes, A->data, dA->tensorDes, dA->data,
-				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
-		}
-		else
-		{
-			VectorMath::clipped_relu_vb(A->data, dA->data, X->data, dX->data, dX->max_script, v);
 		}
 		break;
 	case af_Softmax:
@@ -1228,11 +1179,76 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		//该函数导数就是sigmoid
 		activeForward(af_Sigmoid, X, dX);
 		break;
-	case af_Dropout:
-		if (data) v = *(real*)data;
+	}
+}
+
+void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, real v)
+{
+	real a = 1, b = 0;
+	auto useCuda = A->UseCuda;
+	auto nan = CUDNN_NOT_PROPAGATE_NAN;
+	switch (af)
+	{
+	case af_ClippedReLU:
 		if (useCuda == mc_UseCuda)
 		{
-			//这个效果与文档中描述不符
+			cudnnSetActivationDescriptor(ActivationDes, CUDNN_ACTIVATION_CLIPPED_RELU, nan, v);
+			cudnnActivationForward(cudnnHandle, ActivationDes, &a, X->tensorDes, X->data, &b, A->tensorDes, A->data);
+		}
+		else
+		{
+			VectorMath::clipped_relu_v(X->data, A->data, A->max_script, v);
+		}
+		break;
+	case af_Dropout:
+		if (useCuda == mc_UseCuda)
+		{
+			cudnnSetDropoutDescriptor(DropoutDes, cudnnHandle, v, workspace, workspace_size, 9999);
+			cudnnDropoutForward(cudnnHandle, DropoutDes, X->tensorDes, X->data, A->tensorDes, A->data, workspace, workspace_size);
+		}
+		else
+		{
+			Random<real> r;
+			r.reset();
+			for (int i = 0; i < A->max_script; i++)
+			{
+				if (r.rand_uniform() < v)
+				{
+					A->data[i] = 0;
+				}
+				else
+				{
+					A->data[i] = X->data[i] / (1 - v);
+				}
+			}
+		}
+		break;
+	}
+}
+
+void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, real v)
+{
+	real a = 1, b = 0;
+	auto useCuda = dX->UseCuda;
+	auto nan = CUDNN_NOT_PROPAGATE_NAN;
+	switch (af)
+	{
+	case af_ClippedReLU:
+		if (useCuda == mc_UseCuda)
+		{
+			cudnnSetActivationDescriptor(ActivationDes, CUDNN_ACTIVATION_CLIPPED_RELU, nan, v);
+			cudnnActivationBackward(cudnnHandle, ActivationDes, &a, A->tensorDes, A->data, dA->tensorDes, dA->data,
+				X->tensorDes, X->data, &b, dX->tensorDes, dX->data);
+		}
+		else
+		{
+			VectorMath::clipped_relu_vb(A->data, dA->data, X->data, dX->data, dX->max_script, v);
+		}
+		break;
+	case af_Dropout:
+		if (useCuda == mc_UseCuda)
+		{
+			//cudnn的效果与文档中描述不符，可能是不对
 			//cudnnSetDropoutDescriptor(DropoutDes, cudnnHandle, v, workspace, workspace_size, 9999);
 			cudnnDropoutBackward(cudnnHandle, DropoutDes, dA->tensorDes, dA->data, dX->tensorDes, dX->data, workspace, workspace_size);
 		}
@@ -1254,3 +1270,24 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 	}
 }
 
+void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, 
+	Matrix * as1, Matrix * as2 /*= nullptr*/, Matrix * as3 /*= nullptr*/, Matrix * as4 /*= nullptr*/)
+{
+	real a = 1, b = 0;
+	auto useCuda = A->UseCuda;
+	auto nan = CUDNN_NOT_PROPAGATE_NAN;
+	switch (af)
+	{
+	}
+}
+
+void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, 
+	Matrix * as1, Matrix * as2 /*= nullptr*/, Matrix * as3 /*= nullptr*/, Matrix * as4 /*= nullptr*/)
+{
+	real a = 1, b = 0;
+	auto useCuda = dX->UseCuda;
+	auto nan = CUDNN_NOT_PROPAGATE_NAN;
+	switch (af)
+	{
+	}
+}

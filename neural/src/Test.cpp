@@ -94,12 +94,12 @@ void Test::testActive(int tests)
 		dA.initData(1);
 		X.initRandom();
 		real v = 0.5;
-		Matrix::activeForward(af_Dropout, &X, &A, &v);
+		Matrix::activeForward(af_Dropout, &X, &A);
 		fprintf(stdout, "X:\n");
 		X.print();
 		fprintf(stdout, "A:\n");
 		A.print();
-		Matrix::activeBackward(af_Dropout, &A, &dA, &X, &dX, &v);
+		Matrix::activeBackward(af_Dropout, &A, &dA, &X, &dX);
 		fprintf(stdout, "dA:\n");
 		dA.print(); 
 		fprintf(stdout, "dX:\n");
