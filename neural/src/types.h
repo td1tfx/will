@@ -74,6 +74,7 @@ typedef enum
 	af_Findmax,
 	af_Softplus,
 	af_Dropout,
+	af_DivisiveNormalization,
 	af_BatchNormalization,
 } ActiveFunctionType;
 
@@ -122,9 +123,12 @@ typedef enum
 #define CUBLAS_FUNC_I(func) 
 #endif
 
+
+
 template <class T> void safe_delete(T* pointer)
 {
 	if (pointer)
 		delete pointer;
 	pointer = nullptr;
 }
+

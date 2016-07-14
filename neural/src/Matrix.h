@@ -70,6 +70,7 @@ public:
 	int getRow() { return row; }
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
+	int getMemerySize() { return max_script*sizeof(real); }
 	int whcn2i(int w, int h, int c, int n) { return w + h*W + c*W*H + n*C*W*H; }
 
 	//以下4个函数注意如果数据在显存中，一般来说是无法赋值和输出的
@@ -139,19 +140,22 @@ private:
 	static cublasOperation_t get_cublas_trans(MatrixTransType t) { return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T; }
 	static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t) { return t == mt_NoTrans ? CblasNoTrans : CblasTrans; }
 
-	cudnnTensorDescriptor_t tensorDes = nullptr;
+	//为何我感觉这样很恶心
+	//一般来说，在XAdXdA中，以X的计算设置为准，反向时一般不再重新设置
+	cudnnTensorDescriptor_t TensorDesc = nullptr;
+	cudnnTensorDescriptor_t asTensorDesc = nullptr;
+	cudnnActivationDescriptor_t ActivationDesc = nullptr;
+	cudnnOpTensorDescriptor_t OpTensorDesc = nullptr;
+	cudnnPoolingDescriptor_t PoolingDesc = nullptr;
+	cudnnConvolutionDescriptor_t ConvolutionDesc = nullptr;
+	cudnnFilterDescriptor_t FilterDesc = nullptr;
+	cudnnRNNDescriptor_t RNNDesc = nullptr;
+	cudnnDropoutDescriptor_t DropoutDesc = nullptr;
+	cudnnSpatialTransformerDescriptor_t SpatialTransformerDesc = nullptr;
+	cudnnLRNDescriptor_t LRNDesc = nullptr;
 
-	static cudnnTensorDescriptor_t TensorDes;
-	static cudnnActivationDescriptor_t ActivationDes;
-	static cudnnOpTensorDescriptor_t OpTensorDes;
-	static cudnnPoolingDescriptor_t PoolingDes;
-	static cudnnConvolutionDescriptor_t ConvolutionDes;
-	static cudnnFilterDescriptor_t FilterDes;
-	static cudnnRNNDescriptor_t RNNDes;
-	static cudnnDropoutDescriptor_t DropoutDes;
-	static cudnnSpatialTransformerDescriptor_t SpatialTransformerDes;
 	static void* workspace;
-	static const int workspace_size = 1024 * 1024 * 32;
+	static const int workspace_size = 1024 * 1024 * 128;
 
 	//必须配对！
 	real* mallocData(int size);
@@ -164,7 +168,7 @@ private:
 	void set_freeDataToDevice(real* temp);
 
 public:
-	static void setTensorDes(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
+	static void setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 
 	static void poolingForward(ResampleType re, Matrix* X, Matrix* A,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
@@ -179,19 +183,16 @@ public:
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);
 
 	static void setActive(cudnnActivationMode_t am);
-	
+
 	//激活和反向激活中，输入和输出矩阵都是同维度
 	//重载是为了不让一个函数显得太长
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
-	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, real v);
-	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, real v);
-	
-	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, 
-		Matrix * as1, Matrix * as2 = nullptr, Matrix * as3 = nullptr, Matrix * as4 = nullptr);
-	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, 
-		Matrix * as1, Matrix * as2 = nullptr, Matrix * as3 = nullptr, Matrix * as4 = nullptr);
+	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A,
+		real v, Matrix* as1 = nullptr, Matrix* as2 = nullptr, Matrix* as3 = nullptr, Matrix* as4 = nullptr);
+	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
+		real v, Matrix* as1 = nullptr, Matrix* as2 = nullptr, Matrix* as3 = nullptr, Matrix* as4 = nullptr);
 };
 
 typedef Matrix Tensor;

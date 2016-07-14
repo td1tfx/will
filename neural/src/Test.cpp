@@ -90,20 +90,21 @@ void Test::testActive(int tests)
 	{
 		Matrix X(4, 4), A(4, 4);
 		Matrix dX(4, 4), dA(4, 4);
+		Matrix as1(4, 4), as2(4, 4), as3(4, 4), as4(4, 4);
 
 		dA.initData(1);
 		X.initRandom();
 		real v = 0.5;
-		Matrix::activeForward(af_Dropout, &X, &A);
+		Matrix::activeForward(af_DivisiveNormalization, &X, &A, 0.5, &as1, &as2, &as3,&as4);
 		fprintf(stdout, "X:\n");
 		X.print();
 		fprintf(stdout, "A:\n");
 		A.print();
-		Matrix::activeBackward(af_Dropout, &A, &dA, &X, &dX);
+		Matrix::activeBackward(af_Dropout, &A, &dA, &X, &dX, 0.5, &as1, &as2, &as3, &as4);
 		fprintf(stdout, "dA:\n");
-		dA.print(); 
+		dA.print();
 		fprintf(stdout, "dX:\n");
-		dX.print(); 
+		dX.print();
 	}
 }
 
