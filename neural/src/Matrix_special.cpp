@@ -1,3 +1,4 @@
+#pragma once
 #include "Matrix.h"
 
 void Matrix::setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w)

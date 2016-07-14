@@ -1,3 +1,4 @@
+#pragma once
 #include "Matrix.h"
 
 void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)

@@ -12,20 +12,14 @@
     <Filter Include="ext-source">
       <UniqueIdentifier>{858ff5f1-e19f-4412-a57e-20e9aaa09a83}</UniqueIdentifier>
     </Filter>
-    <Filter Include="lib">
+    <Filter Include="libs">
       <UniqueIdentifier>{20940564-1c68-4f5c-a95e-db87c98f8f51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ext-header">
+      <UniqueIdentifier>{263b4821-4bcc-4160-8cbe-445d8cc723e8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="lib\libconvert.cpp">
-      <Filter>ext-source</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\Timer.cpp">
-      <Filter>ext-source</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\INIReader.cpp">
-      <Filter>ext-source</Filter>
-    </ClCompile>
     <ClCompile Include="src\neural.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -56,14 +50,20 @@
     <ClCompile Include="src\Matrix_special.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Matrix_base.cpp">
+    <ClCompile Include="src\Matrix.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\INIReader.cpp">
+      <Filter>ext-source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\libconvert.cpp">
+      <Filter>ext-source</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\Timer.cpp">
+      <Filter>ext-source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lib\libconvert.h">
-      <Filter>ext-source</Filter>
-    </ClInclude>
     <ClInclude Include="src\Matrix.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -91,9 +91,6 @@
     <ClInclude Include="src\Test.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="lib\INIReader.h">
-      <Filter>ext-source</Filter>
-    </ClInclude>
     <ClInclude Include="src\platforms.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -106,6 +103,81 @@
     <ClInclude Include="src\CudnnTemplate.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="lib\cuda\builtin_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cblas.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\channel_descriptor.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\cublas_api.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\cublas_v2.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\cuComplex.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\cuda_device_runtime_api.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\cuda_runtime.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\cuda_runtime_api.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\cudnn.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\device_functions.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\device_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\driver_functions.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\driver_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\helper_cuda.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\helper_string.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\host_config.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\host_defines.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\INIReader.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\libconvert.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\surface_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\texture_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\vector_functions.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\vector_functions.hpp">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="lib\cuda\vector_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
@@ -113,7 +185,7 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="lib\libopenblas64.dll.a">
-      <Filter>lib</Filter>
+      <Filter>libs</Filter>
     </Library>
   </ItemGroup>
 </Project>

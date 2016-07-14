@@ -105,16 +105,7 @@ public:
 
 	void memcpyDataInFromHost(real* src, int size);
 	void memcpyDataOutToHost(real* dst, int size);
-	void expand();
-	int indexColMaxAbs(int c);
-	real sumAbs();
-	real sumColAbs(int c);
-	real ddot();
 
-	void initData(real v, int inc = 0);
-	void initRandom();
-	void multiply(real v);
-	void colMultiply(real v, int c);
 
 	static void cpyData(Matrix* dst, Matrix* src);
 	void tryUploadToCuda();
@@ -122,19 +113,8 @@ public:
 	void shareData(Matrix* A, int m, int n);
 
 	//为静态运算在结果矩阵使用显存时就调用cuda函数计算，但是调用者应保证所有矩阵一致
-	//并未考虑全局UseCuda，因为在使用cuda的时候也有可能存在在内存中的矩阵
-	static MatrixCudaType selectUseCuda(Matrix* A1 = nullptr, Matrix* A2 = nullptr, Matrix* A3 = nullptr, Matrix* A4 = nullptr);
-
-	static void product(Matrix* A, Matrix* B, Matrix* R,
-		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
-	static void productVector(Matrix* A, Matrix* B, Matrix* R,
-		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
-	static void productVector2(Matrix* A, Matrix* B, Matrix* R,
-		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
-	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
-	static void add(Matrix* A, real b, Matrix* B, Matrix* R);
-	static real dot(Matrix* A, int cA, Matrix* B, int cB);
-
+	//在使用cuda的时候也有可能存在在内存中的矩阵
+	
 private:
 	static const real real_1;
 	static const real real_0;
@@ -172,6 +152,29 @@ private:
 	void set_freeDataToDevice(real* temp);
 
 public:
+	//运算函数
+	void expand();
+	int indexColMaxAbs(int c);
+	real sumAbs();
+	real sumColAbs(int c);
+	real ddot();
+
+	void initData(real v, int inc = 0);
+	void initRandom();
+	void multiply(real v);
+	void colMultiply(real v, int c);
+
+	static void product(Matrix* A, Matrix* B, Matrix* R,
+		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
+	static void productVector(Matrix* A, Matrix* B, Matrix* R,
+		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
+	static void productVector2(Matrix* A, Matrix* B, Matrix* R,
+		real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
+	static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
+	static void add(Matrix* A, real b, Matrix* B, Matrix* R);
+	static real dot(Matrix* A, int cA, Matrix* B, int cB);
+
+	//以下函数不属于矩阵基本运算，因为实在太长，实现分拆到其他文件
 	static void setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 
 	static void poolingForward(ResampleType re, Matrix* X, Matrix* A,

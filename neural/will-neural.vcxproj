@@ -173,7 +173,7 @@
     <ClCompile Include="lib\Timer.cpp" />
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="src\CudnnTemplate.cpp" />
-    <ClCompile Include="src\Matrix_base.cpp" />
+    <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\Matrix_active.cpp" />
     <ClCompile Include="src\Matrix_special.cpp" />
     <ClCompile Include="src\neural.cpp" />
@@ -185,6 +185,29 @@
     <ClCompile Include="src\Test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\cblas.h" />
+    <ClInclude Include="lib\cuda\builtin_types.h" />
+    <ClInclude Include="lib\cuda\channel_descriptor.h" />
+    <ClInclude Include="lib\cuda\cublas_api.h" />
+    <ClInclude Include="lib\cuda\cublas_v2.h" />
+    <ClInclude Include="lib\cuda\cuComplex.h" />
+    <ClInclude Include="lib\cuda\cuda_device_runtime_api.h" />
+    <ClInclude Include="lib\cuda\cuda_runtime.h" />
+    <ClInclude Include="lib\cuda\cuda_runtime_api.h" />
+    <ClInclude Include="lib\cuda\cudnn.h" />
+    <ClInclude Include="lib\cuda\device_functions.h" />
+    <ClInclude Include="lib\cuda\device_types.h" />
+    <ClInclude Include="lib\cuda\driver_functions.h" />
+    <ClInclude Include="lib\cuda\driver_types.h" />
+    <ClInclude Include="lib\cuda\helper_cuda.h" />
+    <ClInclude Include="lib\cuda\helper_string.h" />
+    <ClInclude Include="lib\cuda\host_config.h" />
+    <ClInclude Include="lib\cuda\host_defines.h" />
+    <ClInclude Include="lib\cuda\surface_types.h" />
+    <ClInclude Include="lib\cuda\texture_types.h" />
+    <ClInclude Include="lib\cuda\vector_functions.h" />
+    <ClInclude Include="lib\cuda\vector_functions.hpp" />
+    <ClInclude Include="lib\cuda\vector_types.h" />
     <ClInclude Include="lib\INIReader.h" />
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="src\CudnnTemplate.h" />

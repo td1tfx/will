@@ -232,6 +232,148 @@ void Matrix::memcpyDataOutToHost(real* dst, int size)
 	}
 }
 
+//复制数据，只处理较少的
+void Matrix::cpyData(Matrix* dst, Matrix* src)
+{
+	auto size = sizeof(real)*std::min(dst->row*dst->col, src->row*src->col);
+	if (dst->UseCuda == mc_UseCuda && src->UseCuda == mc_UseCuda)
+	{
+		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToDevice);
+	}
+	else if (dst->UseCuda == mc_UseCuda && src->UseCuda == mc_NoCuda)
+	{
+		cudaMemcpy(dst->data, src->data, size, cudaMemcpyHostToDevice);
+	}
+	else if (dst->UseCuda == mc_NoCuda && src->UseCuda == mc_UseCuda)
+	{
+		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToHost);
+	}
+	else
+	{
+		memcpy(dst->data, src->data, size);
+	}
+}
+
+void Matrix::tryUploadToCuda()
+{
+	if (globalUseCuda == mc_UseCuda)
+	{
+		if (UseCuda == mc_NoCuda)
+		{
+			UseCuda = mc_UseCuda;
+			auto temp = mallocData(data_size);
+			if (temp)
+			{
+				std::swap(temp, data);
+				set_freeDataToDevice(temp);
+			}
+			else
+			{
+				UseCuda = mc_NoCuda;
+			}
+		}
+	}
+}
+
+//将显存中的数据转移到内存
+void Matrix::tryDownloadFromCuda()
+{
+	if (UseCuda == mc_UseCuda)
+	{
+		auto temp = malloc_getDataFromDevice();
+		if (temp)
+		{
+			std::swap(temp, data);
+			cudaFree(temp);
+		}
+		UseCuda = mc_NoCuda;
+	}
+}
+
+//将一个外部数据矩阵的指针指向其他位置
+void Matrix::shareData(Matrix* A, int m, int n)
+{
+	if (insideData == md_Outside && UseCuda == A->UseCuda)
+		this->data = A->getDataPointer(m, n);
+}
+
+
+real* Matrix::mallocData(int size)
+{
+	if (UseCuda == mc_UseCuda)
+	{
+		real* d = nullptr;
+		if (cudaMalloc((void **)&d, size * sizeof(real)) == cudaSuccess)
+		{
+			//dataIsWhere = DataInDevice;
+		}
+		return d;
+	}
+	else
+	{
+		return new real[size];
+	}
+}
+
+void Matrix::freeData()
+{
+	if (!data)
+		return;
+	if (UseCuda == mc_UseCuda)
+	{
+		cudaFree(data);
+		return;
+	}
+	else
+	{
+		delete data;
+	}
+	data = nullptr;
+}
+
+real* Matrix::malloc_getDataFromDevice()
+{
+	if (UseCuda == mc_UseCuda)
+	{
+		auto temp = new real[max_script];
+		cudaMemcpy(temp, data, sizeof(real)*max_script, cudaMemcpyDeviceToHost);
+		return temp;
+	}
+	else
+	{
+		return data;
+	}
+}
+
+void Matrix::freeDataForDevice(real* temp)
+{
+	if (UseCuda == mc_UseCuda)
+	{
+		delete temp;
+	}
+}
+
+real* Matrix::mallocDataForDevice()
+{
+	if (UseCuda == mc_UseCuda)
+	{
+		return new real[max_script];
+	}
+	else
+	{
+		return data;
+	}
+}
+
+void Matrix::set_freeDataToDevice(real* temp)
+{
+	if (UseCuda == mc_UseCuda)
+	{
+		cudaMemcpy(data, temp, sizeof(real)*max_script, cudaMemcpyHostToDevice);
+		delete temp;
+	}
+}
+
 //将第一列复制到整个矩阵
 void Matrix::expand()
 {
@@ -378,83 +520,6 @@ void Matrix::colMultiply(real v, int c)
 	}
 }
 
-//复制数据，只处理较少的
-void Matrix::cpyData(Matrix* dst, Matrix* src)
-{
-	auto size = sizeof(real)*std::min(dst->row*dst->col, src->row*src->col);
-	if (dst->UseCuda == mc_UseCuda && src->UseCuda == mc_UseCuda)
-	{
-		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToDevice);
-	}
-	else if (dst->UseCuda == mc_UseCuda && src->UseCuda == mc_NoCuda)
-	{
-		cudaMemcpy(dst->data, src->data, size, cudaMemcpyHostToDevice);
-	}
-	else if (dst->UseCuda == mc_NoCuda && src->UseCuda == mc_UseCuda)
-	{
-		cudaMemcpy(dst->data, src->data, size, cudaMemcpyDeviceToHost);
-	}
-	else
-	{
-		memcpy(dst->data, src->data, size);
-	}
-}
-
-void Matrix::tryUploadToCuda()
-{
-	if (globalUseCuda == mc_UseCuda)
-	{
-		if (UseCuda == mc_NoCuda)
-		{
-			UseCuda = mc_UseCuda;
-			auto temp = mallocData(data_size);
-			if (temp)
-			{
-				std::swap(temp, data);
-				set_freeDataToDevice(temp);
-			}
-			else
-			{
-				UseCuda = mc_NoCuda;
-			}
-		}
-	}
-}
-
-//将显存中的数据转移到内存
-void Matrix::tryDownloadFromCuda()
-{
-	if (UseCuda == mc_UseCuda)
-	{
-		auto temp = malloc_getDataFromDevice();
-		if (temp)
-		{
-			std::swap(temp, data);
-			cudaFree(temp);
-		}
-		UseCuda = mc_NoCuda;
-	}
-}
-
-//将一个外部数据矩阵的指针指向其他位置
-void Matrix::shareData(Matrix* A, int m, int n)
-{
-	if (insideData == md_Outside && UseCuda == A->UseCuda)
-		this->data = A->getDataPointer(m, n);
-}
-
-
-MatrixCudaType Matrix::selectUseCuda(Matrix* A1 /*= nullptr*/, Matrix* A2 /*= nullptr*/, Matrix* A3 /*= nullptr*/, Matrix* A4 /*= nullptr*/)
-{
-	Matrix* m[4] = { A1,A2,A3,A4 };
-	for (int i = 0; i < 4; i++)
-	{
-		if (m[i] && m[i]->UseCuda == mc_NoCuda)
-			return mc_NoCuda;
-	}
-	return globalUseCuda;
-}
-
 //矩阵乘，R = aAB+cR
 void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
 	real a /*= 1*/, real c /*= 0*/, MatrixTransType ta /*= NoTrans*/, MatrixTransType tb /*= NoTrans*/)
@@ -538,7 +603,7 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 	}
 }
 
-//矩阵减
+//矩阵元素加减
 void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
 {
 	if (R->UseCuda == mc_UseCuda)
@@ -548,7 +613,7 @@ void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
 
 		//setTensor(td, 1, 1, R->col, R->row);
 		//cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_ADD, CUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN);
-		//cudnnOpTensor(cudnnHandle, od, &a1, td, A->data, &a2, td, B->data, &real_0, td, R->data);
+		//cudnnOpTensor(cudnnHandle, od, &real_1, td, A->data, &real_1, td, B->data, &b, td, R->data);
 	}
 	else
 	{
@@ -578,82 +643,3 @@ real Matrix::dot(Matrix* A, int cA, Matrix* B, int cB)
 		return CBLAS_FUNC(dot)(A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1);
 	}
 }
-
-real* Matrix::mallocData(int size)
-{
-	if (UseCuda == mc_UseCuda)
-	{
-		real* d = nullptr;
-		if (cudaMalloc((void **)&d, size * sizeof(real)) == cudaSuccess)
-		{
-			//dataIsWhere = DataInDevice;
-		}
-		return d;
-	}
-	else
-	{
-		return new real[size];
-	}
-}
-
-void Matrix::freeData()
-{
-	if (!data)
-		return;
-	if (UseCuda == mc_UseCuda)
-	{
-		cudaFree(data);
-		return;
-	}
-	else
-	{
-		delete data;
-	}
-	data = nullptr;
-}
-
-real* Matrix::malloc_getDataFromDevice()
-{
-	if (UseCuda == mc_UseCuda)
-	{
-		auto temp = new real[max_script];
-		cudaMemcpy(temp, data, sizeof(real)*max_script, cudaMemcpyDeviceToHost);
-		return temp;
-	}
-	else
-	{
-		return data;
-	}
-}
-
-void Matrix::freeDataForDevice(real* temp)
-{
-	if (UseCuda == mc_UseCuda)
-	{
-		delete temp;
-	}
-}
-
-real* Matrix::mallocDataForDevice()
-{
-	if (UseCuda == mc_UseCuda)
-	{
-		return new real[max_script];
-	}
-	else
-	{
-		return data;
-	}
-}
-
-void Matrix::set_freeDataToDevice(real* temp)
-{
-	if (UseCuda == mc_UseCuda)
-	{
-		cudaMemcpy(data, temp, sizeof(real)*max_script, cudaMemcpyHostToDevice);
-		delete temp;
-	}
-}
-
-
-
