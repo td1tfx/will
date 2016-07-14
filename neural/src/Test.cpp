@@ -84,36 +84,26 @@ int Test::MNIST_readLabelFile(const char* filename, real* expect)
 }
 
 
-
-
-void Test::testSoftmax(int tests)
+void Test::testActive(int tests)
 {
 	if (tests)
 	{
 		Matrix X(4, 4), A(4, 4);
 		Matrix dX(4, 4), dA(4, 4);
-		Matrix E(4, 4, md_Inside, mc_NoCuda);
-		E.initData(0);
-		for (int i = 0; i < 4; i++) E.getData(i, i) = 1;
-		E.tryUploadToCuda();
-		E.print();
 
-		dX.initData(1);
-		X.initData(1);
+		dA.initData(1);
 		X.initRandom();
-		Matrix::activeForward(af_SoftmaxLoss, &X, &A);
-		Matrix::add(&E, -1, &A, &dA);
-
-		fprintf(stdout, "A:\n");
-		A.print();
-		fprintf(stdout, "dA:\n");
-		dA.print();
+		real v = 0.5;
+		Matrix::activeForward(af_Dropout, &X, &A, &v);
 		fprintf(stdout, "X:\n");
 		X.print();
-
-		Matrix::activeBackward(af_SoftmaxLoss, &A, &dA, &X, &dX);
+		fprintf(stdout, "A:\n");
+		A.print();
+		Matrix::activeBackward(af_Dropout, &A, &dA, &X, &dX, &v);
+		fprintf(stdout, "dA:\n");
+		dA.print(); 
 		fprintf(stdout, "dX:\n");
-		dX.print();
+		dX.print(); 
 	}
 }
 
@@ -205,9 +195,9 @@ void Test::testPooling(int testp)
 
 void Test::test()
 {
-	testPooling(0);
-	testConvolution(0);
-	testSoftmax(1);
+	//testPooling(0);
+	//testConvolution(0);
+	testActive(1);
 }
 
 void Test::test2()

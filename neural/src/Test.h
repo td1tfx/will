@@ -12,7 +12,7 @@ public:
 	static int MNIST_readLabelFile(const char* filename, real* expect);
 
 
-	static void testSoftmax(int tests);
+	static void testActive(int tests);
 	static void testConvolution(int testc);
 	static void testPooling(int testp);
 

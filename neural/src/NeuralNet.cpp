@@ -1,8 +1,6 @@
 #include "NeuralNet.h"
 #include "Random.h"
 
-
-
 NeuralNet::NeuralNet()
 {
 
@@ -84,6 +82,9 @@ NeuralLayer* NeuralNet::createLayer(NeuralLayerConnectionType mode)
 		break;
 	case lc_Pooling:
 		layer = new NeuralLayerPooling();
+		break;
+	case lc_BatchNormalization:
+		layer = new NeuralLayerBatchNormalization();
 		break;
 	default:
 		break;

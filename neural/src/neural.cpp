@@ -13,11 +13,11 @@ int main(int argc, char* argv[])
 
 	auto useCuda = op.getInt("UseCuda");
 	
-	if (useCuda) Matrix::initCuda();
-	t.start();
-	net.run(&op);
-	t.stop();
-	if (useCuda) Matrix::destroyCuda();
+// 	if (useCuda) Matrix::initCuda();
+// 	t.start();
+// 	net.run(&op);
+// 	t.stop();
+Matrix::destroyCuda();
 
 	Test::test2();
 

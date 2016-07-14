@@ -29,6 +29,10 @@ public:
 	{
 		generator = std::mt19937(rd());
 	}
+	void reset(unsigned int seed)
+	{
+		generator = std::mt19937(seed);
+	}
 
 };
 

@@ -73,6 +73,8 @@ typedef enum
 	af_Linear,
 	af_Findmax,
 	af_Softplus,
+	af_Dropout,
+	af_BatchNormalization,
 } ActiveFunctionType;
 
 //采样种类，与cuDNN直接对应，可以类型转换

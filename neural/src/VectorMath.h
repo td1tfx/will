@@ -4,8 +4,8 @@
 
 namespace VectorMath
 {
-#define VECTOR(fv, f) template<typename T> void fv(const T* x, T* a, int size) { for(int i=0;i<size;i++){a[i]=f(x[i]);} }
-#define VECTOR_B(fv, content) template<typename T> void fv(const T* a, const T* da,const T* x, T* dx, int size) { for(int i=0;i<size;i++){dx[i]=(content);} }
+#define VECTOR(fv, f) template<typename T> void fv(const T* x, T* a, int size, T v = 0) { for(int i=0;i<size;i++){a[i]=f(x[i]);} }
+#define VECTOR_B(fv, content) template<typename T> void fv(const T* a, const T* da,const T* x, T* dx, int size, T v = 0) { for(int i=0;i<size;i++){dx[i]=(content);} }
 
 	template<typename T> T sigmoid(T x) { return 1 / (1 + exp(-x)); }
 	template<typename T> T softplus(T x) { return log(1 + exp(x)); }
@@ -19,13 +19,23 @@ namespace VectorMath
 	VECTOR(tanh_v, tanh);
 	VECTOR(softplus_v, softplus);
 	template<typename T> void linear_v(T* x, T* a, int size) { memcpy(a, x, sizeof(T)*size); }
+	template<typename T> void clipped_relu_v(const T* x, T* a, int size, T v = 0) 
+	{ 
+		for (int i = 0; i<size; i++) 
+		{
+			a[i] = x[i];
+			if (a[i] > v) a[i] = v;
+			else if (a[i] < 0) a[i] = 0;
+		} 
+	}
 
 	VECTOR_B(exp_vb, a[i]);
 	VECTOR_B(sigmoid_vb, a[i] * (1 - a[i]) * da[i]); //sigmoid导数直接使用a计算
-	VECTOR_B(relu_vb, x[i] > 0 ? 1 : 0);
+	VECTOR_B(relu_vb, x[i] > 0 ? 1 : 0);	
 	VECTOR_B(tanh_vb, (1 - a[i] * a[i]) * da[i]);
 	VECTOR_B(softplus_vb, sigmoid(x[i]));
 	VECTOR_B(linear_vb, 1);
+	VECTOR_B(clipped_relu_vb, (x[i] > 0) && (x[i] < v) ? 1 : 0);
 
 	template<typename T> void sub_max(T* x, int size)
 	{

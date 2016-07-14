@@ -9,6 +9,7 @@
 #include "NeuralLayerConvolution.h"
 #include "NeuralLayerFull.h"
 #include "NeuralLayerPooling.h"
+#include "NeuralLayerBatchNormalization.h"
 #include "Test.h"
 
 

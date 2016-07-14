@@ -141,12 +141,15 @@ private:
 
 	cudnnTensorDescriptor_t tensorDes = nullptr;
 
-	static cudnnTensorDescriptor_t td;
-	static cudnnActivationDescriptor_t ad;
-	static cudnnOpTensorDescriptor_t od;
-	static cudnnPoolingDescriptor_t pd;
-	static cudnnConvolutionDescriptor_t cd;
-	static cudnnFilterDescriptor_t fd;
+	static cudnnTensorDescriptor_t TensorDes;
+	static cudnnActivationDescriptor_t ActivationDes;
+	static cudnnOpTensorDescriptor_t OpTensorDes;
+	static cudnnPoolingDescriptor_t PoolingDes;
+	static cudnnConvolutionDescriptor_t ConvolutionDes;
+	static cudnnFilterDescriptor_t FilterDes;
+	static cudnnRNNDescriptor_t RNNDes;
+	static cudnnDropoutDescriptor_t DropoutDes;
+	static cudnnSpatialTransformerDescriptor_t SpatialTransformerDes;
 	static void* workspace;
 	static const int workspace_size = 1024 * 1024 * 32;
 
@@ -176,8 +179,8 @@ public:
 		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);
 
 	static void setActive(cudnnActivationMode_t am);
-	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
-	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
+	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A, void* data= nullptr);
+	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, void* data = nullptr);
 };
 
 typedef Matrix Tensor;

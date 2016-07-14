@@ -18,6 +18,7 @@ typedef enum
 	lc_Full,
 	lc_Convolution,
 	lc_Pooling,
+	lc_BatchNormalization,
 } NeuralLayerConnectionType;
 
 typedef union

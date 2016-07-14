@@ -175,6 +175,7 @@
     <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\neural.cpp" />
     <ClCompile Include="src\NeuralLayer.cpp" />
+    <ClCompile Include="src\NeuralLayerBatchNormalization.cpp" />
     <ClCompile Include="src\NeuralLayerConvolution.cpp" />
     <ClCompile Include="src\NeuralLayerFull.cpp" />
     <ClCompile Include="src\NeuralLayerPooling.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="lib\INIReader.h" />
     <ClInclude Include="lib\libconvert.h" />
     <ClInclude Include="src\Matrix.h" />
+    <ClInclude Include="src\NeuralLayerBatchNormalization.h" />
     <ClInclude Include="src\VectorMath.h" />
     <ClInclude Include="src\NeuralLayer.h" />
     <ClInclude Include="src\NeuralLayerConvolution.h" />
