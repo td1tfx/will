@@ -9,6 +9,7 @@
 #include "types.h"
 #include "VectorMath.h"
 #include "Random.h"
+#include "CudnnTemplate.h"
 
 //列优先或者行优先（未使用）
 typedef enum
@@ -182,10 +183,19 @@ public:
 	static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* W, Matrix* dW, Matrix* dB);
 	static void convolution_sub(Matrix* X, Matrix* Y, Matrix* Z, Matrix* R, int C, int N, int plus);
 
-	static void selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
-		std::function<int(real*, real*, int)> f1, std::function<int(real*, real*, int)> f2);
+	static void dropoutForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, real v, int seed = 0);
+	static void dropoutBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
 
-	static void setActive(cudnnActivationMode_t am);
+	static void divisiveNormalizationForward(Matrix* X, Matrix* A, 
+		Matrix* means, Matrix* temp1, Matrix* temp2, unsigned lrnN, real lrnAlpha, real lrnBeta, real lrnK);
+	static void divisiveNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, 
+		Matrix* means, Matrix* temp1, Matrix* temp2, Matrix* dmeans);
+
+	static void batchNormalizationForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat);
+	static void batchNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
+
+	static void spatialTfSamplerForward();
+	static void spatialTfSamplerBackward();
 
 	//激活和反向激活中，输入和输出矩阵都是同维度
 	//重载是为了不让一个函数显得太长
@@ -197,14 +207,6 @@ public:
 	static void activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
 		std::initializer_list<real> r_list = { 1 }, std::initializer_list<int> i_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
 
-	static void dropoutForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, real v, int seed = 0);
-	static void dropoutBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
-
-	static void divisiveNormalizationForward(Matrix* X, Matrix* A, Matrix* means, Matrix* temp1, Matrix* temp2);
-	static void divisiveNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* means, Matrix* temp1, Matrix* temp2, Matrix* dmeans);
-
-	static void batchNormalizationForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, real v, int seed = 0);
-	static void batchNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
 };
 
 typedef Matrix Tensor;

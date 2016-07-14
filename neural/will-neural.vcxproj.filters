@@ -26,9 +26,6 @@
     <ClCompile Include="lib\INIReader.cpp">
       <Filter>ext-source</Filter>
     </ClCompile>
-    <ClCompile Include="src\Matrix.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\neural.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -51,6 +48,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="src\CudnnTemplate.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Matrix_active.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Matrix_special.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Matrix_base.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
