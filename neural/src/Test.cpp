@@ -88,19 +88,20 @@ void Test::testActive(int tests)
 {
 	if (tests)
 	{
-		Matrix X(4, 4), A(4, 4);
-		Matrix dX(4, 4), dA(4, 4);
-		Matrix as1(4, 4), as2(4, 4), as3(4, 4), as4(4, 4);
+		Matrix X(4, 4, 1, 1), A(4, 4, 1, 1);
+		Matrix dX(4, 4, 1, 1), dA(4, 4, 1, 1);
+		Matrix as1(4, 4, 1, 1), as2(4, 4, 1, 1), as3(4, 4, 1, 1), as4(4, 4, 1, 1);
 
 		dA.initData(1);
 		X.initRandom();
 		real v = 0.5;
-		Matrix::activeForward(af_DivisiveNormalization, &X, &A, 0.5, &as1, &as2, &as3,&as4);
+		as1.initData(1);
+		Matrix::activeForwardEx(af_Dropout, &X, &A, { 0.5 }, { 0 }, { &as1, &as2, &as3, &as4 });
 		fprintf(stdout, "X:\n");
 		X.print();
 		fprintf(stdout, "A:\n");
 		A.print();
-		Matrix::activeBackward(af_Dropout, &A, &dA, &X, &dX, 0.5, &as1, &as2, &as3, &as4);
+		Matrix::activeBackwardEx(af_Dropout, &A, &dA, &X, &dX, { 0.5 }, { 9 }, { &as1, &as2, &as3, &as4 });
 		fprintf(stdout, "dA:\n");
 		dA.print();
 		fprintf(stdout, "dX:\n");
@@ -153,14 +154,6 @@ void Test::testConvolution(int testc)
 
 		Matrix a(4, 4, md_Outside);
 		Matrix r(3, 3, md_Outside);
-		for (int i = 0; i < c * n; i++)
-		{
-			// 			a.resetDataPointer(X.getDataPointer(i * 16));
-			// 			a.print();
-			// 			r.resetDataPointer(A.getDataPointer(i * 9));
-			// 			r.print();
-			// 			fprintf(stdout,"\n");
-		}
 	}
 }
 
@@ -196,8 +189,8 @@ void Test::testPooling(int testp)
 
 void Test::test()
 {
-	//testPooling(0);
-	//testConvolution(0);
+	testPooling(0);
+	testConvolution(0);
 	testActive(1);
 }
 

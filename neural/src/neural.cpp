@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
 	
  	if (useCuda) Matrix::initCuda();
 // 	t.start();
-// 	net.run(&op);
+ 	net.run(&op);
 // 	t.stop();
 Matrix::destroyCuda();
 

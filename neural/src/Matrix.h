@@ -70,7 +70,7 @@ public:
 	int getRow() { return row; }
 	int getCol() { return col; }
 	int getDataCount() { return max_script; }
-	int getMemerySize() { return max_script*sizeof(real); }
+	int getMemerySize() { return max_script * sizeof(real); }
 	int whcn2i(int w, int h, int c, int n) { return w + h*W + c*W*H + n*C*W*H; }
 
 	//以下4个函数注意如果数据在显存中，一般来说是无法赋值和输出的
@@ -135,6 +135,9 @@ public:
 	static real dot(Matrix* A, int cA, Matrix* B, int cB);
 
 private:
+	static const real real_1;
+	static const real real_0;
+
 	static cublasHandle_t cublasHandle;
 	static cudnnHandle_t cudnnHandle;
 	static cublasOperation_t get_cublas_trans(MatrixTransType t) { return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T; }
@@ -189,10 +192,19 @@ public:
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
-	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A,
-		real v, Matrix* as1 = nullptr, Matrix* as2 = nullptr, Matrix* as3 = nullptr, Matrix* as4 = nullptr);
-	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-		real v, Matrix* as1 = nullptr, Matrix* as2 = nullptr, Matrix* as3 = nullptr, Matrix* as4 = nullptr);
+	static void activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
+		std::initializer_list<real> r_list = { 1 }, std::initializer_list<int> i_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+	static void activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
+		std::initializer_list<real> r_list = { 1 }, std::initializer_list<int> i_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+
+	static void dropoutForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, real v, int seed = 0);
+	static void dropoutBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
+
+	static void divisiveNormalizationForward(Matrix* X, Matrix* A, Matrix* means, Matrix* temp1, Matrix* temp2);
+	static void divisiveNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* means, Matrix* temp1, Matrix* temp2, Matrix* dmeans);
+
+	static void batchNormalizationForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, real v, int seed = 0);
+	static void batchNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
 };
 
 typedef Matrix Tensor;

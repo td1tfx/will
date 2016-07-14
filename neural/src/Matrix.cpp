@@ -4,6 +4,9 @@
 MatrixCudaType Matrix::globalUseCuda = mc_NoCuda;
 bool Matrix::inited = false;
 
+const real Matrix::real_1 = 1;
+const real Matrix::real_0 = 0;
+
 cublasHandle_t Matrix::cublasHandle;
 cudnnHandle_t Matrix::cudnnHandle;
 
@@ -505,7 +508,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, real a /*= 1*/, rea
 	{
 		auto ta1 = get_cublas_trans(ta);
 		for (int i = 0; i <= R->col; i++)
-			CUBLAS_FUNC(gemv)(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1);
+			CUBLAS_FUNC(gemv)(cublasHandle, ta1, m, n, &real_1, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1);
 	}
 	else
 	{
@@ -520,11 +523,10 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (R->UseCuda == mc_UseCuda)
 	{
-		real a1 = 1, a2 = 1, b = 0;
 		cudnnOpTensorDescriptor_t OpTensorDesc = nullptr;
 		CUDNN_CREATE_SET_DESCIPTOR(OpTensorDesc,
 			cudnnSetOpTensorDescriptor(OpTensorDesc, CUDNN_OP_TENSOR_MUL, MYCUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN));
-		cudnnOpTensor(cudnnHandle, OpTensorDesc, &a1, A->TensorDesc, A->data, &a2, B->TensorDesc, B->data, &b, R->TensorDesc, R->data);
+		cudnnOpTensor(cudnnHandle, OpTensorDesc, &real_1, A->TensorDesc, A->data, &real_1, B->TensorDesc, B->data, &real_0, R->TensorDesc, R->data);
 		cudnnDestroyDescriptor(OpTensorDesc);
 	}
 	else
@@ -545,10 +547,9 @@ void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
 		CUBLAS_FUNC(copy)(cublasHandle, R->max_script, A->data, 1, R->data, 1);
 		CUBLAS_FUNC(axpy)(cublasHandle, R->max_script, &b, B->data, 1, R->data, 1);
 
-		//real a1 = 1, a2 = -1, b = 0;
 		//setTensor(td, 1, 1, R->col, R->row);
 		//cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_ADD, CUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN);
-		//cudnnOpTensor(cudnnHandle, od, &a1, td, A->data, &a2, td, B->data, &b, td, R->data);
+		//cudnnOpTensor(cudnnHandle, od, &a1, td, A->data, &a2, td, B->data, &real_0, td, R->data);
 	}
 	else
 	{
@@ -668,12 +669,11 @@ void Matrix::setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, 
 void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 	int window_w, int window_h, int stride_w, int stride_h, int* recordPos /*= nullptr*/)
 {
-	if (A->UseCuda == mc_UseCuda)
+	if (X->UseCuda == mc_UseCuda)
 	{
-		real a = 1, b = 0;
 		CUDNN_CREATE_SET_DESCIPTOR(X->PoolingDesc,
 			cudnnSetPooling2dDescriptor(X->PoolingDesc, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w));
-		cudnnPoolingForward(cudnnHandle, X->PoolingDesc, &a, X->TensorDesc, X->data, &b, A->TensorDesc, A->data);
+		cudnnPoolingForward(cudnnHandle, X->PoolingDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 	}
 	else
 	{
@@ -727,12 +727,12 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
 	int window_w, int window_h, int stride_w, int stride_h, int* recordPos /*= nullptr*/)
 {
-	if (dX->UseCuda == mc_UseCuda)
+	if (X->UseCuda == mc_UseCuda)
 	{
 		//这个怎么看都快不了
-		real a = 1, b = 0;
 		if (X->PoolingDesc)
-			cudnnPoolingBackward(cudnnHandle, X->PoolingDesc, &a, A->TensorDesc, A->data, dA->TensorDesc, dA->data, X->TensorDesc, X->data, &b, dX->TensorDesc, dX->data);
+			cudnnPoolingBackward(cudnnHandle, X->PoolingDesc, &real_1, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
+				X->TensorDesc, X->data, &real_0, dX->TensorDesc, dX->data);
 	}
 	else
 	{
@@ -787,11 +787,10 @@ void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, 
 
 void Matrix::convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX /*= nullptr*/, int* recordW /*= nullptr*/)
 {
-	if (A->UseCuda == mc_UseCuda)
+	if (X->UseCuda == mc_UseCuda)
 	{
 		cudnnConvolutionFwdAlgoPerf_t cfap[8];
 		auto cfa = CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM;
-		real a = 1, b = 0;
 		int n;
 		auto scd = CUDNN_STATUS_SUCCESS;
 		auto sfd = scd;
@@ -803,8 +802,8 @@ void Matrix::convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX /*
 			CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, workspace_size, &cfa);
 		//cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, A->tensorDes, 8, &n, cfap);
 
-		auto scf = cudnnConvolutionForward(cudnnHandle, &a, X->TensorDesc, X->data, W->FilterDesc, W->data, X->ConvolutionDesc,
-			cfa, workspace, workspace_size, &b, A->TensorDesc, A->data);
+		auto scf = cudnnConvolutionForward(cudnnHandle, &real_1, X->TensorDesc, X->data, W->FilterDesc, W->data, X->ConvolutionDesc,
+			cfa, workspace, workspace_size, &real_0, A->TensorDesc, A->data);
 		//printf("%d, %d, %d\n", scd, sfd, scf);
 	}
 	else
@@ -819,9 +818,8 @@ void Matrix::convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX /*
 
 void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* W, Matrix* dW, Matrix* dB)
 {
-	if (dX->UseCuda == mc_UseCuda)
+	if (X->UseCuda == mc_UseCuda)
 	{
-		real a = 1, b = 0;
 		int n;
 		cudnnStatus_t scbd, scbf, scbb;
 		//cudnnConvolutionBwdDataAlgoPerf_t cbdap[8];
@@ -833,20 +831,20 @@ void Matrix::convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, M
 			auto cbda = CUDNN_CONVOLUTION_BWD_DATA_ALGO_0;
 			cudnnGetConvolutionBackwardDataAlgorithm(cudnnHandle, W->FilterDesc, dA->TensorDesc, X->ConvolutionDesc, dX->TensorDesc,
 				CUDNN_CONVOLUTION_BWD_DATA_PREFER_FASTEST, workspace_size, &cbda);
-			scbd = cudnnConvolutionBackwardData(cudnnHandle, &a, W->FilterDesc, W->data, dA->TensorDesc, dA->data, X->ConvolutionDesc,
-				cbda, workspace, workspace_size, &b, dX->TensorDesc, dX->data);
+			scbd = cudnnConvolutionBackwardData(cudnnHandle, &real_1, W->FilterDesc, W->data, dA->TensorDesc, dA->data, X->ConvolutionDesc,
+				cbda, workspace, workspace_size, &real_0, dX->TensorDesc, dX->data);
 		}
 		if (dW && X->ConvolutionDesc)
 		{
 			auto cbfa = CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0;
 			cudnnGetConvolutionBackwardFilterAlgorithm(cudnnHandle, X->TensorDesc, dA->TensorDesc, X->ConvolutionDesc, W->FilterDesc,
 				CUDNN_CONVOLUTION_BWD_FILTER_PREFER_FASTEST, workspace_size, &cbfa);
-			scbf = cudnnConvolutionBackwardFilter(cudnnHandle, &a, X->TensorDesc, X->data, dA->TensorDesc, dA->data, X->ConvolutionDesc,
-				cbfa, workspace, workspace_size, &b, W->FilterDesc, dW->data);
+			scbf = cudnnConvolutionBackwardFilter(cudnnHandle, &real_1, X->TensorDesc, X->data, dA->TensorDesc, dA->data, X->ConvolutionDesc,
+				cbfa, workspace, workspace_size, &real_0, W->FilterDesc, dW->data);
 		}
 		if (dB)
 		{
-			scbb = cudnnConvolutionBackwardBias(cudnnHandle, &a, dA->TensorDesc, dA->data, &b, dB->TensorDesc, dB->data);
+			scbb = cudnnConvolutionBackwardBias(cudnnHandle, &real_1, dA->TensorDesc, dA->data, &real_0, dB->TensorDesc, dB->data);
 		}
 		//printf("%d, %d, %d\n", scbd, scbf, scbb);
 	}
@@ -955,8 +953,7 @@ void Matrix::selectFunction(MatrixCudaType useCuda, real* x, real* y, int size,
 
 void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 {
-	real a = 1, b = 0;
-	auto useCuda = A->UseCuda;
+	auto useCuda = X->UseCuda;
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
 	switch (af)
 	{
@@ -965,7 +962,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		{
 			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
 				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_SIGMOID, nan, 1));
-			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &a, X->TensorDesc, X->data, &b, A->TensorDesc, A->data);
+			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
 		{
@@ -977,7 +974,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		{
 			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
 				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_RELU, nan, 1));
-			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &a, X->TensorDesc, X->data, &b, A->TensorDesc, A->data);
+			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
 		{
@@ -989,7 +986,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		{
 			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
 				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_TANH, nan, 1));
-			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &a, X->TensorDesc, X->data, &b, A->TensorDesc, A->data);
+			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
 		{
@@ -1002,7 +999,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 			CUDNN_CREATE_SET_DESCIPTOR(X->asTensorDesc,
 				setTensorDesc(X->asTensorDesc, X->col, 1, 1, X->row));
 			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE,
-				&a, X->asTensorDesc, X->data, &b, X->asTensorDesc, A->data);
+				&real_1, X->asTensorDesc, X->data, &real_0, X->asTensorDesc, A->data);
 		}
 		else
 		{
@@ -1027,7 +1024,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 			CUDNN_CREATE_SET_DESCIPTOR(X->asTensorDesc,
 				setTensorDesc(X->asTensorDesc, A->col, 1, 1, A->row));
 			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_LOG, CUDNN_SOFTMAX_MODE_INSTANCE,
-				&a, X->asTensorDesc, X->data, &b, X->asTensorDesc, A->data);
+				&real_1, X->asTensorDesc, X->data, &real_0, X->asTensorDesc, A->data);
 		}
 		else
 		{
@@ -1067,20 +1064,22 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 		//GPU部分不支持
 		if (useCuda == mc_UseCuda)
 		{
-
+			fprintf(stderr, "Unsupport softplus on GPU!\n");
 		}
 		else
 		{
 			VectorMath::softplus_v(X->data, A->data, A->max_script);
 		}
 		break;
+	default:
+		fprintf(stderr, "Parameters not enough!\n");
+		break;
 	}
 }
 
 void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX)
 {
-	real a = 1, b = 0;
-	auto useCuda = dX->UseCuda;
+	auto useCuda = X->UseCuda;
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
 	switch (af)
 	{
@@ -1088,8 +1087,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		if (useCuda == mc_UseCuda)
 		{
 			if (X->ActivationDesc)
-				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &a, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
-					X->TensorDesc, X->data, &b, dX->TensorDesc, dX->data);
+				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &real_1, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
+					X->TensorDesc, X->data, &real_0, dX->TensorDesc, dX->data);
 		}
 		else
 		{
@@ -1100,8 +1099,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		if (useCuda == mc_UseCuda)
 		{
 			if (X->ActivationDesc)
-				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &a, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
-					X->TensorDesc, X->data, &b, dX->TensorDesc, dX->data);
+				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &real_1, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
+					X->TensorDesc, X->data, &real_0, dX->TensorDesc, dX->data);
 		}
 		else
 		{
@@ -1113,8 +1112,8 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		if (useCuda == mc_UseCuda)
 		{
 			if (X->ActivationDesc)
-				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &a, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
-					X->TensorDesc, X->data, &b, dX->TensorDesc, dX->data);
+				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &real_1, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
+					X->TensorDesc, X->data, &real_0, dX->TensorDesc, dX->data);
 		}
 		else
 		{
@@ -1125,7 +1124,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		if (useCuda == mc_UseCuda)
 		{
 			auto s = cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE,
-				&a, X->asTensorDesc, A->data, X->asTensorDesc, dA->data, &b, X->asTensorDesc, dX->data);
+				&real_1, X->asTensorDesc, A->data, X->asTensorDesc, dA->data, &real_0, X->asTensorDesc, dX->data);
 		}
 		else
 		{
@@ -1140,7 +1139,7 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		if (useCuda == mc_UseCuda)
 		{
 			auto s = cudnnSoftmaxBackward(cudnnHandle, CUDNN_SOFTMAX_LOG, CUDNN_SOFTMAX_MODE_INSTANCE,
-				&a, X->asTensorDesc, A->data, X->asTensorDesc, dA->data, &b, X->asTensorDesc, dX->data);
+				&real_1, X->asTensorDesc, A->data, X->asTensorDesc, dA->data, &real_0, X->asTensorDesc, dX->data);
 		}
 		else
 		{
@@ -1166,165 +1165,204 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 		//该函数导数就是sigmoid
 		activeForward(af_Sigmoid, X, dX);
 		break;
+	default:
+		fprintf(stderr, "Parameters not enough!\n");
+		break;
 	}
 }
 
-
-void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A,
-	real v, Matrix* as1 /*= nullptr*/, Matrix* as2 /*= nullptr*/, Matrix* as3 /*= nullptr*/, Matrix* as4 /*= nullptr*/)
+//参数更多的的激活函数，包含了前面的功能，如不考虑效率只用这个也可以
+//调用时请自己保证参数数量的正确性！
+void Matrix::activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
+	std::initializer_list<real> r_list, std::initializer_list<int> i_list, std::initializer_list<Matrix*> as_list)
 {
-	real a = 1, b = 0;
-	auto useCuda = A->UseCuda;
+	auto useCuda = X->UseCuda;
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
-	//DivisiveNormalization
-	auto& means = as1;
-	auto& temp = as2;
-	auto& temp2 = as3;
-	auto& dmeans = as4;
+	std::vector<real> vr = r_list;
+	std::vector<int> vi = i_list;
+	std::vector<Matrix*> as = as_list;
 	switch (af)
 	{
 	case af_ClippedReLU:
 		if (useCuda == mc_UseCuda)
 		{
 			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
-				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_CLIPPED_RELU, nan, v));
-			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &a, X->TensorDesc, X->data, &b, A->TensorDesc, A->data);
+				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_CLIPPED_RELU, nan, vr[0]));
+			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
 		{
-			VectorMath::clipped_relu_v(X->data, A->data, A->max_script, v);
+			VectorMath::clipped_relu_v(X->data, A->data, vr[0], A->max_script);
 		}
 		break;
 	case af_Dropout:
-		if (useCuda == mc_UseCuda)
-		{
-			//会改写as1和as2作为辅助空间
-			if (X->DropoutDesc == nullptr)
-			{
-				size_t size1, size2;
-				cudnnDropoutGetStatesSize(cudnnHandle, &size1);
-				as1->resize(size1 / sizeof(real) + 1, 1);
-				cudnnDropoutGetReserveSpaceSize(X->TensorDesc, &size2);
-				as2->resize(size2 / sizeof(real) + 1, 1);
-				//fprintf(stderr, "dropout size %d,%d\n", size, size2);
-				CUDNN_CREATE_SET_DESCIPTOR(X->DropoutDesc,
-					cudnnSetDropoutDescriptor(X->DropoutDesc, cudnnHandle, v, as1->data, as1->getMemerySize(), 9999));
-			}
-			cudnnDropoutForward(cudnnHandle, X->DropoutDesc, X->TensorDesc, X->data, A->TensorDesc, A->data, as2->data, as2->getMemerySize());
-		}
-		else
-		{
-			Random<real> r;
-			r.reset();
-			for (int i = 0; i < A->max_script; i++)
-			{
-				if (r.rand_uniform() < v)
-				{
-					A->data[i] = 0;
-				}
-				else
-				{
-					A->data[i] = X->data[i] / (1 - v);
-				}
-			}
-		}
+		dropoutForward(X, A, as[1], as[2], vr[0], vi[0]);
 		break;
 	case af_DivisiveNormalization:
-		if (useCuda == mc_UseCuda)
-		{
-			//先不管了
-			CUDNN_CREATE_SET_DESCIPTOR(X->LRNDesc,
-				cudnnSetLRNDescriptor(X->LRNDesc, 4, 0, 0, 0));
-			cudnnDivisiveNormalizationForward(cudnnHandle, X->LRNDesc, CUDNN_DIVNORM_PRECOMPUTED_MEANS, &a,
-				X->TensorDesc, X->data, means->data, temp->data, temp2->data, &b, A->TensorDesc, A->data);
-		}
-		else
-		{
-
-		}
+		divisiveNormalizationForward(X, A, as[0], as[1], as[2]);
 		break;
 	case af_BatchNormalization:
 		if (useCuda == mc_UseCuda)
 		{
-			//cudnnBatchNormalizationForwardInference(cudnnHandle, CUDNN_DIVNORM_PRECOMPUTED_MEANS, &a,
-				//X->tensorDesc, X->data, as1->data, as2->data, as3->data, &b, A->tensorDesc, A->data);
+			auto s = cudnnBatchNormalizationForwardInference(cudnnHandle, CUDNN_BATCHNORM_PER_ACTIVATION, &real_1, &real_0,
+				X->TensorDesc, X->data, A->TensorDesc, A->data,
+				as[1]->TensorDesc, as[1]->data, as[1]->data, as[1]->data, as[1]->data, vr[0]);
+			fprintf(stderr, "BatchNormalization status %d\n", s);
 		}
 		else
 		{
 
 		}
 		break;
+	default:
+		activeForward(af, X, A);
+		break;
 	}
 }
 
-void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-	real v, Matrix* as1 /*= nullptr*/, Matrix* as2 /*= nullptr*/, Matrix* as3 /*= nullptr*/, Matrix* as4 /*= nullptr*/)
+void Matrix::activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
+	std::initializer_list<real> r_list, std::initializer_list<int> i_list, std::initializer_list<Matrix*> as_list)
 {
-	real a = 1, b = 0;
-	auto useCuda = dX->UseCuda;
+	auto useCuda = X->UseCuda;
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
-	//DivisiveNormalization
-	auto& means = as1;
-	auto& temp = as2;
-	auto& temp2 = as3;
-	auto& dmeans = as4;
+	std::vector<real> vr = r_list;
+	std::vector<int> vi = i_list;
+	std::vector<Matrix*> as = as_list;
 	switch (af)
 	{
 	case af_ClippedReLU:
 		if (useCuda == mc_UseCuda)
 		{
 			if (X->ActivationDesc)
-				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &a, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
-					X->TensorDesc, X->data, &b, dX->TensorDesc, dX->data);
+				cudnnActivationBackward(cudnnHandle, X->ActivationDesc, &real_1, A->TensorDesc, A->data, dA->TensorDesc, dA->data,
+					X->TensorDesc, X->data, &real_0, dX->TensorDesc, dX->data);
 		}
 		else
 		{
-			VectorMath::clipped_relu_vb(A->data, dA->data, X->data, dX->data, dX->max_script, v);
+			VectorMath::clipped_relu_vb(A->data, dA->data, X->data, dX->data, vr[0], dX->max_script);
 		}
 		break;
 	case af_Dropout:
-		if (useCuda == mc_UseCuda)
-		{
-			if (X->DropoutDesc)
-				cudnnDropoutBackward(cudnnHandle, X->DropoutDesc, dA->TensorDesc, dA->data, dX->TensorDesc, dX->data, as2->data, as2->getMemerySize());
-		}
-		else
-		{
-			for (int i = 0; i < dX->max_script; i++)
-			{
-				if (A->data[i] == 0)
-				{
-					dX->data[i] = 0;
-				}
-				else
-				{
-					dX->data[i] = dA->data[i] / (1 - v);
-				}
-			}
-		}
+		dropoutBackward(A, dA, X, dX, as[1], as[2], vr[0]);
 		break;
 	case af_DivisiveNormalization:
-		if (useCuda == mc_UseCuda)
-		{
-			if (X->LRNDesc)
-				cudnnDivisiveNormalizationBackward(cudnnHandle, X->LRNDesc, CUDNN_DIVNORM_PRECOMPUTED_MEANS, &a,
-					X->TensorDesc, X->data, means->data, dA->data, temp->data, temp2->data, &b, A->TensorDesc, A->data, dmeans->data);
-		}
-		else
-		{
-
-		}
+		divisiveNormalizationForward(X, A, as[0], as[1], as[2], as[3]);
 		break;
 	case af_BatchNormalization:
 		if (useCuda == mc_UseCuda)
 		{
-			//cudnnBatchNormalizationForwardInference(cudnnHandle, CUDNN_DIVNORM_PRECOMPUTED_MEANS, &a,
-			//X->tensorDesc, X->data, as1->data, as2->data, as3->data, &b, A->tensorDesc, A->data);
+			cudnnBatchNormalizationBackward(cudnnHandle, CUDNN_BATCHNORM_PER_ACTIVATION, &real_1, &real_0, &real_1, &real_0, X->TensorDesc,
+				X->data, dA->TensorDesc, dA->data, dX->TensorDesc, dX->data,
+				as[1]->TensorDesc, as[1]->data, as[1]->data, as[1]->data, vr[0], as[1]->data, as[1]->data);
 		}
 		else
 		{
 
 		}
 		break;
+	default:
+		activeBackward(af, A, dA, X, dX);
+		break;
 	}
 }
+
+void Matrix::dropoutForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, real v, int seed/*=0*/)
+{
+	if (A->UseCuda == mc_UseCuda)
+	{
+		//会改写as1和as2作为辅助空间
+		if (X->DropoutDesc == nullptr)
+		{
+			size_t size1, size2;
+			cudnnDropoutGetStatesSize(cudnnHandle, &size1);
+			rgStat->resize(size1 / sizeof(real) + 1, 1);
+			cudnnDropoutGetReserveSpaceSize(X->TensorDesc, &size2);
+			stat->resize(size2 / sizeof(real) + 1, 1);
+			//fprintf(stderr, "dropout size %d,%d\n", size, size2);
+			CUDNN_CREATE_SET_DESCIPTOR(X->DropoutDesc,
+				cudnnSetDropoutDescriptor(X->DropoutDesc, cudnnHandle, v, rgStat->data, rgStat->getMemerySize(), seed));
+		}
+		cudnnDropoutForward(cudnnHandle, X->DropoutDesc, X->TensorDesc, X->data, A->TensorDesc, A->data, stat->data, stat->getMemerySize());
+	}
+	else
+	{
+		Random<real> r;
+		r.reset(seed);
+		for (int i = 0; i < A->max_script; i++)
+		{
+			if (r.rand_uniform() < v)
+			{
+				A->data[i] = 0;
+			}
+			else
+			{
+				A->data[i] = X->data[i] / (1 - v);
+			}
+		}
+	}
+}
+
+void Matrix::dropoutBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v)
+{
+	if (dX->UseCuda == mc_UseCuda)
+	{
+		if (X->DropoutDesc)
+			cudnnDropoutBackward(cudnnHandle, X->DropoutDesc, dA->TensorDesc, dA->data, dX->TensorDesc, dX->data, stat->data, stat->getMemerySize());
+	}
+	else
+	{
+		for (int i = 0; i < dX->max_script; i++)
+		{
+			if (A->data[i] == 0)
+			{
+				dX->data[i] = 0;
+			}
+			else
+			{
+				dX->data[i] = dA->data[i] / (1 - v);
+			}
+		}
+	}
+}
+
+
+void Matrix::divisiveNormalizationForward(Matrix* X, Matrix* A, Matrix* means, Matrix* temp1, Matrix* temp2)
+{
+	if (X->UseCuda == mc_UseCuda)
+	{
+		//先不管了
+		CUDNN_CREATE_SET_DESCIPTOR(X->LRNDesc,
+			cudnnSetLRNDescriptor(X->LRNDesc, vi[0], vr[0], vr[1], vr[2]));
+		cudnnDivisiveNormalizationForward(cudnnHandle, X->LRNDesc, CUDNN_DIVNORM_PRECOMPUTED_MEANS, &real_1,
+			X->TensorDesc, X->data, as[1]->data, as[2]->data, as[3]->data, &real_0, A->TensorDesc, A->data);
+	}
+	else
+	{
+
+	}
+}
+
+void Matrix::divisiveNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* means, Matrix* temp1, Matrix* temp2, Matrix* dmeans)
+{
+	if (X->UseCuda == mc_UseCuda)
+	{
+		if (X->LRNDesc)
+			cudnnDivisiveNormalizationBackward(cudnnHandle, X->LRNDesc, CUDNN_DIVNORM_PRECOMPUTED_MEANS, &real_1,
+				X->TensorDesc, X->data, means->data, dA->data, temp1->data, temp2->data, &real_0, dX->TensorDesc, dX->data, dmeans->data);
+	}
+	else
+	{
+
+	}
+}
+
+void Matrix::batchNormalizationForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, real v, int seed /*= 0*/)
+{
+
+}
+
+void Matrix::batchNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v)
+{
+
+}
+
