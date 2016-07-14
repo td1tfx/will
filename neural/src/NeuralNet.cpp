@@ -13,10 +13,10 @@ NeuralNet::~NeuralNet()
 		safe_delete(Layers[i]);
 	}
 	delete[] Layers;
-	safe_delete(train_input);
-	safe_delete(train_expect);
-	safe_delete(test_input);
-	safe_delete(test_expect);
+	safe_delete(trainX);
+	safe_delete(trainY);
+	safe_delete(testX);
+	safe_delete(testY);
 }
 
 //运行，注意容错保护较弱
@@ -33,8 +33,8 @@ void NeuralNet::run(Option* op)
 	
 	if (op->getInt("UseMNIST") == 0)
 	{
-		readData(op->getString("TrainDataFile").c_str(), &train_groupCount, &train_input, &train_expect);
-		readData(op->getString("TestDataFile").c_str(), &test_groupCount, &test_input, &test_expect);
+		readData(op->getString("TrainDataFile").c_str(), &train_groupCount, &trainX, &trainY);
+		readData(op->getString("TestDataFile").c_str(), &test_groupCount, &testX, &testY);
 	}
 	else
 	{
@@ -82,9 +82,6 @@ NeuralLayer* NeuralNet::createLayer(NeuralLayerConnectionType mode)
 		break;
 	case lc_Pooling:
 		layer = new NeuralLayerPooling();
-		break;
-	case lc_BatchNormalization:
-		layer = new NeuralLayerBatchNormalization();
 		break;
 	default:
 		break;
@@ -143,9 +140,9 @@ void NeuralNet::train(int times, int interval, real tol, real dtol)
 	//这里计算初始的误差，如果足够小就不训练了
 	//这个误差是总体误差，与批量误差有区别，故有时首次训练会出现误差增加
 	real e = 0;
-	train_input->tryUploadToCuda();
-	train_expect->tryUploadToCuda();
-	active(train_input, train_expect, nullptr, train_groupCount, MiniBatchCount, false, &e);
+	trainX->tryUploadToCuda();
+	trainY->tryUploadToCuda();
+	active(trainX, trainY, nullptr, train_groupCount, MiniBatchCount, false, &e);
 	fprintf(stdout, "step = %e, mse = %e\n", 0.0, e);
 	if (e < tol) return;
 	real e0 = e;
@@ -171,7 +168,7 @@ void NeuralNet::train(int times, int interval, real tol, real dtol)
 	for (int count = 1; count <= times; count++)
 	{
 		//getFirstLayer()->step = count;
-		active(train_input, train_expect, nullptr, train_groupCount, MiniBatchCount, true, count % interval == 0 ? &e : nullptr);
+		active(trainX, trainY, nullptr, train_groupCount, MiniBatchCount, true, count % interval == 0 ? &e : nullptr);
 		if (count % interval == 0 || count == times)
 		{
 			fprintf(stdout, "step = %e, mse = %e, diff(mse) = %e\n", real(count), e, e0 - e);
@@ -181,7 +178,7 @@ void NeuralNet::train(int times, int interval, real tol, real dtol)
 	}
 }
 
-void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupCount, int batchCount,
+void NeuralNet::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount,
 	bool learn /*= false*/, real* error /*= nullptr*/)
 {
 	Random<real> r;
@@ -195,13 +192,13 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 			selectgroup = int(r.rand_uniform()*groupCount);
 		}
 		int n = resetGroupCount(std::min(batchCount, groupCount - selectgroup));
-		if (input)
+		if (X)
 		{
-			getFirstLayer()->AMatrix->shareData(input, 0, selectgroup);
+			getFirstLayer()->AMatrix->shareData(X, 0, selectgroup);
 		}
-		if (expect)
+		if (Y)
 		{
-			getLastLayer()->YMatrix->shareData(expect, 0, selectgroup);
+			getLastLayer()->YMatrix->shareData(Y, 0, selectgroup);
 		}
 
 		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
@@ -217,9 +214,9 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 				Layers[i_layer]->updateWeightBias(LearnSpeed, Lambda);
 			}
 		}
-		if (output)
+		if (A)
 		{
-			getOutputData(output, n, selectgroup);
+			getOutputData(A, n, selectgroup);
 		}
 		//计算误差，注意这个算法对于minibatch不严格
 		if (error)
@@ -234,15 +231,15 @@ void NeuralNet::active(Matrix* input, Matrix* expect, Matrix* output, int groupC
 }
 
 
-void NeuralNet::getOutputData(Matrix* output, int groupCount, int col/*= 0*/)
+void NeuralNet::getOutputData(Matrix* A, int groupCount, int col /*= 0*/)
 {
-	getLastLayer()->getOutputMatrix()->memcpyDataOutToHost(output->getDataPointer(0, col), OutputNodeCount*groupCount);
+	getLastLayer()->getOutputMatrix()->memcpyDataOutToHost(A->getDataPointer(0, col), OutputNodeCount*groupCount);
 }
 
 
 //读取数据
 //这里的处理可能不是很好
-void NeuralNet::readData(const char* filename, int* count, Matrix** input, Matrix** expect)
+void NeuralNet::readData(const char* filename, int* count, Matrix** pX, Matrix** pY)
 {
 	*count = 0;
 	if (std::string(filename) == "") 
@@ -260,8 +257,8 @@ void NeuralNet::readData(const char* filename, int* count, Matrix** input, Matri
 	OutputNodeCount = int(v[1]);
 
 	*count = (n - mark) / (InputNodeCount + OutputNodeCount);
-	*input = new Matrix(InputNodeCount, *count, md_Inside, mc_NoCuda);
-	*expect = new Matrix(OutputNodeCount, *count, md_Inside, mc_NoCuda);
+	*pX = new Matrix(InputNodeCount, *count, md_Inside, mc_NoCuda);
+	*pY = new Matrix(OutputNodeCount, *count, md_Inside, mc_NoCuda);
 
 	//写法太难看了
 	int k = mark, k1 = 0, k2 = 0;
@@ -270,11 +267,11 @@ void NeuralNet::readData(const char* filename, int* count, Matrix** input, Matri
 	{
 		for (int i = 1; i <= InputNodeCount; i++)
 		{
-			(*input)->getData(k1++) = v[k++];
+			(*pX)->getData(k1++) = v[k++];
 		}
 		for (int i = 1; i <= OutputNodeCount; i++)
 		{
-			(*expect)->getData(k2++) = v[k++];
+			(*pY)->getData(k2++) = v[k++];
 		}
 	}
 }
@@ -394,18 +391,18 @@ void NeuralNet::readMNIST()
 	OutputNodeCount = 10;
 
 	train_groupCount = 60000;
-	train_input = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-	train_expect = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+	trainX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+	trainY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 
 	test_groupCount = 10000;
-	test_input = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-	test_expect = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+	testX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+	testY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
 
-	Test::MNIST_readImageFile("train-images.idx3-ubyte", train_input->getDataPointer());
-	Test::MNIST_readLabelFile("train-labels.idx1-ubyte", train_expect->getDataPointer());
+	Test::MNIST_readImageFile("train-images.idx3-ubyte", trainX->getDataPointer());
+	Test::MNIST_readLabelFile("train-labels.idx1-ubyte", trainY->getDataPointer());
 
-	Test::MNIST_readImageFile("t10k-images.idx3-ubyte", test_input->getDataPointer());
-	Test::MNIST_readLabelFile("t10k-labels.idx1-ubyte", test_expect->getDataPointer());
+	Test::MNIST_readImageFile("t10k-images.idx3-ubyte", testX->getDataPointer());
+	Test::MNIST_readLabelFile("t10k-labels.idx1-ubyte", testY->getDataPointer());
 }
 
 
@@ -418,8 +415,8 @@ void NeuralNet::selectTest()
 //输出拟合的结果和测试集的结果
 void NeuralNet::test(int forceOutput /*= 0*/, int testMax /*= 0*/)
 {
-	outputTest("train", OutputNodeCount, train_groupCount, train_input, train_expect, forceOutput, testMax);
-	outputTest("test", OutputNodeCount, test_groupCount, test_input, test_expect, forceOutput, testMax);
+	outputTest("train", OutputNodeCount, train_groupCount, trainX, trainY, forceOutput, testMax);
+	outputTest("test", OutputNodeCount, test_groupCount, testX, testY, forceOutput, testMax);
 }
 
 void NeuralNet::extraTest(const char* filename, int forceOutput /*= 0*/, int testMax /*= 0*/)
@@ -432,14 +429,14 @@ void NeuralNet::extraTest(const char* filename, int forceOutput /*= 0*/, int tes
 	delete expect;
 }
 
-void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matrix* input, Matrix* expect, int forceOutput, int testMax)
+void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matrix* X, Matrix* Y, int forceOutput, int testMax)
 {
 	if (groupCount <= 0) return;
 
-	expect->tryDownloadFromCuda();
+	Y->tryDownloadFromCuda();
 	auto output = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
-	input->tryUploadToCuda();
-	active(input, nullptr, output, groupCount, resetGroupCount(groupCount));
+	X->tryUploadToCuda();
+	active(X, nullptr, output, groupCount, resetGroupCount(groupCount));
 
 	fprintf(stdout, "\n%d groups %s data:\n---------------------------------------\n", groupCount, info);
 	if (forceOutput || groupCount <= 100)
@@ -453,7 +450,7 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 			fprintf(stdout, " --> ");
 			for (int j = 0; j < nodeCount; j++)
 			{
-				fprintf(stdout, "%8.4f ", expect->getData(j, i));
+				fprintf(stdout, "%8.4f ", Y->getData(j, i));
 			}
 			fprintf(stdout, "\n");
 		}
@@ -468,13 +465,13 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 			for (int i = 0; i < groupCount; i++)
 			{
 				int o = outputMax->indexColMaxAbs(i);
-				int e = expect->indexColMaxAbs(i);
+				int e = Y->indexColMaxAbs(i);
 				fprintf(stdout, "%3d (%6.4f) --> %3d\n", o, output->getData(o, i), e);
 			}
 		}
 
 		real n = 0;
-		Matrix::add(outputMax, -1, expect, outputMax);
+		Matrix::add(outputMax, -1, Y, outputMax);
 		n = outputMax->sumAbs() / 2;
 		delete outputMax;
 		fprintf(stdout, "Error of max value position: %d, %5.2f%%\n", int(n), n / groupCount * 100);

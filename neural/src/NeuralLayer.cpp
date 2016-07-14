@@ -96,3 +96,10 @@ void NeuralLayer::updateDelta()
 	}
 }
 
+int NeuralLayerInitInfo::initWithOption(Option* op)
+{
+#define READ_PROC(type, sec, proc) this->type.proc = op->get##type("sec","proc")
+
+#undef READ_PROC
+	return 0;
+}

@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include "Matrix.h"
+#include "Option.h"
 
 //隐藏，输入，输出
 typedef enum
@@ -21,19 +22,20 @@ typedef enum
 	lc_BatchNormalization,
 } NeuralLayerConnectionType;
 
-typedef union
+struct NeuralLayerInitInfo
 {
-	struct 
-	{ 
-		int outputCount; 
-	} full;	
+	struct
+	{
+		int outputCount;
+	} full;
 	struct { } Convolution;
-	struct 
+	struct
 	{
 		int window_w, window_h;
 		int stride_w, stride_h;
 	} pooling;
-} NeuralLayerInitInfo;
+	int initWithOption(Option* op);
+};
 
 //神经层
 class NeuralLayer
@@ -57,12 +59,17 @@ public:
 	bool NeedTrain = true;   //如果不需要训练那么也无需反向传播，在训练的时候也只需激活一次
 	void setNeedTrain(bool nt) { NeedTrain = nt; }
 
-	//对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数
-	//Expect仅输出层使用，输入层需要直接设置Y
-	//XMatrix收集上一层的输出，激活函数作用之后就是本层输出
-	Matrix *XMatrix = nullptr, *AMatrix = nullptr;
-	Matrix *dXMatrix = nullptr, *dAMatrix = nullptr;
-	Matrix* YMatrix = nullptr;
+	//对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数	
+	
+	Matrix* XMatrix = nullptr; //XMatrix收集上一层的输出，激活函数作用之后就是本层输出A
+	Matrix* dXMatrix = nullptr;
+	Matrix* AMatrix = nullptr; //输入层需要直接设置A
+	Matrix* dAMatrix = nullptr;
+
+	Matrix* X2Matrix = nullptr;
+	Matrix* dX2Matrix = nullptr;
+	
+	Matrix* YMatrix = nullptr; //Y相当于标准答案，仅输出层使用
 
 	int ImageRow = 1, ImageCol = 1, ImageCountPerGroup;
 

@@ -9,7 +9,6 @@
 #include "NeuralLayerConvolution.h"
 #include "NeuralLayerFull.h"
 #include "NeuralLayerPooling.h"
-#include "NeuralLayerBatchNormalization.h"
 #include "Test.h"
 
 
@@ -45,12 +44,12 @@ public:
 	int OutputNodeCount;
 
 	//训练集
-	Matrix* train_input = nullptr;
-	Matrix* train_expect = nullptr;
+	Matrix* trainX = nullptr;
+	Matrix* trainY = nullptr;
 	int train_groupCount = 0;
 	//测试集
-	Matrix* test_input = nullptr;
-	Matrix* test_expect = nullptr;
+	Matrix* testX = nullptr;
+	Matrix* testY = nullptr;
 	int test_groupCount = 0;
 
 	void run(Option* option);
@@ -83,15 +82,15 @@ public:
 
 	void train(int times = 1000000, int interval = 1000, real tol = 1e-3, real dtol = 0);  //训练过程
 
-	void active(Matrix* input, Matrix* expect, Matrix* output, int groupCount, int batchCount,
+	void active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount,
 		bool learn = false, real* error = nullptr);  //计算一组输出
 
 	//void setInputData(d_matrix* input, int groupid);
 	//void setExpectData(d_matrix* expect, int groupid);
 
-	void getOutputData(Matrix* output, int groupCount, int col = 0);
+	void getOutputData(Matrix* A, int groupCount, int col = 0);
 
-	void readData(const char* filename, int* count, Matrix** input, Matrix** expect);
+	void readData(const char* filename, int* count, Matrix** pX, Matrix** pY);
 	int resetGroupCount(int n);
 
 	//具体设置
@@ -107,6 +106,6 @@ public:
 	void selectTest();
 	void test(int forceOutput = 0, int testMax = 0);
 	void extraTest(const char* filename, int forceOutput = 0, int testMax = 0);
-	void outputTest(const char* info, int nodeCount, int groupCount, Matrix* input, Matrix* expect, int forceOutput, int testMax);
+	void outputTest(const char* info, int nodeCount, int groupCount, Matrix* X, Matrix* Y, int forceOutput, int testMax);
 };
 
