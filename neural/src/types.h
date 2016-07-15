@@ -53,7 +53,7 @@
 #endif
 
 #define varName(a) #a
- 
+
 //默认使用单精度，这时应使用real定义浮点数
 #ifndef _DOUBLE_PRECISION
 #define _SINGLE_PRECISION 
@@ -66,41 +66,42 @@ typedef double real;
 //激活函数种类
 typedef enum
 {
-	af_Sigmoid = CUDNN_ACTIVATION_SIGMOID,
-	af_ReLU = CUDNN_ACTIVATION_RELU, 
-	af_Tanh = CUDNN_ACTIVATION_TANH,
-	af_ClippedReLU = CUDNN_ACTIVATION_CLIPPED_RELU,
-	af_Softmax,
-	af_SoftmaxLoss,
-	af_Linear,
-	af_Findmax,
-	af_Softplus,
-	af_Dropout,
-	af_DivisiveNormalization,
-	af_BatchNormalization,
+    af_Sigmoid = CUDNN_ACTIVATION_SIGMOID,
+    af_ReLU = CUDNN_ACTIVATION_RELU,
+    af_Tanh = CUDNN_ACTIVATION_TANH,
+    af_ClippedReLU = CUDNN_ACTIVATION_CLIPPED_RELU,
+    af_Softmax,
+    af_SoftmaxLoss,
+    af_Linear,
+    af_Findmax,
+    af_Softplus,
+    af_Dropout,
+    af_DivisiveNormalization,
+    af_BatchNormalization,
+    af_SpatialTransformer,
 } ActiveFunctionType;
 
 //采样种类，与cuDNN直接对应，可以类型转换
 typedef enum
 {
-	pl_Max = CUDNN_POOLING_MAX,
-	pl_Average_Padding = CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
-	pl_Average_NoPadding = CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING,
+    pl_Max = CUDNN_POOLING_MAX,
+    pl_Average_Padding = CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
+    pl_Average_NoPadding = CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING,
 } PoolingType;
 
 //卷积种类（这个有问题，待定）
 typedef enum
 {
-	cv_1toN = 0,
-	cv_NtoN,
+    cv_1toN = 0,
+    cv_NtoN,
 } ConvolutionType;
 
 //代价函数种类
 typedef enum
 {
-	cf_RMSE,
-	cf_CrossEntropy,
-	cf_LogLikelihood,
+    cf_RMSE,
+    cf_CrossEntropy,
+    cf_LogLikelihood,
 } CostFunctionType;
 
 
