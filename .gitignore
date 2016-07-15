@@ -19,5 +19,5 @@
 *.vspx
 *.diagsession
 */work/openblas_haswell_lib/
-*/lib/sdl2/
+*/include/SDL2/
 *.zip
