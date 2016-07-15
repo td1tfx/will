@@ -175,7 +175,8 @@ public:
 	static real dot(Matrix* A, int cA, Matrix* B, int cB);
 
 	//以下函数不属于矩阵基本运算，因为实在太长，实现分拆到其他文件
-	static void setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
+	inline static void setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
+	inline static void tryInitNullTensorDesc(cudnnTensorDescriptor_t* tensor, int n, int c, int h, int w);
 
 	static void poolingForward(ResampleType re, Matrix* X, Matrix* A,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
@@ -201,13 +202,15 @@ public:
 	static void spatialTfSamplerBackward();
 
 	//激活和反向激活中，输入和输出矩阵都是同维度
+	inline static void tryInitNullActiveDesc(cudnnActivationDescriptor_t* active, cudnnActivationMode_t mode, real v);
+
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
 	static void activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
-		std::initializer_list<real> r_list = { 1 }, std::initializer_list<int> i_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+		std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
 	static void activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-		std::initializer_list<real> r_list = { 1 }, std::initializer_list<int> i_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+		std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
 
 };
 

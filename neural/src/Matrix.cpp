@@ -587,11 +587,11 @@ void Matrix::hadamardProduct(Matrix* A, Matrix* B, Matrix* R)
 {
 	if (R->UseCuda == mc_UseCuda)
 	{
-		cudnnOpTensorDescriptor_t OpTensorDesc = nullptr;
-		CUDNN_CREATE_SET_DESCIPTOR(OpTensorDesc,
-			cudnnSetOpTensorDescriptor(OpTensorDesc, CUDNN_OP_TENSOR_MUL, MYCUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN));
-		cudnnOpTensor(cudnnHandle, OpTensorDesc, &real_1, A->TensorDesc, A->data, &real_1, B->TensorDesc, B->data, &real_0, R->TensorDesc, R->data);
-		cudnnDestroyDescriptor(OpTensorDesc);
+		cudnnOpTensorDescriptor_t op = nullptr;
+		cudnnCreateDescriptor(&op);
+		cudnnSetOpTensorDescriptor(op, CUDNN_OP_TENSOR_MUL, MYCUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN);
+		cudnnOpTensor(cudnnHandle, op, &real_1, A->TensorDesc, A->data, &real_1, B->TensorDesc, B->data, &real_0, R->TensorDesc, R->data);
+		cudnnDestroyDescriptor(op);
 	}
 	else
 	{

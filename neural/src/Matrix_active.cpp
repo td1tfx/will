@@ -1,6 +1,17 @@
 #pragma once
 #include "Matrix.h"
 
+
+void Matrix::tryInitNullActiveDesc(cudnnActivationDescriptor_t* active, cudnnActivationMode_t mode, real v)
+{
+	if (*active == nullptr)
+	{
+		cudnnCreateDescriptor(active);
+		cudnnSetActivationDescriptor(*active, mode, CUDNN_NOT_PROPAGATE_NAN, v);
+	}
+}
+
+
 void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 {
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
@@ -9,8 +20,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 	case af_Sigmoid:
 		if (X->UseCuda == mc_UseCuda)
 		{
-			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
-				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_SIGMOID, nan, 1));
+			tryInitNullActiveDesc(&X->ActivationDesc, CUDNN_ACTIVATION_SIGMOID, 1);
 			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
@@ -21,8 +31,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 	case af_ReLU:
 		if (X->UseCuda == mc_UseCuda)
 		{
-			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
-				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_RELU, nan, 1));
+			tryInitNullActiveDesc(&X->ActivationDesc, CUDNN_ACTIVATION_RELU, 1);
 			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
@@ -33,8 +42,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 	case af_Tanh:
 		if (X->UseCuda == mc_UseCuda)
 		{
-			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
-				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_TANH, nan, 1));
+			tryInitNullActiveDesc(&X->ActivationDesc, CUDNN_ACTIVATION_TANH, 1);
 			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
@@ -45,8 +53,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 	case af_Softmax:
 		if (X->UseCuda == mc_UseCuda)
 		{
-			CUDNN_CREATE_SET_DESCIPTOR(X->asTensorDesc,
-				setTensorDesc(X->asTensorDesc, X->col, 1, 1, X->row));
+			tryInitNullTensorDesc(&X->asTensorDesc, X->col, 1, 1, X->row);
 			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE,
 				&real_1, X->asTensorDesc, X->data, &real_0, X->asTensorDesc, A->data);
 		}
@@ -70,8 +77,7 @@ void Matrix::activeForward(ActiveFunctionType af, Matrix* X, Matrix* A)
 	case af_SoftmaxLoss:
 		if (X->UseCuda == mc_UseCuda)
 		{
-			CUDNN_CREATE_SET_DESCIPTOR(X->asTensorDesc,
-				setTensorDesc(X->asTensorDesc, A->col, 1, 1, A->row));
+			tryInitNullTensorDesc(&X->asTensorDesc, A->col, 1, 1, A->row);
 			cudnnSoftmaxForward(cudnnHandle, CUDNN_SOFTMAX_LOG, CUDNN_SOFTMAX_MODE_INSTANCE,
 				&real_1, X->asTensorDesc, X->data, &real_0, X->asTensorDesc, A->data);
 		}
@@ -222,19 +228,19 @@ void Matrix::activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix
 //参数更多的的激活函数，包含了前面的功能，如不考虑效率只用这个也可以
 //调用时请自己保证参数数量的正确性！
 void Matrix::activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
-	std::initializer_list<real> r_list, std::initializer_list<int> i_list, std::initializer_list<Matrix*> as_list)
+	std::initializer_list<real> vr_list, std::initializer_list<int> vi_list, std::initializer_list<Matrix*> as_list)
 {
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
-	std::vector<real> vr = r_list;
-	std::vector<int> vi = i_list;
+	std::vector<real> vr = vr_list;
+	std::vector<int> vi = vi_list;
 	std::vector<Matrix*> as = as_list;
 	switch (af)
 	{
 	case af_ClippedReLU:
 		if (X->UseCuda == mc_UseCuda)
 		{
-			CUDNN_CREATE_SET_DESCIPTOR(X->ActivationDesc,
-				cudnnSetActivationDescriptor(X->ActivationDesc, CUDNN_ACTIVATION_CLIPPED_RELU, nan, vr[0]));
+
+			tryInitNullActiveDesc(&X->ActivationDesc, CUDNN_ACTIVATION_CLIPPED_RELU, vr[0]);
 			cudnnActivationForward(cudnnHandle, X->ActivationDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 		}
 		else
@@ -268,11 +274,11 @@ void Matrix::activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
 }
 
 void Matrix::activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-	std::initializer_list<real> r_list, std::initializer_list<int> i_list, std::initializer_list<Matrix*> as_list)
+	std::initializer_list<real> vr_list, std::initializer_list<int> vi_list, std::initializer_list<Matrix*> as_list)
 {
 	auto nan = CUDNN_NOT_PROPAGATE_NAN;
-	std::vector<real> vr = r_list;
-	std::vector<int> vi = i_list;
+	std::vector<real> vr = vr_list;
+	std::vector<int> vi = vi_list;
 	std::vector<Matrix*> as = as_list;
 	switch (af)
 	{

@@ -3,9 +3,18 @@
 
 void Matrix::setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w)
 {
-	if (tensor && globalUseCuda == mc_UseCuda)
+	if (tensor)
 	{
 		cudnnSetTensor4dDescriptor(tensor, CUDNN_TENSOR_NCHW, MYCUDNN_DATA_REAL, n, c, h, w);
+	}
+}
+
+void Matrix::tryInitNullTensorDesc(cudnnTensorDescriptor_t* tensor, int n, int c, int h, int w)
+{
+	if (*tensor == nullptr)
+	{
+		cudnnCreateDescriptor(tensor);
+		cudnnSetTensor4dDescriptor(*tensor, CUDNN_TENSOR_NCHW, MYCUDNN_DATA_REAL, n, c, h, w);
 	}
 }
 
@@ -16,8 +25,11 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 {
 	if (X->UseCuda == mc_UseCuda)
 	{
-		CUDNN_CREATE_SET_DESCIPTOR(X->PoolingDesc,
-			cudnnSetPooling2dDescriptor(X->PoolingDesc, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w));
+		if (!X->PoolingDesc)
+		{
+			cudnnCreateDescriptor(&X->PoolingDesc);
+			cudnnSetPooling2dDescriptor(X->PoolingDesc, cudnnPoolingMode_t(re), CUDNN_NOT_PROPAGATE_NAN, window_h, window_w, 0, 0, stride_h, stride_w);
+		}
 		cudnnPoolingForward(cudnnHandle, X->PoolingDesc, &real_1, X->TensorDesc, X->data, &real_0, A->TensorDesc, A->data);
 	}
 	else
@@ -139,10 +151,16 @@ void Matrix::convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX /*
 		int n;
 		auto scd = CUDNN_STATUS_SUCCESS;
 		auto sfd = scd;
-		CUDNN_CREATE_SET_DESCIPTOR(X->ConvolutionDesc,
-			scd = cudnnSetConvolution2dDescriptor(X->ConvolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION));
-		CUDNN_CREATE_SET_DESCIPTOR(W->FilterDesc,
-			sfd = cudnnSetFilter4dDescriptor(W->FilterDesc, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, A->C, X->C, W->H, W->W));
+		if (!X->ConvolutionDesc)
+		{
+			cudnnCreateDescriptor(&X->ConvolutionDesc);
+			scd = cudnnSetConvolution2dDescriptor(X->ConvolutionDesc, 0, 0, 1, 1, 1, 1, CUDNN_CROSS_CORRELATION);
+		}
+		if (!W->FilterDesc)
+		{
+			cudnnCreateDescriptor(&W->FilterDesc);
+			sfd = cudnnSetFilter4dDescriptor(W->FilterDesc, MYCUDNN_DATA_REAL, CUDNN_TENSOR_NCHW, A->C, X->C, W->H, W->W);
+		}
 		cudnnGetConvolutionForwardAlgorithm(cudnnHandle, X->TensorDesc, W->FilterDesc, X->ConvolutionDesc, A->TensorDesc,
 			CUDNN_CONVOLUTION_FWD_PREFER_FASTEST, workspace_size, &cfa);
 		//cudnnFindConvolutionForwardAlgorithm(cudnnHandle, X->tensorDes, fd, cd, A->tensorDes, 8, &n, cfap);
@@ -295,8 +313,11 @@ void Matrix::dropoutForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, 
 			cudnnDropoutGetReserveSpaceSize(X->TensorDesc, &size2);
 			stat->resize(size2 / sizeof(real) + 1, 1);
 			//fprintf(stderr, "dropout size %d,%d\n", size, size2);
-			CUDNN_CREATE_SET_DESCIPTOR(X->DropoutDesc,
-				cudnnSetDropoutDescriptor(X->DropoutDesc, cudnnHandle, v, rgStat->data, rgStat->getMemerySize(), seed));
+			if (!X->DropoutDesc)
+			{
+				cudnnCreateDescriptor(&X->DropoutDesc);
+				cudnnSetDropoutDescriptor(X->DropoutDesc, cudnnHandle, v, rgStat->data, rgStat->getMemerySize(), seed);
+			}
 		}
 		cudnnDropoutForward(cudnnHandle, X->DropoutDesc, X->TensorDesc, X->data, A->TensorDesc, A->data, stat->data, stat->getMemerySize());
 	}
@@ -348,8 +369,11 @@ void Matrix::divisiveNormalizationForward(Matrix* X, Matrix* A, Matrix* means, M
 	if (X->UseCuda == mc_UseCuda)
 	{
 		//先不管了
-		CUDNN_CREATE_SET_DESCIPTOR(X->LRNDesc,
-			cudnnSetLRNDescriptor(X->LRNDesc, lrnN, lrnAlpha, lrnBeta, lrnK));
+		if (!X->LRNDesc)
+		{
+			cudnnCreateDescriptor(&X->LRNDesc);
+			cudnnSetLRNDescriptor(X->LRNDesc, lrnN, lrnAlpha, lrnBeta, lrnK);
+		}
 		cudnnDivisiveNormalizationForward(cudnnHandle, X->LRNDesc, CUDNN_DIVNORM_PRECOMPUTED_MEANS, &real_1,
 			X->TensorDesc, X->data, means->data, temp1->data, temp2->data, &real_0, A->TensorDesc, A->data);
 	}
