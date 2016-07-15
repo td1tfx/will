@@ -100,7 +100,7 @@ public:
 	void resetGroupCount();
 	void connetPrevlayer(NeuralLayer* prevLayer);
 	void initData(NeuralLayerType type, NeuralLayerInitInfo* info) { this->Type = type; initData2(info); }
-	void updateDelta();  //这里实际只包含了作为输出层的实现，即代价函数的形式，其他层交给各自的子类
+	void activeBackward();  //这里实际只包含了作为输出层的实现，即代价函数的形式，其他层交给各自的子类
 
 	//基类的实现里只处理公共部分，不处理任何算法，即使算法有重复的部分仍然在子类处理！！
 	//算法相关是updateDelta2，activeOutputValue，spreadDeltaToPrevLayer，backPropagate
@@ -108,11 +108,11 @@ protected:
 	virtual void initData2(NeuralLayerInitInfo* info) {}
 	virtual void resetGroupCount2() {}
 	virtual void connetPrevlayer2() {}
-	virtual void updateDelta2() {}
+	virtual void activeBackward2() {}
 public:
-	virtual void activeOutput() {}
+	virtual void activeForward() {}
 	virtual void spreadDeltaToPrevLayer() {}
-	virtual void updateWeightBias(real learnSpeed, real lambda) {}
+	virtual void updateParameters(real learnSpeed, real lambda) {}
 	virtual int saveInfo(FILE* fout) { return 0; }
 	virtual int loadInfo(real* v, int n) { return 0; }
 

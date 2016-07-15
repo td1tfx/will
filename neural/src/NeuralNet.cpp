@@ -205,15 +205,15 @@ void NeuralNet::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batc
 
 		for (int i_layer = 1; i_layer < getLayerCount(); i_layer++)
 		{
-			Layers[i_layer]->activeOutput();
+			Layers[i_layer]->activeForward();
 		}
 
 		if (learn)
 		{
 			for (int i_layer = getLayerCount() - 1; i_layer > 0; i_layer--)
 			{
-				Layers[i_layer]->updateDelta();
-				Layers[i_layer]->updateWeightBias(LearnSpeed, Lambda);
+				Layers[i_layer]->activeBackward();
+				Layers[i_layer]->updateParameters(LearnSpeed, Lambda);
 			}
 		}
 		if (A)
@@ -225,7 +225,7 @@ void NeuralNet::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batc
 		{
 			if (!learn)
 			{
-				getLastLayer()->updateDelta();
+				getLastLayer()->activeBackward();
 			}
 			*error += getLastLayer()->getdAMatrix()->ddot() / groupCount / OutputNodeCount;
 		}

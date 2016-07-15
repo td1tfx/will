@@ -50,7 +50,7 @@ void NeuralLayer::resetGroupCount()
 	resetGroupCount2();
 }
 
-void NeuralLayer::updateDelta()
+void NeuralLayer::activeBackward()
 {
 	if (this->Type == lt_Output)
 	{
@@ -93,7 +93,7 @@ void NeuralLayer::updateDelta()
 	}
 	else
 	{
-		updateDelta2();
+		activeBackward2();
 	}
 }
 

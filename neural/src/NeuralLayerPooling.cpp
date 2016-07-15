@@ -41,13 +41,13 @@ void NeuralLayerPooling::connetPrevlayer2()
 	recordPos = new int[OutputCountPerGroup*GroupCount];
 }
 
-void NeuralLayerPooling::updateDelta2()
+void NeuralLayerPooling::activeBackward2()
 {
 	NextLayer->spreadDeltaToPrevLayer();
 }
 
 //直接硬上
-void NeuralLayerPooling::activeOutput()
+void NeuralLayerPooling::activeForward()
 {
 	Matrix::poolingForward(_resampleType, PrevLayer->AMatrix, XMatrix, window_w, window_h, stride_w, stride_h, recordPos);
 	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说
@@ -63,7 +63,7 @@ void NeuralLayerPooling::spreadDeltaToPrevLayer()
 }
 
 
-void NeuralLayerPooling::updateWeightBias(real learnSpeed, real lambda)
+void NeuralLayerPooling::updateParameters(real learnSpeed, real lambda)
 {
 	//这里好像没什么好练的
 }

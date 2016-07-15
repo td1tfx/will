@@ -12,7 +12,7 @@ NeuralLayerConvolution::~NeuralLayerConvolution()
 {
 }
 
-void NeuralLayerConvolution::activeOutput()
+void NeuralLayerConvolution::activeForward()
 {
 	// 	d_matrix::convolution_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix,
 	// 		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCount,
