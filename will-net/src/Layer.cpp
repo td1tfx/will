@@ -1,21 +1,21 @@
-#include "NeuralLayer.h"
+#include "Layer.h"
 
-int NeuralLayer::GroupCount;
-int NeuralLayer::Step;
+int Layer::GroupCount;
+int Layer::Step;
 
-NeuralLayer::NeuralLayer()
+Layer::Layer()
 {
 }
 
 
-NeuralLayer::~NeuralLayer()
+Layer::~Layer()
 {
 	deleteData();
 	//fprintf(stderr, "~Layer.\n");
 }
 
 
-void NeuralLayer::setImageMode(int w, int h, int count)
+void Layer::setImageMode(int w, int h, int count)
 {
 	ImageRow = h; 
 	ImageCol = w; 
@@ -24,7 +24,7 @@ void NeuralLayer::setImageMode(int w, int h, int count)
 		ImageCountPerGroup = OutputCountPerGroup / w / h;
 }
 
-void NeuralLayer::deleteData()
+void Layer::deleteData()
 {
 	safe_delete(XMatrix);
 	safe_delete(AMatrix);
@@ -33,14 +33,14 @@ void NeuralLayer::deleteData()
 	safe_delete(YMatrix);
 }
 
-void NeuralLayer::connetPrevlayer(NeuralLayer* prevLayer)
+void Layer::connetPrevlayer(Layer* prevLayer)
 {
 	this->PrevLayer = prevLayer;
 	prevLayer->NextLayer = this;
 	connetPrevlayer2();
 }
 
-void NeuralLayer::resetGroupCount()
+void Layer::resetGroupCount()
 {
 	XMatrix->resize(OutputCountPerGroup, GroupCount);
 	AMatrix->resize(OutputCountPerGroup, GroupCount);
@@ -50,7 +50,7 @@ void NeuralLayer::resetGroupCount()
 	resetGroupCount2();
 }
 
-void NeuralLayer::activeBackward()
+void Layer::activeBackward()
 {
 	if (this->Type == lt_Output)
 	{

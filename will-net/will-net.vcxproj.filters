@@ -20,24 +20,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\neural.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeuralLayer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeuralLayerConvolution.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeuralLayerFull.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeuralLayerPooling.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\NeuralNet.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\Test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -56,24 +38,27 @@
     <ClCompile Include="lib\Timer.cpp">
       <Filter>ext-source</Filter>
     </ClCompile>
+    <ClCompile Include="src\Net.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Layer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LayerFull.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LayerConv.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\LayerPool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Matrix.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NeuralLayer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NeuralLayerConvolution.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NeuralLayerFull.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NeuralLayerPooling.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\NeuralNet.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Option.h">
@@ -171,6 +156,21 @@
     </ClInclude>
     <ClInclude Include="lib\cuda\vector_types.h">
       <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Net.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Layer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LayerFull.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LayerConv.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LayerPool.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

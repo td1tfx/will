@@ -1,12 +1,12 @@
-#include "NeuralNet.h"
+#include "Net.h"
 #include "Random.h"
 
-NeuralNet::NeuralNet()
+Net::Net()
 {
 
 }
 
-NeuralNet::~NeuralNet()
+Net::~Net()
 {
 	//safe_delete({ Layers[0],Layers[1],Layers[2] });
 	for (int i = 0; i < LayerCount; i++)
@@ -22,7 +22,7 @@ NeuralNet::~NeuralNet()
 }
 
 //运行，注意容错保护较弱
-void NeuralNet::run(Option* op)
+void Net::run(Option* op)
 {
 	BatchMode = NeuralNetLearnType(op->getInt("BatchMode"));
 	MiniBatchCount = std::max(1, op->getInt("MiniBatch"));
@@ -70,20 +70,20 @@ void NeuralNet::run(Option* op)
 }
 
 //这里代替工厂了
-NeuralLayer* NeuralNet::createLayer(NeuralLayerConnectionType mode)
+Layer* Net::createLayer(NeuralLayerConnectionType mode)
 {
-	NeuralLayer* layer = nullptr;
+	Layer* layer = nullptr;
 
 	switch (mode)
 	{
 	case lc_Full:
-		layer = new NeuralLayerFull();
+		layer = new LayerFull();
 		break;
 	case lc_Convolution:
-		layer = new NeuralLayerConvolution();
+		layer = new LayerConv();
 		break;
 	case lc_Pooling:
-		layer = new NeuralLayerPooling();
+		layer = new LayerPool();
 		break;
 	default:
 		break;
@@ -92,7 +92,7 @@ NeuralLayer* NeuralNet::createLayer(NeuralLayerConnectionType mode)
 }
 
 //设置学习模式
-void NeuralNet::setLearnType(NeuralNetLearnType lm, int lb /*= -1*/)
+void Net::setLearnType(NeuralNetLearnType lm, int lb /*= -1*/)
 {
 	BatchMode = lm;
 	//批量学习时，节点数据量等于实际数据量
@@ -107,7 +107,7 @@ void NeuralNet::setLearnType(NeuralNetLearnType lm, int lb /*= -1*/)
 	}
 }
 
-void NeuralNet::setWorkType(NeuralNetWorkType wm)
+void Net::setWorkType(NeuralNetWorkType wm)
 {
 	WorkType = wm;
 	getLastLayer()->setActiveFunction(af_Sigmoid);
@@ -122,9 +122,9 @@ void NeuralNet::setWorkType(NeuralNetWorkType wm)
 }
 
 //创建神经层
-void NeuralNet::createLayers(int layerCount)
+void Net::createLayers(int layerCount)
 {
-	Layers = new NeuralLayer*[layerCount];
+	Layers = new Layer*[layerCount];
 	LayerCount = layerCount;
 	for (int i = 0; i < layerCount; i++)
 	{
@@ -136,7 +136,7 @@ void NeuralNet::createLayers(int layerCount)
 
 
 //训练一批数据，输出步数和误差，若训练次数为0可以理解为纯测试模式
-void NeuralNet::train(int times, int interval, real tol, real dtol)
+void Net::train(int times, int interval, real tol, real dtol)
 {
 	if (times <= 0) return;
 	//这里计算初始的误差，如果足够小就不训练了
@@ -180,7 +180,7 @@ void NeuralNet::train(int times, int interval, real tol, real dtol)
 	}
 }
 
-void NeuralNet::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount,
+void Net::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount,
 	bool learn /*= false*/, real* error /*= nullptr*/)
 {
 	Random<real> r;
@@ -233,7 +233,7 @@ void NeuralNet::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batc
 }
 
 
-void NeuralNet::getOutputData(Matrix* M, int groupCount, int col /*= 0*/)
+void Net::getOutputData(Matrix* M, int groupCount, int col /*= 0*/)
 {
 	getLastLayer()->getAMatrix()->memcpyDataOutToHost(M->getDataPointer(0, col), OutputNodeCount*groupCount);
 }
@@ -241,7 +241,7 @@ void NeuralNet::getOutputData(Matrix* M, int groupCount, int col /*= 0*/)
 
 //读取数据
 //这里的处理可能不是很好
-void NeuralNet::readData(const char* filename, int* count, Matrix** pX, Matrix** pY)
+void Net::readData(const char* filename, int* count, Matrix** pX, Matrix** pY)
 {
 	*count = 0;
 	if (std::string(filename) == "") 
@@ -278,12 +278,12 @@ void NeuralNet::readData(const char* filename, int* count, Matrix** pX, Matrix**
 	}
 }
 
-int NeuralNet::resetGroupCount(int n)
+int Net::resetGroupCount(int n)
 {
-	if (n == NeuralLayer::GroupCount) return n;
+	if (n == Layer::GroupCount) return n;
 	if (n > MaxGroup)
 		n = MaxGroup;
-	NeuralLayer::setGroupCount(n);
+	Layer::setGroupCount(n);
 	for (int i = 0; i < LayerCount; i++)
 	{
 		Layers[i]->resetGroupCount();
@@ -293,9 +293,9 @@ int NeuralNet::resetGroupCount(int n)
 
 //依据输入数据创建神经网，网络的节点数只对隐藏层有用
 //此处是具体的网络结构
-void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
+void Net::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 {
-	NeuralLayer::setGroupCount(MiniBatchCount);
+	Layer::setGroupCount(MiniBatchCount);
 
 	this->createLayers(layerCount);
 
@@ -321,7 +321,7 @@ void NeuralNet::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 }
 
 //输出键结值
-void NeuralNet::saveInfo(const char* filename)
+void Net::saveInfo(const char* filename)
 {
 	FILE *fout = stdout;
 	if (filename)
@@ -350,7 +350,7 @@ void NeuralNet::saveInfo(const char* filename)
 }
 
 //依据键结值创建神经网
-void NeuralNet::createByLoad(const char* filename)
+void Net::createByLoad(const char* filename)
 {
 	std::string str = readStringFromFile(filename);
 	if (str == "")
@@ -387,7 +387,7 @@ void NeuralNet::createByLoad(const char* filename)
 	delete[] v;
 }
 
-void NeuralNet::readMNIST()
+void Net::readMNIST()
 {
 	InputNodeCount = 784;
 	OutputNodeCount = 10;
@@ -408,20 +408,20 @@ void NeuralNet::readMNIST()
 }
 
 
-void NeuralNet::selectTest()
+void Net::selectTest()
 {
 
 }
 
 
 //输出拟合的结果和测试集的结果
-void NeuralNet::test(int forceOutput /*= 0*/, int testMax /*= 0*/)
+void Net::test(int forceOutput /*= 0*/, int testMax /*= 0*/)
 {
 	outputTest("train", OutputNodeCount, train_groupCount, trainX, trainY, forceOutput, testMax);
 	outputTest("test", OutputNodeCount, test_groupCount, testX, testY, forceOutput, testMax);
 }
 
-void NeuralNet::extraTest(const char* filename, int forceOutput /*= 0*/, int testMax /*= 0*/)
+void Net::extraTest(const char* filename, int forceOutput /*= 0*/, int testMax /*= 0*/)
 {
 	int count = 0;
 	Matrix *X = nullptr, *Y = nullptr;
@@ -431,7 +431,7 @@ void NeuralNet::extraTest(const char* filename, int forceOutput /*= 0*/, int tes
 	safe_delete(Y);
 }
 
-void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matrix* X, Matrix* Y, int forceOutput, int testMax)
+void Net::outputTest(const char* info, int nodeCount, int groupCount, Matrix* X, Matrix* Y, int forceOutput, int testMax)
 {
 	if (groupCount <= 0) return;
 

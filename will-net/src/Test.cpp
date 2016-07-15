@@ -1,6 +1,6 @@
 #include "Test.h"
 #include "Matrix.h"
-#include "NeuralLayer.h"
+#include "Layer.h"
 
 unsigned char* Test::readFile(const char* filename)
 {

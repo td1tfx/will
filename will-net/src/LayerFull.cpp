@@ -1,14 +1,14 @@
-#include "NeuralLayerFull.h"
+#include "LayerFull.h"
 
 
 
-NeuralLayerFull::NeuralLayerFull()
+LayerFull::LayerFull()
 {
 	//_activeFunctionType = af_Sigmoid;
 }
 
 
-NeuralLayerFull::~NeuralLayerFull()
+LayerFull::~LayerFull()
 {
 	safe_delete(WeightMatrix);
 	safe_delete(BiasVector);
@@ -16,7 +16,7 @@ NeuralLayerFull::~NeuralLayerFull()
 }
 
 //全连接层中，x1是本层输出数
-void NeuralLayerFull::initData2(NeuralLayerInitInfo* info)
+void LayerFull::initData2(NeuralLayerInitInfo* info)
 {
 	//deleteData();
 	auto outputCount = info->full.outputCount;
@@ -44,7 +44,7 @@ void NeuralLayerFull::initData2(NeuralLayerInitInfo* info)
 	//output->print();
 }
 
-void NeuralLayerFull::resetGroupCount2()
+void LayerFull::resetGroupCount2()
 {
 	if (asBiasVector->resize(GroupCount, 1) > 0)
 	{
@@ -52,7 +52,7 @@ void NeuralLayerFull::resetGroupCount2()
 	}
 }
 
-void NeuralLayerFull::connetPrevlayer2()
+void LayerFull::connetPrevlayer2()
 {
 	this->WeightMatrix = new Matrix(this->OutputCountPerGroup, PrevLayer->OutputCountPerGroup);
 	this->WeightMatrix->initRandom();
@@ -60,7 +60,7 @@ void NeuralLayerFull::connetPrevlayer2()
 	this->BiasVector->initRandom();
 }
 
-void NeuralLayerFull::activeBackward2()
+void LayerFull::activeBackward2()
 {
 	NextLayer->spreadDeltaToPrevLayer();
 	//UnactivedMatrix->dactiveFunction(_activeFunctionType);
@@ -68,7 +68,7 @@ void NeuralLayerFull::activeBackward2()
 	Matrix::activeBackward(_activeFunctionType, AMatrix, dAMatrix, XMatrix, dXMatrix);
 }
 
-void NeuralLayerFull::activeForward()
+void LayerFull::activeForward()
 {
 	Matrix::cpyData(XMatrix, BiasVector);
 	XMatrix->expand();
@@ -76,19 +76,19 @@ void NeuralLayerFull::activeForward()
 	Matrix::activeForward(_activeFunctionType, XMatrix, AMatrix);
 }
 
-void NeuralLayerFull::spreadDeltaToPrevLayer()
+void LayerFull::spreadDeltaToPrevLayer()
 {
 	Matrix::product(WeightMatrix, dXMatrix, PrevLayer->dAMatrix, 1, 0, mt_Trans, mt_NoTrans);
 }
 
-void NeuralLayerFull::updateParameters(real learnSpeed, real lambda)
+void LayerFull::updateParameters(real learnSpeed, real lambda)
 {
 	Matrix::product(dXMatrix, PrevLayer->AMatrix, WeightMatrix,
 		learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, mt_NoTrans, mt_Trans);
 	Matrix::productVector(dXMatrix, asBiasVector, BiasVector, learnSpeed / GroupCount, 1, mt_NoTrans);
 }
 
-int NeuralLayerFull::saveInfo(FILE* fout)
+int LayerFull::saveInfo(FILE* fout)
 {
 	fprintf(fout, "Full connection\n");
 	fprintf(fout, "weight for layer %d to %d\n", Id, Id - 1);
@@ -99,7 +99,7 @@ int NeuralLayerFull::saveInfo(FILE* fout)
 	return 3 + WeightMatrix->getDataCount() + BiasVector->getDataCount();
 }
 
-int NeuralLayerFull::loadInfo(real* v, int n)
+int LayerFull::loadInfo(real* v, int n)
 {
 	int k = 0;
 	k += 2;

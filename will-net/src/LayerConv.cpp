@@ -1,18 +1,18 @@
-#include "NeuralLayerConvolution.h"
+#include "LayerConv.h"
 
 
 
-NeuralLayerConvolution::NeuralLayerConvolution()
+LayerConv::LayerConv()
 {
 
 }
 
 
-NeuralLayerConvolution::~NeuralLayerConvolution()
+LayerConv::~LayerConv()
 {
 }
 
-void NeuralLayerConvolution::activeForward()
+void LayerConv::activeForward()
 {
 	// 	d_matrix::convolution_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix,
 	// 		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCount,
@@ -20,14 +20,14 @@ void NeuralLayerConvolution::activeForward()
 	Matrix::activeForward(_activeFunctionType, XMatrix, AMatrix);
 }
 
-int NeuralLayerConvolution::saveInfo(FILE* fout)
+int LayerConv::saveInfo(FILE* fout)
 {
 	fprintf(fout, "Convolution\n%d %d %d %d\n", int(_convolutionType), kernelCount, kernelRow, kernelCol);
 	kernelData->printAsVector(fout);
 	return 4 + kernelCount*kernelRow*kernelCol;
 }
 
-int NeuralLayerConvolution::loadInfo(real* v, int n)
+int LayerConv::loadInfo(real* v, int n)
 {
 	int k = 0;
 	_convolutionType = ConvolutionType(int(v[k++]));

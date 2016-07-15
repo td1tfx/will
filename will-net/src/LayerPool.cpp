@@ -1,20 +1,20 @@
-#include "NeuralLayerPooling.h"
+#include "LayerPool.h"
 
 
 
-NeuralLayerPooling::NeuralLayerPooling()
+LayerPool::LayerPool()
 {
 	_activeFunctionType = af_ReLU;
 }
 
 
-NeuralLayerPooling::~NeuralLayerPooling()
+LayerPool::~LayerPool()
 {
 	if (recordPos) delete recordPos;
 }
 
 //采样层，参数为本层横向和纵向的采样像素个数
-void NeuralLayerPooling::initData2(NeuralLayerInitInfo* info)
+void LayerPool::initData2(NeuralLayerInitInfo* info)
 {
 	window_w = info->pooling.window_w;
 	window_h = info->pooling.window_h;
@@ -22,14 +22,14 @@ void NeuralLayerPooling::initData2(NeuralLayerInitInfo* info)
 	stride_w = info->pooling.stride_h;
 }
 
-void NeuralLayerPooling::resetGroupCount2()
+void LayerPool::resetGroupCount2()
 {
 	if (recordPos) delete recordPos;
 	recordPos = new int[OutputCountPerGroup*GroupCount];
 }
 
 //连接的时候才能知道本层的输出数
-void NeuralLayerPooling::connetPrevlayer2()
+void LayerPool::connetPrevlayer2()
 {
 	ImageCountPerGroup = PrevLayer->ImageCountPerGroup;
 	ImageRow = (PrevLayer->ImageRow + window_w - 1) / window_w;
@@ -41,13 +41,13 @@ void NeuralLayerPooling::connetPrevlayer2()
 	recordPos = new int[OutputCountPerGroup*GroupCount];
 }
 
-void NeuralLayerPooling::activeBackward2()
+void LayerPool::activeBackward2()
 {
 	NextLayer->spreadDeltaToPrevLayer();
 }
 
 //直接硬上
-void NeuralLayerPooling::activeForward()
+void LayerPool::activeForward()
 {
 	Matrix::poolingForward(_resampleType, PrevLayer->AMatrix, XMatrix, window_w, window_h, stride_w, stride_h, recordPos);
 	//对于最大值采样来说，偏置、权重与激活函数均意义不大，后面再说
@@ -56,25 +56,25 @@ void NeuralLayerPooling::activeForward()
 
 //回传被选中的位置，非常麻烦，可能需要一个东西记录
 //平均值模式未完成，先不管了
-void NeuralLayerPooling::spreadDeltaToPrevLayer()
+void LayerPool::spreadDeltaToPrevLayer()
 {
 	Matrix::poolingBackward(_resampleType, AMatrix, dAMatrix, PrevLayer->AMatrix, PrevLayer->dAMatrix,
 		window_w, window_h, stride_w, stride_h, recordPos);
 }
 
 
-void NeuralLayerPooling::updateParameters(real learnSpeed, real lambda)
+void LayerPool::updateParameters(real learnSpeed, real lambda)
 {
 	//这里好像没什么好练的
 }
 
-int NeuralLayerPooling::saveInfo(FILE* fout)
+int LayerPool::saveInfo(FILE* fout)
 {
 	fprintf(fout, "Resample\n%d %d %d", int(_resampleType), window_w, window_h);
 	return 3;
 }
 
-int NeuralLayerPooling::loadInfo(real* v, int n)
+int LayerPool::loadInfo(real* v, int n)
 {
 	_resampleType = ResampleType(int(v[0]));
 	window_w = v[1];

@@ -174,12 +174,12 @@
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="src\CudnnTemplate.cpp" />
     <ClCompile Include="src\Matrix.cpp" />
-    <ClCompile Include="src\neural.cpp" />
-    <ClCompile Include="src\NeuralLayer.cpp" />
-    <ClCompile Include="src\NeuralLayerConvolution.cpp" />
-    <ClCompile Include="src\NeuralLayerFull.cpp" />
-    <ClCompile Include="src\NeuralLayerPooling.cpp" />
-    <ClCompile Include="src\NeuralNet.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Layer.cpp" />
+    <ClCompile Include="src\LayerConv.cpp" />
+    <ClCompile Include="src\LayerFull.cpp" />
+    <ClCompile Include="src\LayerPool.cpp" />
+    <ClCompile Include="src\Net.cpp" />
     <ClCompile Include="src\Test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -211,11 +211,11 @@
     <ClInclude Include="src\CudnnTemplate.h" />
     <ClInclude Include="src\Matrix.h" />
     <ClInclude Include="src\VectorMath.h" />
-    <ClInclude Include="src\NeuralLayer.h" />
-    <ClInclude Include="src\NeuralLayerConvolution.h" />
-    <ClInclude Include="src\NeuralLayerFull.h" />
-    <ClInclude Include="src\NeuralLayerPooling.h" />
-    <ClInclude Include="src\NeuralNet.h" />
+    <ClInclude Include="src\Layer.h" />
+    <ClInclude Include="src\LayerConv.h" />
+    <ClInclude Include="src\LayerFull.h" />
+    <ClInclude Include="src\LayerPool.h" />
+    <ClInclude Include="src\Net.h" />
     <ClInclude Include="src\Option.h" />
     <ClInclude Include="src\Random.h" />
     <ClInclude Include="src\platforms.h" />

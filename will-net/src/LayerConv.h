@@ -1,12 +1,12 @@
 #pragma once
-#include "NeuralLayer.h"
+#include "Layer.h"
 
-class NeuralLayerConvolution :
-	public NeuralLayer
+class LayerConv :
+	public Layer
 {
 public:
-	NeuralLayerConvolution();
-	virtual ~NeuralLayerConvolution();
+	LayerConv();
+	virtual ~LayerConv();
 
 	int kernelCount = 0;
 	int kernelRow, kernelCol;

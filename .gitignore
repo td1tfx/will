@@ -18,6 +18,6 @@
 *.exp
 *.vspx
 *.diagsession
-neural/work/openblas_haswell_lib/
-neural/lib/sdl2/
+*/work/openblas_haswell_lib/
+*/lib/sdl2/
 *.zip

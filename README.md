@@ -6,7 +6,7 @@
 ## crawl
 * 一个爬虫，利用bing从网络中提取有用的信息。效果并不太好。
 
-## neural
+## will-net
 * 神经网络。利用反向传播算法构造，用于机器学习。目前在设法利用高性能库重构中。
 * CBLAS的代码需少量修改才能在VS中使用。主要是出在vnsprintf和stderr的定义不同。或者使用OpenBlas。
 * dll文件在<https://github.com/scarsty/will/issues/6>下载。

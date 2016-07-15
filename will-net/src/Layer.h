@@ -38,11 +38,11 @@ struct NeuralLayerInitInfo
 };
 
 //神经层
-class NeuralLayer
+class Layer
 {
 public:
-	NeuralLayer();
-	virtual ~NeuralLayer();
+	Layer();
+	virtual ~Layer();
 
 	int Id;
 
@@ -76,7 +76,7 @@ public:
 	//只有输入层有必要调用这个函数，其他层均计算得到对应的值
 	void setImageMode(int w, int h, int count);
 
-	NeuralLayer *PrevLayer, *NextLayer;
+	Layer *PrevLayer, *NextLayer;
 
 	void deleteData();
 
@@ -98,7 +98,7 @@ public:
 
 	//下面凡是有两个函数的，在无后缀函数中有公共部分，在带后缀函数中是各自子类的功能
 	void resetGroupCount();
-	void connetPrevlayer(NeuralLayer* prevLayer);
+	void connetPrevlayer(Layer* prevLayer);
 	void initData(NeuralLayerType type, NeuralLayerInitInfo* info) { this->Type = type; initData2(info); }
 	void activeBackward();  //这里实际只包含了作为输出层的实现，即代价函数的形式，其他层交给各自的子类
 

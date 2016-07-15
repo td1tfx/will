@@ -5,12 +5,11 @@
 #include <cmath>
 #include "libconvert.h"
 #include "Option.h"
-#include "NeuralLayer.h"
-#include "NeuralLayerConvolution.h"
-#include "NeuralLayerFull.h"
-#include "NeuralLayerPooling.h"
+#include "Layer.h"
+#include "LayerConv.h"
+#include "LayerFull.h"
+#include "LayerPool.h"
 #include "Test.h"
-
 
 //学习模式
 typedef enum
@@ -31,11 +30,11 @@ typedef enum
 
 
 //神经网
-class NeuralNet
+class Net
 {
 public:
-	NeuralNet();
-	virtual ~NeuralNet();
+	Net();
+	virtual ~Net();
 	int Id;
 
 	int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
@@ -55,15 +54,15 @@ public:
 	void run(Option* option);
 
 	//神经层
-	NeuralLayer** Layers;
+	Layer** Layers;
 	int LayerCount = 0;
 	//std::vector<NeuralLayer*>& getLayerVector() { return Layers; }
-	NeuralLayer*& getLayer(int number) { return Layers[number]; }
-	NeuralLayer*& getFirstLayer() { return Layers[0]; }
-	NeuralLayer*& getLastLayer() { return Layers[LayerCount - 1]; }
+	Layer*& getLayer(int number) { return Layers[number]; }
+	Layer*& getFirstLayer() { return Layers[0]; }
+	Layer*& getLastLayer() { return Layers[LayerCount - 1]; }
 	int getLayerCount() { return LayerCount; };
 
-	NeuralLayer* createLayer(NeuralLayerConnectionType mode);
+	Layer* createLayer(NeuralLayerConnectionType mode);
 
 	NeuralNetLearnType BatchMode = nl_Whole;
 	int MiniBatchCount = -1;
@@ -108,4 +107,3 @@ public:
 	void extraTest(const char* filename, int forceOutput = 0, int testMax = 0);
 	void outputTest(const char* info, int nodeCount, int groupCount, Matrix* X, Matrix* Y, int forceOutput, int testMax);
 };
-

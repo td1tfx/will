@@ -1,12 +1,12 @@
 #pragma once
-#include "NeuralLayer.h"
+#include "Layer.h"
 
-class NeuralLayerPooling :
-	public NeuralLayer
+class LayerPool :
+	public Layer
 {
 public:
-	NeuralLayerPooling();
-	virtual ~NeuralLayerPooling();
+	LayerPool();
+	virtual ~LayerPool();
 
 	int* recordPos = nullptr;   //记录最大值的位置
 

@@ -1,12 +1,12 @@
 #pragma once
-#include "NeuralLayer.h"
+#include "Layer.h"
 
-class NeuralLayerFull :
-	public NeuralLayer
+class LayerFull :
+	public Layer
 {
 public:
-	NeuralLayerFull();
-	virtual ~NeuralLayerFull();
+	LayerFull();
+	virtual ~LayerFull();
 
 	//weight矩阵，对于全连接层，行数是本层的节点数，列数是上一层的节点数
 	Matrix* WeightMatrix = nullptr;
