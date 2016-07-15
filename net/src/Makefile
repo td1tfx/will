@@ -1,7 +1,7 @@
 CXX=g++
-CPPFLAGS=-I. -I./lib -I./lib/cuda -O3 -std=c++11 $(EXCPPFLAGS)
+CPPFLAGS=-I. -I../include -I../include/cuda -Iothers -O3 -std=c++11 $(EXCPPFLAGS)
 LDFLAGS=-L. -lcudart -lcublas -lcudnn $(EXLDFLAGS)
-SOURCES=$(wildcard *.cpp) $(wildcard lib/*.cpp)
+SOURCES=$(wildcard *.cpp) $(wildcard others/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=neural
 

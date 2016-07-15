@@ -26,7 +26,7 @@ void Net::run(Option* op)
 {
 	BatchType = NetBatchType(op->getInt("BatchMode"));
 	MiniBatchCount = std::max(1, op->getInt("MiniBatch"));
-	WorkType = NeuralNetWorkType(op->getInt("WorkMode"));
+	WorkType = ActiveFunctionType(op->getInt("WorkMode"));
 
 	LearnSpeed = op->getReal("LearnSpeed", 0.5);
 	Lambda = op->getReal("Regular");
@@ -55,7 +55,7 @@ void Net::run(Option* op)
 	else
 		createByLoad(op->getString("LoadFile").c_str());
 
-	setWorkType(NeuralNetWorkType(op->getInt("WorkType", 0)));
+	setWorkType(ActiveFunctionType(op->getInt("WorkType", 0)));
 
 	//selectTest();
 	train(op->getInt("TrainTimes", 1000), op->getInt("OutputInterval", 1000),

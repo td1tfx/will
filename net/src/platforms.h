@@ -5,12 +5,9 @@
 #include <windows.h>
 #endif
 
-namespace Windows
+void set_console_color(unsigned short color_index)
 {
-	void set_console_color(unsigned short color_index)
-	{
 #ifdef _MSC_VER
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color_index);
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color_index);
 #endif
-	}
 }

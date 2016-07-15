@@ -85,13 +85,13 @@ void Timer::stop()
 double Timer::getElapsedTimeInMicroSec()
 {
 #ifdef _MSC_VER
-    if(!stopped)
+    if (!stopped)
         QueryPerformanceCounter(&endCount);
 
     startTimeInMicroSec = startCount.QuadPart * (1000000.0 / frequency.QuadPart);
     endTimeInMicroSec = endCount.QuadPart * (1000000.0 / frequency.QuadPart);
 #else
-    if(!stopped)
+    if (!stopped)
         gettimeofday(&endCount, NULL);
 
     startTimeInMicroSec = (startCount.tv_sec * 1000000.0) + startCount.tv_usec;
