@@ -16,7 +16,7 @@ public:
 	Matrix* asBiasVector = nullptr;
 
 protected:
-	void initData2(NeuralLayerInitInfo* info) override;
+	void initData2(LayerInitInfo* info) override;
 	void resetGroupCount2() override;
 	void connetPrevlayer2() override;
 	void activeBackward2() override;

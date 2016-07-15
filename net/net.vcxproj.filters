@@ -50,10 +50,10 @@
     <ClCompile Include="src\LayerFull.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\LayerConv.cpp">
+    <ClCompile Include="src\LayerConvolution.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\LayerPool.cpp">
+    <ClCompile Include="src\LayerPooling.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -82,81 +82,6 @@
     <ClInclude Include="src\CudnnTemplate.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="lib\cuda\builtin_types.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cblas.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\channel_descriptor.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\cublas_api.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\cublas_v2.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\cuComplex.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\cuda_device_runtime_api.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\cuda_runtime.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\cuda_runtime_api.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\cudnn.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\device_functions.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\device_types.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\driver_functions.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\driver_types.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\helper_cuda.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\helper_string.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\host_config.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\host_defines.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\INIReader.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\libconvert.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\surface_types.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\texture_types.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\vector_functions.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\vector_functions.hpp">
-      <Filter>ext-header</Filter>
-    </ClInclude>
-    <ClInclude Include="lib\cuda\vector_types.h">
-      <Filter>ext-header</Filter>
-    </ClInclude>
     <ClInclude Include="src\Net.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -166,10 +91,88 @@
     <ClInclude Include="src\LayerFull.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\LayerConv.h">
+    <ClInclude Include="include\cblas.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\INIReader.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\libconvert.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\Timer.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\builtin_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\channel_descriptor.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\cublas_api.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\cublas_v2.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\cuComplex.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\cuda_device_runtime_api.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\cuda_runtime.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\cuda_runtime_api.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\cudnn.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\device_functions.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\device_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\driver_functions.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\driver_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\helper_cuda.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\helper_string.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\host_config.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\host_defines.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\surface_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\texture_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\vector_functions.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\vector_functions.hpp">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cuda\vector_types.h">
+      <Filter>ext-header</Filter>
+    </ClInclude>
+    <ClInclude Include="src\LayerConvolution.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\LayerPool.h">
+    <ClInclude Include="src\LayerPooling.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -97,9 +97,10 @@ void Layer::activeBackward()
 	}
 }
 
-int NeuralLayerInitInfo::initWithOption(Option* op)
+int LayerInitInfo::initWithOption(LayerConnectionType type, Option* op, std::string section)
 {
 #define READ_PROC(type, sec, proc) this->type.proc = op->get##type("sec","proc")
+	
 
 #undef READ_PROC
 	return 0;

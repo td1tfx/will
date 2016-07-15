@@ -1,12 +1,12 @@
 #pragma once
 #include "Layer.h"
 
-class LayerConv :
+class LayerConvolution :
 	public Layer
 {
 public:
-	LayerConv();
-	virtual ~LayerConv();
+	LayerConvolution();
+	virtual ~LayerConvolution();
 
 	int kernelCount = 0;
 	int kernelRow, kernelCol;
@@ -18,7 +18,7 @@ public:
 	//应该是从卷积核和计算方式算出一个矩阵，这个矩阵应该是比较稀疏的
 	//提供的是连接方式，卷积核，据此计算出一个大矩阵
 protected:
-	void initData2(NeuralLayerInitInfo* info) override {}
+	void initData2(LayerInitInfo* info) override {}
 	void resetGroupCount2() override {}
 	void connetPrevlayer2() override {}
 	void activeBackward2() override {}

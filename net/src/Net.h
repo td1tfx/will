@@ -6,10 +6,11 @@
 #include "libconvert.h"
 #include "Option.h"
 #include "Layer.h"
-#include "LayerConv.h"
+#include "LayerConvolution.h"
 #include "LayerFull.h"
-#include "LayerPool.h"
+#include "LayerPooling.h"
 #include "Test.h"
+
 
 //学习模式
 typedef enum
@@ -17,16 +18,7 @@ typedef enum
 	nl_Whole = 0,          //全部数据一起学习，数据多的时候收敛会很慢
 	nl_Online = 1,         //每次学习一个，其实可以用下面的代替
 	nl_MiniBatch = 2,      //每次学习一小批，但是最后一批的影响可能会比较大
-} NeuralNetLearnType;
-
-
-//工作模式
-typedef enum
-{
-	nw_Fit = 0,            //拟合
-	nw_Classify = 1,       //分类，会筛选最大值设为1，其他设为0
-	nw_Probability = 2,    //几率，结果会归一化	
-} NeuralNetWorkType;
+} NetBatchType;
 
 
 //神经网
@@ -62,11 +54,11 @@ public:
 	Layer*& getLastLayer() { return Layers[LayerCount - 1]; }
 	int getLayerCount() { return LayerCount; };
 
-	Layer* createLayer(NeuralLayerConnectionType mode);
+	Layer* createLayer(LayerConnectionType mode);
 
-	NeuralNetLearnType BatchMode = nl_Whole;
+	NetBatchType BatchType = nl_Whole;
 	int MiniBatchCount = -1;
-	void setLearnType(NeuralNetLearnType lm, int lb = -1);
+	void setBatchType(NetBatchType lm, int lb = -1);
 
 	real LearnSpeed = 0.5;  //学习速度
 	void setLearnSpeed(real s) { LearnSpeed = s; }
@@ -74,8 +66,8 @@ public:
 	real Lambda = 0.0;      //正则化参数，防止过拟合
 	void setRegular(real l) { Lambda = l; }
 
-	NeuralNetWorkType WorkType = nw_Fit;
-	void setWorkType(NeuralNetWorkType wm);
+	ActiveFunctionType WorkType = af_Sigmoid;  //实际就是最后一层的激活
+	void setWorkType(ActiveFunctionType wt);
 
 	void createLayers(int layerCount);  //包含输入和输出层
 

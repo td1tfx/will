@@ -107,7 +107,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>lib;lib/cuda</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include/cuda;include/SDL2</AdditionalIncludeDirectories>
       <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
@@ -152,7 +152,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>lib;lib/cuda</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>include;include/cuda;include/SDL2</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <OpenMPSupport>true</OpenMPSupport>
       <PreprocessToFile>false</PreprocessToFile>
@@ -176,45 +176,46 @@
     <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Layer.cpp" />
-    <ClCompile Include="src\LayerConv.cpp" />
+    <ClCompile Include="src\LayerConvolution.cpp" />
     <ClCompile Include="src\LayerFull.cpp" />
-    <ClCompile Include="src\LayerPool.cpp" />
+    <ClCompile Include="src\LayerPooling.cpp" />
     <ClCompile Include="src\Net.cpp" />
     <ClCompile Include="src\Test.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="lib\cblas.h" />
-    <ClInclude Include="lib\cuda\builtin_types.h" />
-    <ClInclude Include="lib\cuda\channel_descriptor.h" />
-    <ClInclude Include="lib\cuda\cublas_api.h" />
-    <ClInclude Include="lib\cuda\cublas_v2.h" />
-    <ClInclude Include="lib\cuda\cuComplex.h" />
-    <ClInclude Include="lib\cuda\cuda_device_runtime_api.h" />
-    <ClInclude Include="lib\cuda\cuda_runtime.h" />
-    <ClInclude Include="lib\cuda\cuda_runtime_api.h" />
-    <ClInclude Include="lib\cuda\cudnn.h" />
-    <ClInclude Include="lib\cuda\device_functions.h" />
-    <ClInclude Include="lib\cuda\device_types.h" />
-    <ClInclude Include="lib\cuda\driver_functions.h" />
-    <ClInclude Include="lib\cuda\driver_types.h" />
-    <ClInclude Include="lib\cuda\helper_cuda.h" />
-    <ClInclude Include="lib\cuda\helper_string.h" />
-    <ClInclude Include="lib\cuda\host_config.h" />
-    <ClInclude Include="lib\cuda\host_defines.h" />
-    <ClInclude Include="lib\cuda\surface_types.h" />
-    <ClInclude Include="lib\cuda\texture_types.h" />
-    <ClInclude Include="lib\cuda\vector_functions.h" />
-    <ClInclude Include="lib\cuda\vector_functions.hpp" />
-    <ClInclude Include="lib\cuda\vector_types.h" />
-    <ClInclude Include="lib\INIReader.h" />
-    <ClInclude Include="lib\libconvert.h" />
+    <ClInclude Include="include\cblas.h" />
+    <ClInclude Include="include\cuda\builtin_types.h" />
+    <ClInclude Include="include\cuda\channel_descriptor.h" />
+    <ClInclude Include="include\cuda\cublas_api.h" />
+    <ClInclude Include="include\cuda\cublas_v2.h" />
+    <ClInclude Include="include\cuda\cuComplex.h" />
+    <ClInclude Include="include\cuda\cuda_device_runtime_api.h" />
+    <ClInclude Include="include\cuda\cuda_runtime.h" />
+    <ClInclude Include="include\cuda\cuda_runtime_api.h" />
+    <ClInclude Include="include\cuda\cudnn.h" />
+    <ClInclude Include="include\cuda\device_functions.h" />
+    <ClInclude Include="include\cuda\device_types.h" />
+    <ClInclude Include="include\cuda\driver_functions.h" />
+    <ClInclude Include="include\cuda\driver_types.h" />
+    <ClInclude Include="include\cuda\helper_cuda.h" />
+    <ClInclude Include="include\cuda\helper_string.h" />
+    <ClInclude Include="include\cuda\host_config.h" />
+    <ClInclude Include="include\cuda\host_defines.h" />
+    <ClInclude Include="include\cuda\surface_types.h" />
+    <ClInclude Include="include\cuda\texture_types.h" />
+    <ClInclude Include="include\cuda\vector_functions.h" />
+    <ClInclude Include="include\cuda\vector_functions.hpp" />
+    <ClInclude Include="include\cuda\vector_types.h" />
+    <ClInclude Include="include\INIReader.h" />
+    <ClInclude Include="include\libconvert.h" />
+    <ClInclude Include="include\Timer.h" />
     <ClInclude Include="src\CudnnTemplate.h" />
     <ClInclude Include="src\Matrix.h" />
     <ClInclude Include="src\VectorMath.h" />
     <ClInclude Include="src\Layer.h" />
-    <ClInclude Include="src\LayerConv.h" />
+    <ClInclude Include="src\LayerConvolution.h" />
     <ClInclude Include="src\LayerFull.h" />
-    <ClInclude Include="src\LayerPool.h" />
+    <ClInclude Include="src\LayerPooling.h" />
     <ClInclude Include="src\Net.h" />
     <ClInclude Include="src\Option.h" />
     <ClInclude Include="src\Random.h" />

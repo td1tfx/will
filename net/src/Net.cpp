@@ -24,7 +24,7 @@ Net::~Net()
 //运行，注意容错保护较弱
 void Net::run(Option* op)
 {
-	BatchMode = NeuralNetLearnType(op->getInt("BatchMode"));
+	BatchType = NetBatchType(op->getInt("BatchMode"));
 	MiniBatchCount = std::max(1, op->getInt("MiniBatch"));
 	WorkType = NeuralNetWorkType(op->getInt("WorkMode"));
 
@@ -70,7 +70,7 @@ void Net::run(Option* op)
 }
 
 //这里代替工厂了
-Layer* Net::createLayer(NeuralLayerConnectionType mode)
+Layer* Net::createLayer(LayerConnectionType mode)
 {
 	Layer* layer = nullptr;
 
@@ -80,10 +80,10 @@ Layer* Net::createLayer(NeuralLayerConnectionType mode)
 		layer = new LayerFull();
 		break;
 	case lc_Convolution:
-		layer = new LayerConv();
+		layer = new LayerConvolution();
 		break;
 	case lc_Pooling:
-		layer = new LayerPool();
+		layer = new LayerPooling();
 		break;
 	default:
 		break;
@@ -92,33 +92,25 @@ Layer* Net::createLayer(NeuralLayerConnectionType mode)
 }
 
 //设置学习模式
-void Net::setLearnType(NeuralNetLearnType lm, int lb /*= -1*/)
+void Net::setBatchType(NetBatchType bt, int lb /*= -1*/)
 {
-	BatchMode = lm;
+	BatchType = bt;
 	//批量学习时，节点数据量等于实际数据量
-	if (BatchMode == nl_Online)
+	if (BatchType == nl_Online)
 	{
 		MiniBatchCount = 1;
 	}
 	//这里最好是能整除的
-	if (BatchMode == nl_MiniBatch)
+	if (BatchType == nl_MiniBatch)
 	{
 		MiniBatchCount = lb;
 	}
 }
 
-void Net::setWorkType(NeuralNetWorkType wm)
+void Net::setWorkType(ActiveFunctionType wt)
 {
-	WorkType = wm;
-	getLastLayer()->setActiveFunction(af_Sigmoid);
-	if (wm == nw_Probability)
-	{
-		getLastLayer()->setActiveFunction(af_Softmax);
-	}
-	if (wm == nw_Classify)
-	{
-		getLastLayer()->setActiveFunction(af_Findmax);
-	}
+	WorkType = wt;
+	getLastLayer()->setActiveFunction(wt);
 }
 
 //创建神经层
@@ -149,7 +141,7 @@ void Net::train(int times, int interval, real tol, real dtol)
 	if (e < tol) return;
 	real e0 = e;
 
-	switch (BatchMode)
+	switch (BatchType)
 	{
 	case nl_Whole:
 		MiniBatchCount = resetGroupCount(train_groupCount);
@@ -184,7 +176,7 @@ void Net::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount
 	bool learn /*= false*/, real* error /*= nullptr*/)
 {
 	Random<real> r;
-	r.reset();
+	r.set_seed();
 	if (error) *error = 0;
 	for (int i = 0; i < groupCount; i += batchCount)
 	{
@@ -299,7 +291,7 @@ void Net::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
 
 	this->createLayers(layerCount);
 
-	NeuralLayerInitInfo info;
+	LayerInitInfo info;
 
 	info.full.outputCount = InputNodeCount;
 	getFirstLayer()->initData(lt_Input, &info);
@@ -367,7 +359,7 @@ void Net::createByLoad(const char* filename)
 	getFirstLayer()->Type = lt_Input;
 	getLastLayer()->Type = lt_Output;
 	k++;
-	NeuralLayerInitInfo info;
+	LayerInitInfo info;
 	for (int i_layer = 0; i_layer < layerCount; i_layer++)
 	{
 		info.full.outputCount = int(v[k]);

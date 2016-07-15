@@ -1,18 +1,18 @@
-#include "LayerConv.h"
+#include "LayerConvolution.h"
 
 
 
-LayerConv::LayerConv()
+LayerConvolution::LayerConvolution()
 {
 
 }
 
 
-LayerConv::~LayerConv()
+LayerConvolution::~LayerConvolution()
 {
 }
 
-void LayerConv::activeForward()
+void LayerConvolution::activeForward()
 {
 	// 	d_matrix::convolution_colasImage(PrevLayer->OutputMatrix, UnactivedMatrix,
 	// 		PrevLayer->ImageRow, PrevLayer->ImageCol, PrevLayer->ImageCount,
@@ -20,14 +20,14 @@ void LayerConv::activeForward()
 	Matrix::activeForward(_activeFunctionType, XMatrix, AMatrix);
 }
 
-int LayerConv::saveInfo(FILE* fout)
+int LayerConvolution::saveInfo(FILE* fout)
 {
 	fprintf(fout, "Convolution\n%d %d %d %d\n", int(_convolutionType), kernelCount, kernelRow, kernelCol);
 	kernelData->printAsVector(fout);
 	return 4 + kernelCount*kernelRow*kernelCol;
 }
 
-int LayerConv::loadInfo(real* v, int n)
+int LayerConvolution::loadInfo(real* v, int n)
 {
 	int k = 0;
 	_convolutionType = ConvolutionType(int(v[k++]));

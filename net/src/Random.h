@@ -25,11 +25,11 @@ public:
 	{
 		return normal_dist(generator);
 	}
-	void reset()
+	void set_seed()
 	{
 		generator = std::mt19937(rd());
 	}
-	void reset(unsigned int seed)
+	void set_seed(unsigned int seed)
 	{
 		generator = std::mt19937(seed);
 	}

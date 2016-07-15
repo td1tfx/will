@@ -16,7 +16,7 @@ LayerFull::~LayerFull()
 }
 
 //全连接层中，x1是本层输出数
-void LayerFull::initData2(NeuralLayerInitInfo* info)
+void LayerFull::initData2(LayerInitInfo* info)
 {
 	//deleteData();
 	auto outputCount = info->full.outputCount;

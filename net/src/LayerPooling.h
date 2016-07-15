@@ -1,16 +1,16 @@
 #pragma once
 #include "Layer.h"
 
-class LayerPool :
+class LayerPooling :
 	public Layer
 {
 public:
-	LayerPool();
-	virtual ~LayerPool();
+	LayerPooling();
+	virtual ~LayerPooling();
 
 	int* recordPos = nullptr;   //记录最大值的位置
 
-	ResampleType _resampleType = re_Max;
+	PoolingType _resampleType = pl_Max;
 	real Weight, Bias;
 	//所有值为1
 	Matrix* _asBiasMatrix = nullptr;
@@ -19,7 +19,7 @@ public:
 	int stride_w, stride_h;  //pooling步长
 
 protected:
-	void initData2(NeuralLayerInitInfo* info) override;
+	void initData2(LayerInitInfo* info) override;
 	void resetGroupCount2() override;
 	void connetPrevlayer2() override;
 	void activeBackward2() override;
@@ -30,6 +30,6 @@ public:
 	int saveInfo(FILE* fout) override;
 	int loadInfo(real* v, int n) override;
 
-	void setSubType(ResampleType re) override { _resampleType = re; }
+	void setSubType(PoolingType re) override { _resampleType = re; }
 };
 

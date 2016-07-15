@@ -664,7 +664,7 @@ void Matrix::tryInitNullTensorDesc(cudnnTensorDescriptor_t* tensor, int n, int c
 
 //池化，注意利用一个record记录下了对应位置
 //gpu部分，平均模式下对padding的支持目前还有问题
-void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
+void Matrix::poolingForward(PoolingType re, Matrix* X, Matrix* A,
 	int window_w, int window_h, int stride_w, int stride_h, int* recordPos /*= nullptr*/)
 {
 	if (X->UseCuda == mc_UseCuda)
@@ -686,19 +686,19 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 				{
 					real v = 0;
 					//if (re == re_Average)v = 0;
-					if (re == re_Max) v = -REAL_MAX;
+					if (re == pl_Max) v = -REAL_MAX;
 					int n = 0;
 					for (int wX = wA*stride_w; wX < std::min(X->W, wA*stride_w + window_w); wX++)
 					{
 						for (int hX = hA*stride_h; hX < std::min(X->H, hA*stride_h + window_h); hX++)
 						{
-							if (re == re_Average_Padding || re == re_Average_NoPadding)
+							if (re == pl_Average_Padding || re == pl_Average_NoPadding)
 							{
 								v += X->getData(wX, hX, p);
 								if (recordPos) recordPos[wX + hX*X->W + p*X->H*X->W] = wA + hA*A->W + p*A->H*A->W;
 								n++;
 							}
-							else if (re == re_Max)
+							else if (re == pl_Max)
 							{
 								auto x = X->getData(wX, hX, p);
 								if (x > v)
@@ -709,11 +709,11 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 							}
 						}
 					}
-					if (re == re_Average_Padding)
+					if (re == pl_Average_Padding)
 					{
 						v /= window_w*window_h;
 					}
-					else if (re == re_Average_NoPadding)
+					else if (re == pl_Average_NoPadding)
 					{
 						v /= n;
 					}
@@ -725,7 +725,7 @@ void Matrix::poolingForward(ResampleType re, Matrix* X, Matrix* A,
 }
 
 //使用cpu时利用了record
-void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
+void Matrix::poolingBackward(PoolingType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
 	int window_w, int window_h, int stride_w, int stride_h, int* recordPos /*= nullptr*/)
 {
 	if (X->UseCuda == mc_UseCuda)
@@ -737,7 +737,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, 
 	}
 	else
 	{
-		if (re == re_Max && recordPos)
+		if (re == pl_Max && recordPos)
 		{
 			//cpu计算时必须传入一个记录数组，保存最大值的位置，这样速度会快一点
 			dX->initData(0);
@@ -747,14 +747,14 @@ void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, 
 			}
 		}
 		//对于平均值池化，两种算法实际上遍历元素的数目是相同的
-		else if (re == re_Average_Padding && recordPos)
+		else if (re == pl_Average_Padding && recordPos)
 		{
 			for (int i = 0; i < dX->getDataCount(); i++)
 			{
 				dX->getData(i) = dA->getData(recordPos[i]) / window_w / window_h;
 			}
 		}
-		else if ((re == re_Average_Padding && recordPos == nullptr) || re == re_Average_NoPadding)
+		else if ((re == pl_Average_Padding && recordPos == nullptr) || re == pl_Average_NoPadding)
 		{
 			for (int p = 0; p < dA->N*dA->C; p++)
 			{
@@ -763,7 +763,7 @@ void Matrix::poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, 
 					for (int hdA = 0; hdA < dA->H; hdA++)
 					{
 						int n;
-						if (re == re_Average_NoPadding)
+						if (re == pl_Average_NoPadding)
 						{
 							n = std::min(window_w, dX->W - wdA*stride_w) * std::min(window_h, dX->H - hdA*stride_h);
 						}
@@ -968,7 +968,7 @@ void Matrix::dropoutForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat, 
 	else
 	{
 		Random<real> r;
-		r.reset(seed);
+		r.set_seed(seed);
 		for (int i = 0; i < A->max_script; i++)
 		{
 			if (r.rand_uniform() < v)

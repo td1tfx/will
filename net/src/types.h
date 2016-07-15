@@ -1,5 +1,5 @@
 #pragma once
-#include <stdarg.h>
+//包含一些类型定义，常用的宏和无聊模板
 
 #define _USE_CUDA
 //#define _DOUBLE_PRECISION
@@ -54,6 +54,7 @@
 
 #define varName(a) #a
  
+//默认使用单精度，这时应使用real定义浮点数
 #ifndef _DOUBLE_PRECISION
 #define _SINGLE_PRECISION 
 typedef float real;
@@ -82,10 +83,10 @@ typedef enum
 //采样种类，与cuDNN直接对应，可以类型转换
 typedef enum
 {
-	re_Max = CUDNN_POOLING_MAX,
-	re_Average_Padding = CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
-	re_Average_NoPadding = CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING,
-} ResampleType;
+	pl_Max = CUDNN_POOLING_MAX,
+	pl_Average_Padding = CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
+	pl_Average_NoPadding = CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING,
+} PoolingType;
 
 //卷积种类（这个有问题，待定）
 typedef enum

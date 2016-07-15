@@ -167,7 +167,7 @@ void Test::testPooling(int testp)
 		X.print();
 		Matrix A(2, 2, 1, 1);
 		auto m = new int[X.getDataCount()];
-		auto re = re_Average_Padding;
+		auto re = pl_Average_Padding;
 		Matrix::poolingForward(re, &X, &A, 2, 2, 2, 2, m);
 		fprintf(stdout, "\n");
 		A.print();

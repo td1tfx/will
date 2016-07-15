@@ -178,9 +178,9 @@ public:
 	inline static void setTensorDesc(cudnnTensorDescriptor_t tensor, int n, int c, int h, int w);
 	inline static void tryInitNullTensorDesc(cudnnTensorDescriptor_t* tensor, int n, int c, int h, int w);
 
-	static void poolingForward(ResampleType re, Matrix* X, Matrix* A,
+	static void poolingForward(PoolingType re, Matrix* X, Matrix* A,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
-	static void poolingBackward(ResampleType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
+	static void poolingBackward(PoolingType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
 		int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
 	static void convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX = nullptr, int* recordW = nullptr);

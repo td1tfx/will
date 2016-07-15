@@ -1,11 +1,13 @@
 #include "CudnnTemplate.h"
 
-#define CUDNN_CERATE_DESCRIPTOR(type) template<> cudnnStatus_t cudnnCreateDescriptor<cudnn##type##Descriptor_t>(cudnn##type##Descriptor_t* t)\
+#define CUDNN_CERATE_DESCRIPTOR(type) template<> \
+cudnnStatus_t cudnnCreateDescriptor<cudnn##type##Descriptor_t>(cudnn##type##Descriptor_t* t) \
 {return cudnnCreate##type##Descriptor(t);}
-#define CUDNN_DESTROY_DESCRIPTOR(type) template<> cudnnStatus_t cudnnDestroyDescriptor<cudnn##type##Descriptor_t>(cudnn##type##Descriptor_t t)\
+#define CUDNN_DESTROY_DESCRIPTOR(type) template<> \
+cudnnStatus_t cudnnDestroyDescriptor<cudnn##type##Descriptor_t>(cudnn##type##Descriptor_t t) \
 {auto r = CUDNN_STATUS_EXECUTION_FAILED; if (t) {r=cudnnDestroy##type##Descriptor(t); t=nullptr;} return r;}
 
-#define CUDNN_DESCRIPTOR_PAIR(type) CUDNN_CERATE_DESCRIPTOR(type)\
+#define CUDNN_DESCRIPTOR_PAIR(type) CUDNN_CERATE_DESCRIPTOR(type) \
 CUDNN_DESTROY_DESCRIPTOR(type)
 
 CUDNN_DESCRIPTOR_PAIR(Tensor)
