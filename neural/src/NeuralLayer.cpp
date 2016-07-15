@@ -11,6 +11,7 @@ NeuralLayer::NeuralLayer()
 NeuralLayer::~NeuralLayer()
 {
 	deleteData();
+	//fprintf(stderr, "~Layer.\n");
 }
 
 

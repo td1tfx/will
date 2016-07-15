@@ -88,7 +88,7 @@ public:
 	//void setInputData(d_matrix* input, int groupid);
 	//void setExpectData(d_matrix* expect, int groupid);
 
-	void getOutputData(Matrix* A, int groupCount, int col = 0);
+	void getOutputData(Matrix* M, int groupCount, int col = 0);
 
 	void readData(const char* filename, int* count, Matrix** pX, Matrix** pY);
 	int resetGroupCount(int n);

@@ -201,7 +201,6 @@ public:
 	static void spatialTfSamplerBackward();
 
 	//激活和反向激活中，输入和输出矩阵都是同维度
-	//重载是为了不让一个函数显得太长
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 

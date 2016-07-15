@@ -8,9 +8,11 @@ NeuralNet::NeuralNet()
 
 NeuralNet::~NeuralNet()
 {
+	//safe_delete({ Layers[0],Layers[1],Layers[2] });
 	for (int i = 0; i < LayerCount; i++)
 	{
 		safe_delete(Layers[i]);
+		//printf("%d\n", Layers[i]);
 	}
 	delete[] Layers;
 	safe_delete(trainX);
@@ -225,15 +227,15 @@ void NeuralNet::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batc
 			{
 				getLastLayer()->updateDelta();
 			}
-			*error += getLastLayer()->getDeltaMatrix()->ddot() / groupCount / OutputNodeCount;
+			*error += getLastLayer()->getdAMatrix()->ddot() / groupCount / OutputNodeCount;
 		}
 	}
 }
 
 
-void NeuralNet::getOutputData(Matrix* A, int groupCount, int col /*= 0*/)
+void NeuralNet::getOutputData(Matrix* M, int groupCount, int col /*= 0*/)
 {
-	getLastLayer()->getOutputMatrix()->memcpyDataOutToHost(A->getDataPointer(0, col), OutputNodeCount*groupCount);
+	getLastLayer()->getAMatrix()->memcpyDataOutToHost(M->getDataPointer(0, col), OutputNodeCount*groupCount);
 }
 
 
@@ -422,11 +424,11 @@ void NeuralNet::test(int forceOutput /*= 0*/, int testMax /*= 0*/)
 void NeuralNet::extraTest(const char* filename, int forceOutput /*= 0*/, int testMax /*= 0*/)
 {
 	int count = 0;
-	Matrix *input, *expect;
-	readData(filename, &count, &input, &expect);
-	outputTest("extra test", OutputNodeCount, count, input, expect, forceOutput, testMax);
-	delete input;
-	delete expect;
+	Matrix *X = nullptr, *Y = nullptr;
+	readData(filename, &count, &X, &Y);
+	outputTest("extra test", OutputNodeCount, count, X, Y, forceOutput, testMax);
+	safe_delete(X);
+	safe_delete(Y);
 }
 
 void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matrix* X, Matrix* Y, int forceOutput, int testMax)
@@ -434,9 +436,9 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 	if (groupCount <= 0) return;
 
 	Y->tryDownloadFromCuda();
-	auto output = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
+	auto A = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
 	X->tryUploadToCuda();
-	active(X, nullptr, output, groupCount, resetGroupCount(groupCount));
+	active(X, nullptr, A, groupCount, resetGroupCount(groupCount));
 
 	fprintf(stdout, "\n%d groups %s data:\n---------------------------------------\n", groupCount, info);
 	if (forceOutput || groupCount <= 100)
@@ -445,7 +447,7 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 		{
 			for (int j = 0; j < nodeCount; j++)
 			{
-				fprintf(stdout, "%8.4f ", output->getData(j, i));
+				fprintf(stdout, "%8.4f ", A->getData(j, i));
 			}
 			fprintf(stdout, " --> ");
 			for (int j = 0; j < nodeCount; j++)
@@ -457,24 +459,24 @@ void NeuralNet::outputTest(const char* info, int nodeCount, int groupCount, Matr
 	}
 	if (testMax)
 	{
-		auto outputMax = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
-		Matrix::activeForward(af_Findmax, output, outputMax);
+		auto AMax = new Matrix(nodeCount, groupCount, md_Inside, mc_NoCuda);
+		Matrix::activeForward(af_Findmax, A, AMax);
 
 		if (forceOutput || groupCount <= 100)
 		{
 			for (int i = 0; i < groupCount; i++)
 			{
-				int o = outputMax->indexColMaxAbs(i);
+				int o = AMax->indexColMaxAbs(i);
 				int e = Y->indexColMaxAbs(i);
-				fprintf(stdout, "%3d (%6.4f) --> %3d\n", o, output->getData(o, i), e);
+				fprintf(stdout, "%3d (%6.4f) --> %3d\n", o, A->getData(o, i), e);
 			}
 		}
 
 		real n = 0;
-		Matrix::add(outputMax, -1, Y, outputMax);
-		n = outputMax->sumAbs() / 2;
-		delete outputMax;
+		Matrix::add(AMax, -1, Y, AMax);
+		n = AMax->sumAbs() / 2;
+		delete AMax;
 		fprintf(stdout, "Error of max value position: %d, %5.2f%%\n", int(n), n / groupCount * 100);
 	}
-	delete output;
+	delete A;
 }

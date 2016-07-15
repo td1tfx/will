@@ -88,10 +88,10 @@ public:
 	void setCostFunction(CostFunctionType cf) { _costFunctionType = cf; }
 
 	//以下函数仅建议使用在输入和输出层，隐藏层不建议使用！
-	Matrix* getOutputMatrix() { return AMatrix; }
-	Matrix* getExpectMatrix() { return YMatrix; }
-	Matrix* getDeltaMatrix() { return dAMatrix; }
-	real& getOutputValue(int x, int y) { return AMatrix->getData(x, y); }
+	Matrix* getAMatrix() { return AMatrix; }
+	Matrix* getYMatrix() { return YMatrix; }
+	Matrix* getdAMatrix() { return dAMatrix; }
+	real& getAValue(int x, int y) { return AMatrix->getData(x, y); }
 
 	virtual void setSubType(ResampleType re) {}
 	virtual void setSubType(ConvolutionType cv) {}
