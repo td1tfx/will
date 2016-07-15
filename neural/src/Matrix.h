@@ -202,7 +202,8 @@ public:
 	static void spatialTfSamplerBackward();
 
 	//激活和反向激活中，输入和输出矩阵都是同维度
-	inline static void tryInitNullActiveDesc(cudnnActivationDescriptor_t* active, cudnnActivationMode_t mode, real v);
+	inline static void setActivationDesc(cudnnActivationDescriptor_t tensor, cudnnActivationMode_t mode, real v);
+	inline static void tryInitNullActivationDesc(cudnnActivationDescriptor_t* activation, cudnnActivationMode_t mode, real v);
 
 	static void activeForward(ActiveFunctionType af, Matrix* X, Matrix* A);
 	static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);

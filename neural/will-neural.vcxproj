@@ -174,8 +174,6 @@
     <ClCompile Include="lib\libconvert.cpp" />
     <ClCompile Include="src\CudnnTemplate.cpp" />
     <ClCompile Include="src\Matrix.cpp" />
-    <ClCompile Include="src\Matrix_active.cpp" />
-    <ClCompile Include="src\Matrix_special.cpp" />
     <ClCompile Include="src\neural.cpp" />
     <ClCompile Include="src\NeuralLayer.cpp" />
     <ClCompile Include="src\NeuralLayerConvolution.cpp" />

@@ -44,12 +44,6 @@
     <ClCompile Include="src\CudnnTemplate.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\Matrix_active.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Matrix_special.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\Matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
