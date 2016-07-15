@@ -6,7 +6,7 @@
 ## crawl
 * 一个爬虫，利用bing从网络中提取有用的信息。效果并不太好。
 
-## net
+## neural
 * 神经网络。利用反向传播算法构造，用于机器学习。
 * 支持CPU和GPU运算。
 * GPU模式下使用cuDNN，cuBlas。CPU模式下使用Blas，建议使用OpenBlas。

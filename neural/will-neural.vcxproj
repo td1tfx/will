@@ -177,6 +177,7 @@
     <ClCompile Include="src\LayerFull.cpp" />
     <ClCompile Include="src\LayerPooling.cpp" />
     <ClCompile Include="src\Net.cpp" />
+    <ClCompile Include="src\Neural.cpp" />
     <ClCompile Include="src\others\INIReader.cpp" />
     <ClCompile Include="src\others\libconvert.cpp" />
     <ClCompile Include="src\others\Timer.cpp" />
@@ -208,6 +209,7 @@
     <ClInclude Include="include\cuda\vector_types.h" />
     <ClInclude Include="src\CudnnTemplate.h" />
     <ClInclude Include="src\Matrix.h" />
+    <ClInclude Include="src\Neural.h" />
     <ClInclude Include="src\others\INIReader.h" />
     <ClInclude Include="src\others\libconvert.h" />
     <ClInclude Include="src\others\Timer.h" />
@@ -219,7 +221,6 @@
     <ClInclude Include="src\Net.h" />
     <ClInclude Include="src\Option.h" />
     <ClInclude Include="src\Random.h" />
-    <ClInclude Include="src\platforms.h" />
     <ClInclude Include="src\Test.h" />
     <ClInclude Include="src\types.h" />
   </ItemGroup>

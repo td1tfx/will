@@ -14,7 +14,7 @@
     <Filter Include="others">
       <UniqueIdentifier>{858ff5f1-e19f-4412-a57e-20e9aaa09a83}</UniqueIdentifier>
     </Filter>
-    <Filter Include="others\头文件">
+    <Filter Include="头文件">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
@@ -56,46 +56,46 @@
     <ClCompile Include="src\others\Timer.cpp">
       <Filter>others</Filter>
     </ClCompile>
+    <ClCompile Include="src\Neural.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Matrix.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Option.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Random.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Test.h">
-      <Filter>others\头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\platforms.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\types.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\VectorMath.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\CudnnTemplate.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Net.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Layer.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\LayerFull.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\LayerConvolution.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\LayerPooling.h">
-      <Filter>others\头文件</Filter>
+      <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\others\INIReader.h">
       <Filter>others</Filter>
@@ -174,6 +174,9 @@
     </ClInclude>
     <ClInclude Include="include\cblas.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Neural.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

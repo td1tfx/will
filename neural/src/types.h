@@ -126,20 +126,3 @@ typedef enum
 #endif
 
 
-
-template <class T> void safe_delete(T*& pointer)
-{
-	if (pointer)
-		delete pointer;
-	pointer = nullptr;
-}
-
-// template <class T> void safe_delete(std::initializer_list<T*> pointer_list)
-// {
-// 	for (auto& pointer : pointer_list)
-// 	{
-// 		safe_delete(pointer);
-// 	}
-// }
-
-//#define safe_delete(...) safe_delete({__VA_ARGS__})
