@@ -15,3 +15,10 @@
 ### neural-demo
 * 演示的神经网络，是按照教科书中的讲解以面向对象方法构造。已停止更新，分离至<https://github.com/scarsty/neural-demo>。
 * 所有部分都直接计算，实际上应当使用矩阵计算来优化。
+
+#### Astyle设置
+```
+--style=allman --indent=spaces=4 --min-conditional-indent=0 --max-instatement-indent=80 --align-pointer=type --align-reference=type 
+--indent-namespaces --indent-preproc-define --pad-oper --pad-header --unpad-paren 
+--add-brackets --add-one-line-brackets --keep-one-line-blocks --keep-one-line-statements --convert-tabs --mode=c
+```

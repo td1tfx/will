@@ -66,9 +66,9 @@ typedef double real;
 //激活函数种类
 typedef enum
 {
-    af_Sigmoid = CUDNN_ACTIVATION_SIGMOID,
-    af_ReLU = CUDNN_ACTIVATION_RELU,
-    af_Tanh = CUDNN_ACTIVATION_TANH,
+    af_Sigmoid     = CUDNN_ACTIVATION_SIGMOID,
+    af_ReLU        = CUDNN_ACTIVATION_RELU,
+    af_Tanh        = CUDNN_ACTIVATION_TANH,
     af_ClippedReLU = CUDNN_ACTIVATION_CLIPPED_RELU,
     af_Softmax,
     af_SoftmaxLoss,
@@ -84,8 +84,8 @@ typedef enum
 //采样种类，与cuDNN直接对应，可以类型转换
 typedef enum
 {
-    pl_Max = CUDNN_POOLING_MAX,
-    pl_Average_Padding = CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
+    pl_Max               = CUDNN_POOLING_MAX,
+    pl_Average_Padding   = CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING,
     pl_Average_NoPadding = CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING,
 } PoolingType;
 
