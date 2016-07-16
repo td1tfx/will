@@ -168,11 +168,11 @@ public:
     void colMultiply(real v, int c);
 
     static void product(Matrix* A, Matrix* B, Matrix* R,
-        real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
+                        real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
     static void productVector(Matrix* A, Matrix* B, Matrix* R,
-        real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
+                              real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
     static void productVector2(Matrix* A, Matrix* B, Matrix* R,
-        real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
+                               real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
     static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
     static void add(Matrix* A, real b, Matrix* B, Matrix* R);
     static real dot(Matrix* A, int cA, Matrix* B, int cB);
@@ -182,9 +182,9 @@ public:
     inline static void tryInitNullTensorDesc(cudnnTensorDescriptor_t* tensor, int n, int c, int h, int w);
 
     static void poolingForward(PoolingType re, Matrix* X, Matrix* A,
-        int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
+                               int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
     static void poolingBackward(PoolingType re, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-        int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
+                                int window_w, int window_h, int stride_w, int stride_h, int* recordPos = nullptr);
 
     static void convolutionForward(Matrix* X, Matrix* W, Matrix* A, int* recordX = nullptr, int* recordW = nullptr);
     static void convolutionBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* W, Matrix* dW, Matrix* dB);
@@ -194,9 +194,9 @@ public:
     static void dropoutBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
 
     static void divisiveNormalizationForward(Matrix* X, Matrix* A,
-        Matrix* means, Matrix* temp1, Matrix* temp2, unsigned lrnN, real lrnAlpha, real lrnBeta, real lrnK);
+                                             Matrix* means, Matrix* temp1, Matrix* temp2, unsigned lrnN, real lrnAlpha, real lrnBeta, real lrnK);
     static void divisiveNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-        Matrix* means, Matrix* temp1, Matrix* temp2, Matrix* dmeans);
+                                              Matrix* means, Matrix* temp1, Matrix* temp2, Matrix* dmeans);
 
     static void batchNormalizationForward(Matrix* X, Matrix* A, Matrix* rgStat, Matrix* stat);
     static void batchNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
@@ -212,9 +212,9 @@ public:
     static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
     static void activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
-        std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+                                std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
     static void activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-        std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+                                 std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
 
 };
 

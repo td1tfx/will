@@ -20,7 +20,6 @@ typedef enum
     lc_Full,
     lc_Convolution,
     lc_Pooling,
-    lc_BatchNormalization,
 } LayerConnectionType;
 
 struct LayerInitInfo
@@ -30,7 +29,7 @@ struct LayerInitInfo
     {
         int outputCount;
     } full;
-    struct { } convolution;
+    struct {} convolution;
     struct
     {
         int window_w, window_h;
@@ -61,7 +60,7 @@ public:
     bool NeedTrain = true;   //如果不需要训练那么也无需反向传播，在训练的时候也只需激活一次
     void setNeedTrain(bool nt) { NeedTrain = nt; }
 
-    //对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数	
+    //对于全连接矩阵，这几个矩阵形式相同，行数是节点数，列数是数据组数
 
     Matrix* XMatrix = nullptr; //XMatrix收集上一层的输出，激活函数作用之后就是本层输出A
     Matrix* dXMatrix = nullptr;
@@ -78,7 +77,8 @@ public:
     //只有输入层有必要调用这个函数，其他层均计算得到对应的值
     void setImageMode(int w, int h, int count);
 
-    Layer *PrevLayer, *NextLayer;
+    Layer* PrevLayer;
+    Layer* NextLayer;
 
     void deleteData();
 

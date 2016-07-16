@@ -5,34 +5,34 @@ template <typename T = float>
 class Random
 {
 public:
-	Random() {}
-	virtual ~Random() {}
+    Random() {}
+    virtual ~Random() {}
 
-	std::random_device rd;
-	std::mt19937 generator;
-	std::uniform_real_distribution<T> uniform_dist{ 0, 1 };
-	std::normal_distribution<T> normal_dist{ 0, 1 };
+    std::random_device rd;
+    std::mt19937 generator;
+    std::uniform_real_distribution<T> uniform_dist{ 0, 1 };
+    std::normal_distribution<T> normal_dist{ 0, 1 };
 
-	void set_uniform(T a, T b)
-	{
-		uniform_dist = std::uniform_real_distribution<T>(a, b);
-	}
-	T rand_uniform()
-	{
-		return uniform_dist(generator);
-	}
-	T rand_normal()
-	{
-		return normal_dist(generator);
-	}
-	void set_seed()
-	{
-		generator = std::mt19937(rd());
-	}
-	void set_seed(unsigned int seed)
-	{
-		generator = std::mt19937(seed);
-	}
+    void set_uniform(T a, T b)
+    {
+        uniform_dist = std::uniform_real_distribution<T>(a, b);
+    }
+    T rand_uniform()
+    {
+        return uniform_dist(generator);
+    }
+    T rand_normal()
+    {
+        return normal_dist(generator);
+    }
+    void set_seed()
+    {
+        generator = std::mt19937(rd());
+    }
+    void set_seed(unsigned int seed)
+    {
+        generator = std::mt19937(seed);
+    }
 
 };
 

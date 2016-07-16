@@ -75,12 +75,9 @@ public:
     void train(int times = 1000000, int interval = 1000, real tol = 1e-3, real dtol = 0);  //训练过程
 
     void active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount,
-        bool learn = false, real* error = nullptr);  //计算一组输出
+                bool learn = false, real* error = nullptr);  //计算一组输出
 
-    //void setInputData(d_matrix* input, int groupid);
-    //void setExpectData(d_matrix* expect, int groupid);
-
-    void getOutputData(Matrix* M, int groupCount, int col = 0);
+    void getYData(Matrix* M, int groupCount, int col = 0);
 
     void readData(const char* filename, int* count, Matrix** pX, Matrix** pY);
     int resetGroupCount(int n);
