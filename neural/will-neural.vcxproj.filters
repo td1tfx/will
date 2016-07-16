@@ -23,9 +23,6 @@
     <ClCompile Include="src\Test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\CudnnTemplate.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="src\Matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -59,6 +56,9 @@
     <ClCompile Include="src\Neural.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\cudnn_desc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Matrix.h">
@@ -77,9 +77,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\VectorMath.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\CudnnTemplate.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\Net.h">
@@ -176,6 +173,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="src\Neural.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cudnn_desc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cblas_real.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

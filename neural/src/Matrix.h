@@ -9,7 +9,7 @@
 #include "types.h"
 #include "VectorMath.h"
 #include "Random.h"
-#include "CudnnTemplate.h"
+#include "cudnn_desc.h"
 
 //列优先或者行优先（未使用）
 typedef enum

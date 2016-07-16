@@ -1,4 +1,4 @@
-#include "CudnnTemplate.h"
+#include "cudnn_desc.h"
 
 #define CUDNN_CERATE_DESCRIPTOR(type) template<> \
     cudnnStatus_t cudnnCreateDescriptor<cudnn##type##Descriptor_t>(cudnn##type##Descriptor_t* t) \
@@ -24,4 +24,5 @@ CUDNN_DESCRIPTOR_PAIR(LRN)
 #undef CUDNN_CERATE_DESCRIPTOR
 #undef CUDNN_DESTROY_DESCRIPTOR
 #undef CUDNN_DESCRIPTOR_PAIR
+
 
