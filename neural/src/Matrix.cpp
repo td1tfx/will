@@ -39,7 +39,7 @@ Matrix::Matrix(int m, int n, MatrixDataType tryInside, MatrixCudaType tryCuda)
 //4阶张量形式构造函数，用于池化和卷积
 //当矩阵是张量时，实际上原本的列数毫无意义，这样写是为了n和c都是1的情况下与原矩阵等价
 Matrix::Matrix(int w, int h, int c, int n, MatrixDataType tryInside /*= md_Inside*/, MatrixCudaType tryCuda /*= mc_UseCuda*/)
-    :Matrix(w, h*n*c, tryInside, tryCuda)
+    : Matrix(w, h*n*c, tryInside, tryCuda)
 {
     W = w;
     H = h;
@@ -68,8 +68,7 @@ Matrix::~Matrix()
 //返回值：-1空矩阵，未重新分配内存，1重新分配内存
 int Matrix::resize(int m, int n, int force /*= 0*/)
 {
-    if (!this)
-        return -1;
+    if (!this) return -1;
     row = m;
     col = n;
     max_script = m*n;
@@ -92,7 +91,7 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 //在matrix中初始化Cuda可能不是很好，暂时没想出更好的设计
 void Matrix::initCuda()
 {
-    if (inited) { return; }
+    if (inited) return;
     inited = true;
 #ifdef _USE_CUDA
     int dev = -1;
@@ -303,7 +302,7 @@ real* Matrix::mallocData(int size)
     if (UseCuda == mc_UseCuda)
     {
         real* d = nullptr;
-        if (cudaMalloc((void **)&d, size * sizeof(real)) == cudaSuccess)
+        if (cudaMalloc((void**)&d, size * sizeof(real)) == cudaSuccess)
         {
             //dataIsWhere = DataInDevice;
         }
