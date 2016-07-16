@@ -10,7 +10,7 @@ LayerPooling::LayerPooling()
 
 LayerPooling::~LayerPooling()
 {
-    if (recordPos) delete recordPos;
+    if (recordPos) { delete recordPos; }
 }
 
 //采样层，参数为本层横向和纵向的采样像素个数
@@ -24,8 +24,8 @@ void LayerPooling::initData2(LayerInitInfo* info)
 
 void LayerPooling::resetGroupCount2()
 {
-    if (recordPos) delete recordPos;
-    recordPos = new int[OutputCountPerGroup*GroupCount];
+    if (recordPos) { delete recordPos; }
+    recordPos = new int[OutputCountPerGroup * GroupCount];
 }
 
 //连接的时候才能知道本层的输出数
@@ -34,11 +34,11 @@ void LayerPooling::connetPrevlayer2()
     ImageCountPerGroup = PrevLayer->ImageCountPerGroup;
     ImageRow = (PrevLayer->ImageRow + window_w - 1) / window_w;
     ImageCol = (PrevLayer->ImageCol + window_h - 1) / window_h;
-    OutputCountPerGroup = ImageCountPerGroup*ImageRow*ImageCol;
+    OutputCountPerGroup = ImageCountPerGroup * ImageRow * ImageCol;
     //UnactivedMatrix = new d_matrix(OutputCount, GroupCount);
     dAMatrix = new Matrix(OutputCountPerGroup, GroupCount);
     AMatrix = new Matrix(OutputCountPerGroup, GroupCount);
-    recordPos = new int[OutputCountPerGroup*GroupCount];
+    recordPos = new int[OutputCountPerGroup * GroupCount];
 }
 
 void LayerPooling::activeBackward2()

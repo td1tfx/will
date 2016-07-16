@@ -65,14 +65,14 @@ public:
     Matrix(int w, int h, int c, int n, MatrixDataType tryInside = md_Inside, MatrixCudaType tryCuda = mc_UseCuda);
     ~Matrix();
 private:
-    int xy2i(int m, int n) { return m + n*row; }
-    int whp2i(int w, int h, int p) { return w + h*W + p*W*H; }
+    int xy2i(int m, int n) { return m + n * row; }
+    int whp2i(int w, int h, int p) { return w + h * W + p * W * H; }
 public:
     int getRow() { return row; }
     int getCol() { return col; }
     int getDataCount() { return max_script; }
     int getMemerySize() { return max_script * sizeof(real); }
-    int whcn2i(int w, int h, int c, int n) { return w + h*W + c*W*H + n*C*W*H; }
+    int whcn2i(int w, int h, int c, int n) { return w + h * W + c * W * H + n * C * W * H; }
 
     //以下4个函数注意如果数据在显存中，一般来说是无法赋值和输出的
     real& getData(int i) { return data[std::min(i, max_script - 1)]; }
@@ -93,7 +93,7 @@ public:
     //使用这个函数，主要是为了析构时同时删除数据指针，最好你清楚你在干啥！
     void setInsideData(MatrixDataType id) { insideData = id; }
 
-    real& operator [] (int i) { return data[i]; }
+    real& operator [](int i) { return data[i]; }
 
     static void initCuda();
     static void destroyCuda();
@@ -194,7 +194,8 @@ public:
     static void dropoutBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX, Matrix* rgStat, Matrix* stat, real v);
 
     static void divisiveNormalizationForward(Matrix* X, Matrix* A,
-                                             Matrix* means, Matrix* temp1, Matrix* temp2, unsigned lrnN, real lrnAlpha, real lrnBeta, real lrnK);
+                                             Matrix* means, Matrix* temp1, Matrix* temp2,
+                                             unsigned lrnN, real lrnAlpha, real lrnBeta, real lrnK);
     static void divisiveNormalizationBackward(Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
                                               Matrix* means, Matrix* temp1, Matrix* temp2, Matrix* dmeans);
 
@@ -212,9 +213,13 @@ public:
     static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
     static void activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
-                                std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+                                std::initializer_list<real> vr_list = { 1 },
+                                std::initializer_list<int> vi_list = { 0 },
+                                std::initializer_list<Matrix*> as_list = {});
     static void activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-                                 std::initializer_list<real> vr_list = { 1 }, std::initializer_list<int> vi_list = { 0 }, std::initializer_list<Matrix*> as_list = {});
+                                 std::initializer_list<real> vr_list = { 1 },
+                                 std::initializer_list<int> vi_list = { 0 },
+                                 std::initializer_list<Matrix*> as_list = {});
 
 };
 

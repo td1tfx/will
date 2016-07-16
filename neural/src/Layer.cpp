@@ -21,7 +21,7 @@ void Layer::setImageMode(int w, int h, int count)
     ImageCol = w;
     ImageCountPerGroup = count;
     if (count <= 0)
-        ImageCountPerGroup = OutputCountPerGroup / w / h;
+    { ImageCountPerGroup = OutputCountPerGroup / w / h; }
 }
 
 void Layer::deleteData()

@@ -17,7 +17,7 @@ int LayerConvolution::saveInfo(FILE* fout)
 {
     fprintf(fout, "Convolution\n%d %d %d %d\n", int(_convolutionType), kernelCount, kernelRow, kernelCol);
     kernelData->printAsVector(fout);
-    return 4 + kernelCount*kernelRow*kernelCol;
+    return 4 + kernelCount * kernelRow * kernelCol;
 }
 
 int LayerConvolution::loadInfo(real* v, int n)
@@ -27,7 +27,7 @@ int LayerConvolution::loadInfo(real* v, int n)
     kernelCount = v[k++];
     kernelRow = v[k++];
     kernelCol = v[k++];
-    kernelData = new Matrix(kernelRow*kernelCol, kernelCount);
+    kernelData = new Matrix(kernelRow * kernelCol, kernelCount);
     k += kernelData->loadAsVector(v + k, n - k);
     for (int i = 0; i < kernelCount; i++)
     {

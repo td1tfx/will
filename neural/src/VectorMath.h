@@ -24,8 +24,8 @@ namespace VectorMath
         for (int i = 0; i < size; i++)
         {
             a[i] = x[i];
-            if (a[i] > v) a[i] = v;
-            else if (a[i] < 0) a[i] = 0;
+            if (a[i] > v) { a[i] = v; }
+            else if (a[i] < 0) { a[i] = 0; }
         }
     }
 
@@ -70,7 +70,7 @@ namespace VectorMath
     {
         for (int i = 0; i < size; i++)
         {
-            dx[i] = da[i] - v*exp(a[i]);
+            dx[i] = da[i] - v * exp(a[i]);
         }
     }
 
