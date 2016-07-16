@@ -405,7 +405,7 @@ int Matrix::indexColMaxAbs(int c)
     }
     else
     {
-        return CBLAS_FUNC_I(amax)(row, getDataPointer(0, c), 1);
+        return Cblas::cblas_iamax(row, getDataPointer(0, c), 1);
     }
 }
 
@@ -420,7 +420,7 @@ real Matrix::sumAbs()
     }
     else
     {
-        return CBLAS_FUNC(asum)(max_script, data, 1);
+        return Cblas::cblas_asum(max_script, data, 1);
     }
 }
 
@@ -435,7 +435,7 @@ real Matrix::sumColAbs(int c)
     }
     else
     {
-        return CBLAS_FUNC(asum)(row, getDataPointer(0, c), 1);
+        return Cblas::cblas_asum(row, getDataPointer(0, c), 1);
     }
 }
 
@@ -450,7 +450,7 @@ real Matrix::ddot()
     }
     else
     {
-        return CBLAS_FUNC(dot)(max_script, data, 1, data, 1);
+        return Cblas::cblas_dot(max_script, data, 1, data, 1);
     }
 }
 
@@ -502,7 +502,7 @@ void Matrix::multiply(real v)
     }
     else
     {
-        CBLAS_FUNC(scal)(max_script, v, data, 1);
+        Cblas::cblas_scal(max_script, v, data, 1);
     }
 }
 
@@ -515,7 +515,7 @@ void Matrix::colMultiply(real v, int c)
     }
     else
     {
-        CBLAS_FUNC(scal)(row, v, getDataPointer(0, c), 1);
+        Cblas::cblas_scal(row, v, getDataPointer(0, c), 1);
     }
 }
 
@@ -539,7 +539,7 @@ void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
     {
         auto ta1 = get_cblas_trans(ta);
         auto tb1 = get_cblas_trans(tb);
-        CBLAS_FUNC(gemm)(CblasColMajor, ta1, tb1, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
+        Cblas::cblas_gemm(ta1, tb1, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
     }
 }
 
@@ -557,7 +557,7 @@ void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, real a /*= 1*/, real
     else
     {
         auto ta1 = get_cblas_trans(ta);
-        CBLAS_FUNC(gemv)(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
+        Cblas::cblas_gemv(ta1, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
     }
 }
 
@@ -577,7 +577,7 @@ void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, real a /*= 1*/, rea
     {
         auto ta1 = get_cblas_trans(ta);
         for (int i = 0; i <= R->col; i++)
-        { CBLAS_FUNC(gemv)(CblasColMajor, ta1, m, n, a, A->data, A->row, B->data, 1, c, R->getDataPointer(0, i), 1); }
+        { Cblas::cblas_gemv(ta1, m, n, a, A->data, A->row, B->data, 1, c, R->getDataPointer(0, i), 1); }
     }
 }
 
@@ -616,8 +616,8 @@ void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
     }
     else
     {
-        CBLAS_FUNC(copy)(R->max_script, A->data, 1, R->data, 1);
-        CBLAS_FUNC(axpy)(R->max_script, b, B->data, 1, R->data, 1);
+        Cblas::cblas_copy(R->max_script, A->data, 1, R->data, 1);
+        Cblas::cblas_axpy(R->max_script, b, B->data, 1, R->data, 1);
 
         // #pragma loop(hint_parallel(8))
         //  for (int i = 0; i < R->max_script; i++)
@@ -639,7 +639,7 @@ real Matrix::dot(Matrix* A, int cA, Matrix* B, int cB)
     }
     else
     {
-        return CBLAS_FUNC(dot)(A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1);
+        return Cblas::cblas_dot(A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1);
     }
 }
 

@@ -108,7 +108,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>include;include/cuda;include/SDL2;src/others</AdditionalIncludeDirectories>
-      <PreprocessToFile>true</PreprocessToFile>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -169,6 +169,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\cblas_real.cpp" />
     <ClCompile Include="src\cudnn_desc.cpp" />
     <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -207,6 +208,7 @@
     <ClInclude Include="include\cuda\vector_functions.h" />
     <ClInclude Include="include\cuda\vector_functions.hpp" />
     <ClInclude Include="include\cuda\vector_types.h" />
+    <ClInclude Include="src\cblas_real_c.h" />
     <ClInclude Include="src\cblas_real.h" />
     <ClInclude Include="src\cudnn_desc.h" />
     <ClInclude Include="src\Matrix.h" />

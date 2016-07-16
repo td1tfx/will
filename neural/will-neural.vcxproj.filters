@@ -59,6 +59,9 @@
     <ClCompile Include="src\cudnn_desc.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\cblas_real.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Matrix.h">
@@ -176,6 +179,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\cudnn_desc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cblas_real_c.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\cblas_real.h">

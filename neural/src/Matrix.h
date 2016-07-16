@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include <cfloat>
-#include "cblas.h"
+#include "cblas_real.h"
 #include "types.h"
 #include "VectorMath.h"
 #include "Random.h"
