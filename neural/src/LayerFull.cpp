@@ -78,14 +78,14 @@ void LayerFull::activeForward()
 
 void LayerFull::spreadDeltaToPrevLayer()
 {
-    Matrix::product(WeightMatrix, dXMatrix, PrevLayer->dAMatrix, 1, 0, mt_Trans, mt_NoTrans);
+    Matrix::product(WeightMatrix, dXMatrix, PrevLayer->dAMatrix, 1, 0, Matrix_Trans, Matrix_NoTrans);
 }
 
 void LayerFull::updateParameters(real learnSpeed, real lambda)
 {
     Matrix::product(dXMatrix, PrevLayer->AMatrix, WeightMatrix,
-                    learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, mt_NoTrans, mt_Trans);
-    Matrix::productVector(dXMatrix, asBiasVector, BiasVector, learnSpeed / GroupCount, 1, mt_NoTrans);
+                    learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, Matrix_NoTrans, Matrix_Trans);
+    Matrix::productVector(dXMatrix, asBiasVector, BiasVector, learnSpeed / GroupCount, 1, Matrix_NoTrans);
 }
 
 int LayerFull::saveInfo(FILE* fout)

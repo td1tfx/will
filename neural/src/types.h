@@ -108,13 +108,9 @@ typedef enum
 #ifdef _SINGLE_PRECISION
 #define REAL_MAX FLT_MAX
 #define MYCUDNN_DATA_REAL CUDNN_DATA_FLOAT
-#define CUBLAS_FUNC(func) cublasS##func
-#define CUBLAS_FUNC_I(func) cublasIs##func
 #else
 #define REAL_MAX DBL_MAX
 #define MYCUDNN_DATA_REAL CUDNN_DATA_DOUBLE
-#define CUBLAS_FUNC(func) cublasD##func
-#define CUBLAS_FUNC_I(func) cublasId##func
 #endif 
 
 #ifndef _USE_CUDA

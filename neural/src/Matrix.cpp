@@ -7,6 +7,9 @@ const real Matrix::real_1 = 1;
 const real Matrix::real_0 = 0;
 
 cublasHandle_t Matrix::cublasHandle;
+Cublas* Matrix::cublas;
+Cblas* Matrix::cblas;
+
 cudnnHandle_t Matrix::cudnnHandle;
 
 void* Matrix::workspace;
@@ -89,10 +92,12 @@ int Matrix::resize(int m, int n, int force /*= 0*/)
 }
 
 //在matrix中初始化Cuda可能不是很好，暂时没想出更好的设计
-void Matrix::initCuda()
+void Matrix::init(int useCuda)
 {
     if (inited) { return; }
     inited = true;
+    cblas = new Cblas();
+    if (useCuda == 0) { return; }
 #ifdef _USE_CUDA
     int dev = -1;
     globalUseCuda = mc_NoCuda;
@@ -112,6 +117,7 @@ void Matrix::initCuda()
         fprintf(stderr, "CUBLAS initialization error!\n");
         return;
     }
+    cublas = new Cublas(cublasHandle);
     if (cudnnCreate(&cudnnHandle) != CUDNN_STATUS_SUCCESS)
     {
         fprintf(stderr, "CUDNN initialization error!\n");
@@ -121,16 +127,21 @@ void Matrix::initCuda()
 #endif
 }
 
-void Matrix::destroyCuda()
+void Matrix::destroy()
 {
     if (!inited) { return; }
     inited = false;
-    globalUseCuda = mc_NoCuda;
+    delete cblas;
+    if (globalUseCuda == mc_UseCuda)
+    {
+        globalUseCuda = mc_NoCuda;
 #ifdef _USE_CUDA
-    cudaFree(&workspace);
-    cublasDestroy(cublasHandle);
-    cudnnDestroy(cudnnHandle);
+        cudaFree(&workspace);
+        cublasDestroy(cublasHandle);
+        delete cublas;
+        cudnnDestroy(cudnnHandle);
 #endif
+    }
 }
 
 void Matrix::print(FILE* fout)
@@ -397,61 +408,25 @@ void Matrix::expand()
 //一列中最大值的序号
 int Matrix::indexColMaxAbs(int c)
 {
-    if (UseCuda == mc_UseCuda)
-    {
-        int r;
-        CUBLAS_FUNC_I(amax)(cublasHandle, row, getDataPointer(0, c), 1, &r);
-        return r - 1;
-    }
-    else
-    {
-        return Cblas::cblas_iamax(row, getDataPointer(0, c), 1);
-    }
+    return selectBlas(UseCuda)->iamax(row, getDataPointer(0, c), 1);
 }
 
 //绝对值求和（直接调用的blas，注意这里实际上需要的功能只是求和）
 real Matrix::sumAbs()
 {
-    if (UseCuda == mc_UseCuda)
-    {
-        real r;
-        CUBLAS_FUNC(asum)(cublasHandle, max_script, data, 1, &r);
-        return r;
-    }
-    else
-    {
-        return Cblas::cblas_asum(max_script, data, 1);
-    }
+    return selectBlas(UseCuda)->asum(max_script, data, 1);
 }
 
 //一列的绝对值和
 real Matrix::sumColAbs(int c)
 {
-    if (UseCuda == mc_UseCuda)
-    {
-        real r;
-        CUBLAS_FUNC(asum)(cublasHandle, row, getDataPointer(0, c), 1, &r);
-        return r;
-    }
-    else
-    {
-        return Cblas::cblas_asum(row, getDataPointer(0, c), 1);
-    }
+    return selectBlas(UseCuda)->asum(row, getDataPointer(0, c), 1);
 }
 
 //点乘，即所有元素平方和
-real Matrix::ddot()
+real Matrix::dotSelf()
 {
-    if (UseCuda == mc_UseCuda)
-    {
-        real r;
-        CUBLAS_FUNC(dot)(cublasHandle, max_script, data, 1, data, 1, &r);
-        return r;
-    }
-    else
-    {
-        return Cblas::cblas_dot(max_script, data, 1, data, 1);
-    }
+    return selectBlas(UseCuda)->dot(max_script, data, 1, data, 1);
 }
 
 //以同一个值初始化矩阵
@@ -496,27 +471,13 @@ void Matrix::initRandom()
 //数乘
 void Matrix::multiply(real v)
 {
-    if (UseCuda == mc_UseCuda)
-    {
-        CUBLAS_FUNC(scal)(cublasHandle, row, &v, data, 1);
-    }
-    else
-    {
-        Cblas::cblas_scal(max_script, v, data, 1);
-    }
+    selectBlas(UseCuda)->scal(max_script, v, data, 1);
 }
 
 //选择一列数乘
 void Matrix::colMultiply(real v, int c)
 {
-    if (UseCuda == mc_UseCuda)
-    {
-        CUBLAS_FUNC(scal)(cublasHandle, row, &v, getDataPointer(0, c), 1);
-    }
-    else
-    {
-        Cblas::cblas_scal(row, v, getDataPointer(0, c), 1);
-    }
+    selectBlas(UseCuda)->scal(row, v, getDataPointer(0, c), 1);
 }
 
 //矩阵乘，R = aAB+cR
@@ -528,57 +489,26 @@ void Matrix::product(Matrix* A, Matrix* B, Matrix* R,
     int lda = A->row;
     int k = A->col;
     int ldb = B->row;
-    if (ta == mt_Trans) { k = A->row; }
-    if (R->UseCuda == mc_UseCuda)
-    {
-        auto ta1 = get_cublas_trans(ta);
-        auto tb1 = get_cublas_trans(tb);
-        CUBLAS_FUNC(gemm)(cublasHandle, ta1, tb1, m, n, k, &a, A->data, lda, B->data, ldb, &c, R->data, m);
-    }
-    else
-    {
-        auto ta1 = get_cblas_trans(ta);
-        auto tb1 = get_cblas_trans(tb);
-        Cblas::cblas_gemm(ta1, tb1, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
-    }
+    if (ta == Matrix_Trans) { k = A->row; }
+    selectBlas(R->UseCuda)->gemm(ta, tb, m, n, k, a, A->data, lda, B->data, ldb, c, R->data, m);
 }
 
 //矩阵乘以向量，R = aAB+cR
 void Matrix::productVector(Matrix* A, Matrix* B, Matrix* R, real a /*= 1*/, real c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
     int m = A->row, n = A->col;
-    if (ta == mt_Trans) { std::swap(m, n); };
-
-    if (R->UseCuda == mc_UseCuda)
-    {
-        auto ta1 = get_cublas_trans(ta);
-        CUBLAS_FUNC(gemv)(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->data, 1);
-    }
-    else
-    {
-        auto ta1 = get_cblas_trans(ta);
-        Cblas::cblas_gemv(ta1, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
-    }
+    if (ta == Matrix_Trans) { std::swap(m, n); };
+    selectBlas(R->UseCuda)->gemv(ta, m, n, a, A->data, A->row, B->data, 1, c, R->data, 1);
 }
 
 //没什么用，废弃
 void Matrix::productVector2(Matrix* A, Matrix* B, Matrix* R, real a /*= 1*/, real c /*= 0*/, MatrixTransType ta /*= NoTrans*/)
 {
     int m = A->row, n = A->col;
-    if (ta == mt_Trans) { std::swap(m, n); };
+    if (ta == Matrix_Trans) { std::swap(m, n); };
 
-    if (R->UseCuda == mc_UseCuda)
-    {
-        auto ta1 = get_cublas_trans(ta);
-        for (int i = 0; i <= R->col; i++)
-        { CUBLAS_FUNC(gemv)(cublasHandle, ta1, m, n, &a, A->data, A->row, B->data, 1, &c, R->getDataPointer(0, i), 1); }
-    }
-    else
-    {
-        auto ta1 = get_cblas_trans(ta);
-        for (int i = 0; i <= R->col; i++)
-        { Cblas::cblas_gemv(ta1, m, n, a, A->data, A->row, B->data, 1, c, R->getDataPointer(0, i), 1); }
-    }
+    for (int i = 0; i <= R->col; i++)
+    { selectBlas(R->UseCuda)->gemv(ta, m, n, a, A->data, A->row, B->data, 1, c, R->getDataPointer(0, i), 1); }
 }
 
 //矩阵元素乘
@@ -607,17 +537,20 @@ void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
 {
     if (R->UseCuda == mc_UseCuda)
     {
-        CUBLAS_FUNC(copy)(cublasHandle, R->max_script, A->data, 1, R->data, 1);
-        CUBLAS_FUNC(axpy)(cublasHandle, R->max_script, &b, B->data, 1, R->data, 1);
+        //Cublas::copy(R->max_script, A->data, 1, R->data, 1);
+        //Cublas::axpy(R->max_script, b, B->data, 1, R->data, 1);
 
         //setTensor(td, 1, 1, R->col, R->row);
-        //cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_ADD, CUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN);
-        //cudnnOpTensor(cudnnHandle, od, &real_1, td, A->data, &real_1, td, B->data, &b, td, R->data);
+        cudnnOpTensorDescriptor_t od;
+        cudnnCreateDescriptor(&od);
+        cudnnSetOpTensorDescriptor(od, CUDNN_OP_TENSOR_ADD, MYCUDNN_DATA_REAL, CUDNN_NOT_PROPAGATE_NAN);
+        cudnnOpTensor(cudnnHandle, od, &real_1, A->TensorDesc, A->data, &real_1, B->TensorDesc, B->data, &b, R->TensorDesc, R->data);
+        cudnnDestroyDescriptor(od);
     }
     else
     {
-        Cblas::cblas_copy(R->max_script, A->data, 1, R->data, 1);
-        Cblas::cblas_axpy(R->max_script, b, B->data, 1, R->data, 1);
+        cblas->copy(R->max_script, A->data, 1, R->data, 1);
+        cblas->axpy(R->max_script, b, B->data, 1, R->data, 1);
 
         // #pragma loop(hint_parallel(8))
         //  for (int i = 0; i < R->max_script; i++)
@@ -630,17 +563,7 @@ void Matrix::add(Matrix* A, real b, Matrix* B, Matrix* R)
 
 real Matrix::dot(Matrix* A, int cA, Matrix* B, int cB)
 {
-    if (A->UseCuda == mc_UseCuda)
-    {
-        real r;
-        CUBLAS_FUNC(dot)(cublasHandle, A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1, &r);
-        return r;
-
-    }
-    else
-    {
-        return Cblas::cblas_dot(A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1);
-    }
+    return selectBlas(A->UseCuda)->dot(A->row, A->getDataPointer(0, cA), 1, B->getDataPointer(0, cA), 1);
 }
 
 

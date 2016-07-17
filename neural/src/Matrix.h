@@ -5,25 +5,13 @@
 #include <algorithm>
 #include <functional>
 #include <cfloat>
+#include "blas_types.h"
 #include "cblas_real.h"
+#include "cublas_real.h"
 #include "types.h"
 #include "VectorMath.h"
 #include "Random.h"
 #include "cudnn_desc.h"
-
-//列优先或者行优先（未使用）
-typedef enum
-{
-    ms_ColMajor,
-    ms_RowMajor,
-} MatrixStoreType;
-
-//转置
-typedef enum
-{
-    mt_NoTrans,
-    mt_Trans,
-} MatrixTransType;
 
 //数据位置（是否需要自己析构数据）
 typedef enum
@@ -95,8 +83,8 @@ public:
 
     real& operator [](int i) { return data[i]; }
 
-    static void initCuda();
-    static void destroyCuda();
+    static void init(int useCuda);
+    static void destroy();
 
     void print(FILE* fout = stdout);
     int load(real* v, int n);
@@ -120,14 +108,15 @@ private:
     static const real real_0;
 
     static cublasHandle_t cublasHandle;
+    static Cublas* cublas;
+    static Cblas* cblas;
+    static Blas* selectBlas(MatrixCudaType mc) { return mc == mc_NoCuda ? (Blas*)cblas : (Blas*)cublas; }
+
     static cudnnHandle_t cudnnHandle;
 
     //开辟一块显存作为一些功能的空间
     static void* workspace;
     static const int workspace_size = 1024 * 1024 * 128;
-
-    static cublasOperation_t get_cublas_trans(MatrixTransType t) { return t == mt_NoTrans ? CUBLAS_OP_N : CUBLAS_OP_T; }
-    static CBLAS_TRANSPOSE get_cblas_trans(MatrixTransType t) { return t == mt_NoTrans ? CblasNoTrans : CblasTrans; }
 
     //为何我感觉这样很恶心
     //一般来说，在X，A，dX，dA中，以X的计算设置为准，反向时一般不再重新设置
@@ -160,7 +149,7 @@ public:
     int indexColMaxAbs(int c);
     real sumAbs();
     real sumColAbs(int c);
-    real ddot();
+    real dotSelf();
 
     void initData(real v, int inc = 0);
     void initRandom();
@@ -168,11 +157,11 @@ public:
     void colMultiply(real v, int c);
 
     static void product(Matrix* A, Matrix* B, Matrix* R,
-                        real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans, MatrixTransType tb = mt_NoTrans);
+                        real a = 1, real c = 0, MatrixTransType ta = Matrix_NoTrans, MatrixTransType tb = Matrix_NoTrans);
     static void productVector(Matrix* A, Matrix* B, Matrix* R,
-                              real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
+                              real a = 1, real c = 0, MatrixTransType ta = Matrix_NoTrans);
     static void productVector2(Matrix* A, Matrix* B, Matrix* R,
-                               real a = 1, real c = 0, MatrixTransType ta = mt_NoTrans);
+                               real a = 1, real c = 0, MatrixTransType ta = Matrix_NoTrans);
     static void hadamardProduct(Matrix* A, Matrix* B, Matrix* R);
     static void add(Matrix* A, real b, Matrix* B, Matrix* R);
     static real dot(Matrix* A, int cA, Matrix* B, int cB);
@@ -213,13 +202,13 @@ public:
     static void activeBackward(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX);
 
     static void activeForwardEx(ActiveFunctionType af, Matrix* X, Matrix* A,
-                                std::initializer_list<real> vr_list = { 1 },
-                                std::initializer_list<int> vi_list = { 0 },
-                                std::initializer_list<Matrix*> as_list = {});
+                                std::initializer_list<real> vr_list ={ 1 },
+                                std::initializer_list<int> vi_list ={ 0 },
+                                std::initializer_list<Matrix*> as_list ={});
     static void activeBackwardEx(ActiveFunctionType af, Matrix* A, Matrix* dA, Matrix* X, Matrix* dX,
-                                 std::initializer_list<real> vr_list = { 1 },
-                                 std::initializer_list<int> vi_list = { 0 },
-                                 std::initializer_list<Matrix*> as_list = {});
+                                 std::initializer_list<real> vr_list ={ 1 },
+                                 std::initializer_list<int> vi_list ={ 0 },
+                                 std::initializer_list<Matrix*> as_list ={});
 
 };
 

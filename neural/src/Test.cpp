@@ -196,10 +196,10 @@ void Test::test()
 
 void Test::test2()
 {
-    Matrix::initCuda();
+    Matrix::init(1);
     fprintf(stdout, "Use Cuda\n");
     test();
-    Matrix::destroyCuda();
+    Matrix::destroy();
     fprintf(stdout, "No Cuda\n");
     test();
     //printf();

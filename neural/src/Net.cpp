@@ -219,7 +219,7 @@ void Net::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount
             {
                 getLastLayer()->activeBackward();
             }
-            *error += getLastLayer()->getdAMatrix()->ddot() / groupCount / OutputNodeCount;
+            *error += getLastLayer()->getdAMatrix()->dotSelf() / groupCount / OutputNodeCount;
         }
     }
 }
