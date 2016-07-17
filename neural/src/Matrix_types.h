@@ -1,7 +1,7 @@
 #pragma once
 #include "types.h"
-#include "cublas_real.h"
-#include "cblas_real.h"
+#include "cublas_real.hpp"
+#include "cblas_real.hpp"
 
 //数据位置（是否需要自己析构数据）
 typedef enum

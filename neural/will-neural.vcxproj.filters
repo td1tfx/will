@@ -178,16 +178,16 @@
     <ClInclude Include="src\cudnn_desc.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="src\cblas_real.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\cublas_real.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\blas_types.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="src\Matrix_types.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\blas_types.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cblas_real.hpp">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cublas_real.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

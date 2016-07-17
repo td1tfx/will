@@ -1,6 +1,6 @@
 #pragma once
 #include "cblas.h"
-#include "blas_types.h"
+#include "blas_types.hpp"
 
 class Cblas : Blas
 {

@@ -207,9 +207,9 @@
     <ClInclude Include="include\cuda\vector_functions.h" />
     <ClInclude Include="include\cuda\vector_functions.hpp" />
     <ClInclude Include="include\cuda\vector_types.h" />
-    <ClInclude Include="src\blas_types.h" />
-    <ClInclude Include="src\cblas_real.h" />
-    <ClInclude Include="src\cublas_real.h" />
+    <ClInclude Include="src\blas_types.hpp" />
+    <ClInclude Include="src\cblas_real.hpp" />
+    <ClInclude Include="src\cublas_real.hpp" />
     <ClInclude Include="src\cudnn_desc.h" />
     <ClInclude Include="src\Matrix.h" />
     <ClInclude Include="src\Matrix_types.h" />
