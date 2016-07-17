@@ -171,7 +171,7 @@
   <ItemGroup>
     <ClCompile Include="src\cudnn_desc.cpp" />
     <ClCompile Include="src\Matrix.cpp" />
-    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\will.cpp" />
     <ClCompile Include="src\Layer.cpp" />
     <ClCompile Include="src\LayerConvolution.cpp" />
     <ClCompile Include="src\LayerFull.cpp" />
@@ -212,6 +212,7 @@
     <ClInclude Include="src\cublas_real.h" />
     <ClInclude Include="src\cudnn_desc.h" />
     <ClInclude Include="src\Matrix.h" />
+    <ClInclude Include="src\Matrix_types.h" />
     <ClInclude Include="src\Neural.h" />
     <ClInclude Include="src\others\INIReader.h" />
     <ClInclude Include="src\others\libconvert.h" />

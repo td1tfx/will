@@ -12,30 +12,17 @@
 #include "VectorMath.h"
 #include "Random.h"
 #include "cudnn_desc.h"
-
-//数据位置（是否需要自己析构数据）
-typedef enum
-{
-    md_Outside = 0,
-    md_Inside,
-} MatrixDataType;
-
-//数据是否存储于CUDA设备
-typedef enum
-{
-    mc_NoCuda = 0,
-    mc_UseCuda,
-} MatrixCudaType;
+#include "Matrix_types.h"
 
 //矩阵和张量
 //该类更大的意义是封装cuda运算
 struct Matrix
 {
 private:
-    static bool inited;
+    static CudaParameters Cuda;
+    static MatrixConstant Const;
 
     MatrixCudaType UseCuda = mc_NoCuda;
-    static MatrixCudaType globalUseCuda;
 
     real* data = nullptr;
     int row = 0;
@@ -104,20 +91,8 @@ public:
     //在使用cuda的时候也有可能存在在内存中的矩阵
 
 private:
-    static const real real_1;
-    static const real real_0;
 
-    static cublasHandle_t cublasHandle;
-    static Cublas* cublas;
-    static Cblas* cblas;
-    static Blas* selectBlas(MatrixCudaType mc) { return mc == mc_NoCuda ? (Blas*)cblas : (Blas*)cublas; }
-
-    static cudnnHandle_t cudnnHandle;
-
-    //开辟一块显存作为一些功能的空间
-    static void* workspace;
-    static const int workspace_size = 1024 * 1024 * 128;
-
+    static Blas* selectBlas(MatrixCudaType mc) { return mc == mc_NoCuda ? (Blas*)Cuda.cblas : (Blas*)Cuda.cublas; }
     //为何我感觉这样很恶心
     //一般来说，在X，A，dX，dA中，以X的计算设置为准，反向时一般不再重新设置
     //这些参量的初值均为空，一般来说，算法只设置一次，之后不重复设置

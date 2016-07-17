@@ -24,6 +24,7 @@ typedef enum
     Matrix_Right = 1
 } MatrixSideType;
 
+#ifdef VIRTUAL_BLAS
 class Blas
 {
 public:
@@ -99,5 +100,9 @@ public:
     virtual void trsm(const MatrixSideType Side, const MatrixFillType Uplo, const MatrixTransType TransA, const MatrixDiagType Diag, const int M, const int N, const double alpha, const double* A, const int lda, double* B, const int ldb) {}
 
 };
-
+#define BLAS_FUNC virtual
+#else
+class Blas {};
+#define BLAS_FUNC inline static
+#endif
 
