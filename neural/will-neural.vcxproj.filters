@@ -41,9 +41,6 @@
     <ClCompile Include="src\LayerPooling.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\others\INIReader.cpp">
-      <Filter>others</Filter>
-    </ClCompile>
     <ClCompile Include="src\others\libconvert.cpp">
       <Filter>others</Filter>
     </ClCompile>
@@ -58,6 +55,12 @@
     </ClCompile>
     <ClCompile Include="src\will.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="src\others\ini.cpp">
+      <Filter>others</Filter>
+    </ClCompile>
+    <ClCompile Include="src\others\INIReader.cpp">
+      <Filter>others</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -93,9 +96,6 @@
     </ClInclude>
     <ClInclude Include="src\LayerPooling.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="src\others\INIReader.h">
-      <Filter>others</Filter>
     </ClInclude>
     <ClInclude Include="src\others\libconvert.h">
       <Filter>others</Filter>
@@ -189,6 +189,12 @@
     </ClInclude>
     <ClInclude Include="src\cublas_real.hpp">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\others\ini.h">
+      <Filter>others</Filter>
+    </ClInclude>
+    <ClInclude Include="src\others\INIReader.h">
+      <Filter>others</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

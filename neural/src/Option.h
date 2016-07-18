@@ -3,6 +3,7 @@
 #include "INIReader.h"
 
 //注意实数只获取双精度数，如果是单精度模式会包含隐式转换
+//获取整数的时候，先获取双精度数并强制转换
 struct Option
 {
     Option() {}
