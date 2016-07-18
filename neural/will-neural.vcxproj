@@ -169,6 +169,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\cublas_real.cpp" />
     <ClCompile Include="src\cudnn_desc.cpp" />
     <ClCompile Include="src\Matrix.cpp" />
     <ClCompile Include="src\others\ini.cpp" />

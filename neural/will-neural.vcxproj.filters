@@ -62,6 +62,9 @@
     <ClCompile Include="src\others\INIReader.cpp">
       <Filter>others</Filter>
     </ClCompile>
+    <ClCompile Include="src\cublas_real.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Matrix.h">
