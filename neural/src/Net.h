@@ -69,12 +69,6 @@ private:
     int MiniBatchCount = -1;
     void setBatchType(NetBatchType lm, int lb = -1);
 
-    real LearnSpeed = 0.5;  //学习速度
-    void setLearnSpeed(real s) { LearnSpeed = s; }
-
-    real Lambda = 0.0;      //正则化参数，防止过拟合
-    void setRegular(real l) { Lambda = l; }
-
     ActiveFunctionType WorkType = af_Sigmoid;  //实际就是最后一层的激活
     void setWorkType(ActiveFunctionType wt);
 

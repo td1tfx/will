@@ -24,13 +24,10 @@ Net::~Net()
 void Net::init(Option* op)
 {
     this->option = op;
-    op->setDefautlSection("will");
+    op->setDefautlSection(DefaultSection);
     BatchType = NetBatchType(op->getInt("BatchMode"));
     MiniBatchCount = std::max(1, op->getInt("MiniBatch"));
     WorkType = ActiveFunctionType(op->getInt("WorkMode"));
-
-    LearnSpeed = op->getReal("LearnSpeed", 0.5);
-    Lambda = op->getReal("Regular");
 
     MaxGroup = op->getInt("MaxGroup", 100000);
 
@@ -44,13 +41,6 @@ void Net::init(Option* op)
         readMNIST(&train_groupCount, &trainX, &trainY, &test_groupCount, &testX, &testY);
     }
 
-    //读不到文件强制重新创建网络，不太正常
-    //if (readStringFromFile(_option.LoadFile) == "")
-    //  _option.LoadNet == 0;
-
-    std::vector<int> v;
-    int n = findNumbers(op->getString("NodePerLayer"), &v);
-
     if (op->getInt("LoadNet") == 0)
     { createByData(op->getInt("Layer", 3)); }
     else
@@ -62,7 +52,7 @@ void Net::init(Option* op)
 //运行，注意容错保护较弱
 void Net::run()
 {
-    option->setDefautlSection("will");
+    option->setDefautlSection(DefaultSection);
     train(option->getInt("TrainTimes", 1000), option->getInt("OutputInterval", 1000),
           option->getReal("Tol", 1e-3), option->getReal("Dtol", 0.0));
     if (option->getString("SaveFile") != "")
@@ -228,7 +218,7 @@ void Net::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount
             for (int i_layer = getLayerCount() - 1; i_layer > 0; i_layer--)
             {
                 Layers[i_layer]->activeBackward();
-                Layers[i_layer]->updateParameters(LearnSpeed, Lambda);
+                Layers[i_layer]->updateParameters();
             }
         }
         if (A)

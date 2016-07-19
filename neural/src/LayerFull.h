@@ -16,14 +16,14 @@ public:
     Matrix* asBiasVector = nullptr;
 
 protected:
-    void init(Option* op, const std::string& section) override;
+    void init2(Option* op, const std::string& section) override;
     void resetGroupCount2() override;
     void connetPrevlayer2() override;
     void activeBackward2() override;
 public:
     void activeForward() override;
     void spreadDeltaToPrevLayer() override;
-    void updateParameters(real learnSpeed, real lambda) override;
+    void updateParameters() override;
     int saveInfo(FILE* fout) override;
     int loadInfo(real* v, int n) override;
 };

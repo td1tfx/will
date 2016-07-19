@@ -50,6 +50,17 @@ void Layer::resetGroupCount()
     resetGroupCount2();
 }
 
+void Layer::init(Option* op, const std::string& section)
+{
+    LearnSpeed = op->getReal(DefaultSection, "LearnSpeed", 0.5);
+    Regular = op->getReal(DefaultSection, "Regular", 0.01);
+
+    op->setDefautlSection(section);
+    LearnSpeed = op->getReal("LearnSpeed", LearnSpeed);
+    Regular = op->getReal("Regular", Regular);
+    init2(op, section);
+}
+
 void Layer::activeBackward()
 {
     if (this->Type == lt_Output)

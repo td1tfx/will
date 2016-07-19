@@ -17,7 +17,7 @@ LayerFull::~LayerFull()
 }
 
 //全连接层中，x1是本层输出数
-void LayerFull::init(Option* op, const std::string& section)
+void LayerFull::init2(Option* op, const std::string& section)
 {
     //deleteData();
     auto outputCount = op->getInt(section, "nodeCount");
@@ -82,11 +82,11 @@ void LayerFull::spreadDeltaToPrevLayer()
     Matrix::product(WeightMatrix, dXMatrix, PrevLayer->dAMatrix, 1, 0, Matrix_Trans, Matrix_NoTrans);
 }
 
-void LayerFull::updateParameters(real learnSpeed, real lambda)
+void LayerFull::updateParameters()
 {
     Matrix::product(dXMatrix, PrevLayer->AMatrix, WeightMatrix,
-                    learnSpeed / GroupCount, 1 - lambda * learnSpeed / GroupCount, Matrix_NoTrans, Matrix_Trans);
-    Matrix::productVector(dXMatrix, asBiasVector, BiasVector, learnSpeed / GroupCount, 1, Matrix_NoTrans);
+                    LearnSpeed / GroupCount, 1 - Regular * LearnSpeed / GroupCount, Matrix_NoTrans, Matrix_Trans);
+    Matrix::productVector(dXMatrix, asBiasVector, BiasVector, LearnSpeed / GroupCount, 1, Matrix_NoTrans);
 }
 
 int LayerFull::saveInfo(FILE* fout)

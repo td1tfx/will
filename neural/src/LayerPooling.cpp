@@ -14,7 +14,7 @@ LayerPooling::~LayerPooling()
 }
 
 //采样层，参数为本层横向和纵向的采样像素个数
-void LayerPooling::init(Option* op, const std::string& section)
+void LayerPooling::init2(Option* op, const std::string& section)
 {
 //     window_w = info->pooling.window_w;
 //     window_h = info->pooling.window_h;
@@ -63,7 +63,7 @@ void LayerPooling::spreadDeltaToPrevLayer()
 }
 
 
-void LayerPooling::updateParameters(real learnSpeed, real lambda)
+void LayerPooling::updateParameters()
 {
     //这里好像没什么好练的
 }
