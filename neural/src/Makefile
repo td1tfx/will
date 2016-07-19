@@ -5,7 +5,10 @@ SOURCES=$(wildcard *.cpp) $(wildcard others/*.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 TARGET=neural
 
-.PHONY: all clean
+.PHONY: show
+
+show: 
+	@echo Use one of gcc/icc/clang.
 
 all: .d $(SOURCES) $(TARGET)
 
@@ -16,7 +19,7 @@ $(TARGET): $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $@ $(LDFLAGS)
 
 clean:
-	rm *.o lib/*.o
+	rm *.o others/*.o
 
 gcc: EXCPPFLAGS=-floop-parallelize-all -ftree-vectorize -flto
 gcc: EXLDFLAGS=-lpthread -flto -fwhole-program -lopenblas

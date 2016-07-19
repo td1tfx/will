@@ -5,9 +5,6 @@
 #include <algorithm>
 #include <functional>
 #include <cfloat>
-#include "blas_types.hpp"
-#include "cblas_real.hpp"
-#include "cublas_real.hpp"
 #include "types.h"
 #include "VectorMath.h"
 #include "Random.h"
