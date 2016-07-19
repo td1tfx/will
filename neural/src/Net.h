@@ -27,7 +27,7 @@ class Net : Neural
 public:
     Net();
     virtual ~Net();
-
+private:
     int Id;
 
     int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
@@ -44,8 +44,13 @@ public:
     Matrix* testY = nullptr;
     int test_groupCount = 0;
 
-    void run(Option* option);
 
+    Option* option;
+public:
+    void init(Option* op);
+    void run();
+
+private:
     //神经层
     Layer** Layers;
     int LayerCount = 0;
@@ -56,6 +61,9 @@ public:
     int getLayerCount() { return LayerCount; };
 
     Layer* createLayer(LayerConnectionType mode);
+    void createLayers(int layerCount);  //包含输入和输出层
+
+    int resetGroupCount(int n);
 
     NetBatchType BatchType = nl_Whole;
     int MiniBatchCount = -1;
@@ -70,8 +78,6 @@ public:
     ActiveFunctionType WorkType = af_Sigmoid;  //实际就是最后一层的激活
     void setWorkType(ActiveFunctionType wt);
 
-    void createLayers(int layerCount);  //包含输入和输出层
-
     void train(int times = 1000000, int interval = 1000, real tol = 1e-3, real dtol = 0);  //训练过程
 
     void active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount,
@@ -80,17 +86,13 @@ public:
     void getYData(Matrix* M, int groupCount, int col = 0);
 
     void readData(const char* filename, int* count, Matrix** pX, Matrix** pY);
-    int resetGroupCount(int n);
+    void readMNIST(int* train_count, Matrix** train_pX, Matrix** train_pY, int* test_count, Matrix** test_pX, Matrix** test_pY);
 
     //具体设置
-    virtual void createByData(int layerCount = 3, int nodesPerLayer = 7); //具体的网络均改写这里
+    void createByData(int layerCount = 3); //具体的网络均改写这里
+    void createByLoad(const std::string& filename);
+
     void saveInfo(const char* filename = nullptr);
-    void createByLoad(const char* filename);
-
-    //NeuralNetCalMode activeMode = ByNode;
-    //NeuralNetCalMode backPropageteMode = ByNode;
-
-    void readMNIST();
 
     void selectTest();
     void test(int forceOutput = 0, int testMax = 0);

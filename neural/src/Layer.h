@@ -22,22 +22,6 @@ typedef enum
     lc_Pooling,
 } LayerConnectionType;
 
-struct LayerInitInfo
-{
-
-    struct
-    {
-        int outputCount;
-    } full;
-    struct {} convolution;
-    struct
-    {
-        int window_w, window_h;
-        int stride_w, stride_h;
-    } pooling;
-    int initWithOption(LayerConnectionType type, Option* op, std::string section);
-};
-
 //神经层
 class Layer : public Neural
 {
@@ -46,7 +30,6 @@ public:
     virtual ~Layer();
 
     int Id;
-
     int OutputCountPerGroup;  //对于全连接层，输出数等于节点数，对于其他形式定义不同
 
     static int GroupCount;    //对于所有层数据量都一样
@@ -101,17 +84,16 @@ public:
     //下面凡是有两个函数的，在无后缀函数中有公共部分，在带后缀函数中是各自子类的功能
     void resetGroupCount();
     void connetPrevlayer(Layer* prevLayer);
-    void initData(LayerType type, LayerInitInfo* info) { this->Type = type; initData2(info); }
     void activeBackward();  //这里实际只包含了作为输出层的实现，即代价函数的形式，其他层交给各自的子类
 
     //基类的实现里只处理公共部分，不处理任何算法，即使算法有重复的部分仍然在子类处理！！
     //算法相关是updateDelta2，activeOutputValue，spreadDeltaToPrevLayer，backPropagate
 protected:
-    virtual void initData2(LayerInitInfo* info) {}
     virtual void resetGroupCount2() {}
     virtual void connetPrevlayer2() {}
     virtual void activeBackward2() {}
 public:
+    virtual void init(Option* op, const std::string& section) {}
     virtual void activeForward() {}
     virtual void spreadDeltaToPrevLayer() {}
     virtual void updateParameters(real learnSpeed, real lambda) {}

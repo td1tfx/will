@@ -21,9 +21,10 @@ Net::~Net()
     safe_delete(testY);
 }
 
-//运行，注意容错保护较弱
-void Net::run(Option* op)
+void Net::init(Option* op)
 {
+    this->option = op;
+    op->setDefautlSection("will");
     BatchType = NetBatchType(op->getInt("BatchMode"));
     MiniBatchCount = std::max(1, op->getInt("MiniBatch"));
     WorkType = ActiveFunctionType(op->getInt("WorkMode"));
@@ -40,7 +41,7 @@ void Net::run(Option* op)
     }
     else
     {
-        readMNIST();
+        readMNIST(&train_groupCount, &trainX, &trainY, &test_groupCount, &testX, &testY);
     }
 
     //读不到文件强制重新创建网络，不太正常
@@ -51,22 +52,26 @@ void Net::run(Option* op)
     int n = findNumbers(op->getString("NodePerLayer"), &v);
 
     if (op->getInt("LoadNet") == 0)
-    { createByData(op->getInt("Layer", 3), v[0]); }
+    { createByData(op->getInt("Layer", 3)); }
     else
-    { createByLoad(op->getString("LoadFile").c_str()); }
+    { createByLoad(op->getString("LoadFile")); }
 
     setWorkType(ActiveFunctionType(op->getInt("WorkType", 0)));
+}
 
-    //selectTest();
-    train(op->getInt("TrainTimes", 1000), op->getInt("OutputInterval", 1000),
-          op->getReal("Tol", 1e-3), op->getReal("Dtol", 0.0));
-    if (op->getString("SaveFile") != "")
+//运行，注意容错保护较弱
+void Net::run()
+{
+    option->setDefautlSection("will");
+    train(option->getInt("TrainTimes", 1000), option->getInt("OutputInterval", 1000),
+          option->getReal("Tol", 1e-3), option->getReal("Dtol", 0.0));
+    if (option->getString("SaveFile") != "")
     {
-        saveInfo(op->getString("SaveFile").c_str());
+        saveInfo(option->getString("SaveFile").c_str());
     }
 
-    test(op->getInt("ForceOutput"), op->getInt("TestMax"));
-    extraTest(op->getString("ExtraTestDataFile").c_str(), op->getInt("ForceOutput"), op->getInt("TestMax"));
+    test(option->getInt("ForceOutput"), option->getInt("TestMax"));
+    extraTest(option->getString("ExtraTestDataFile").c_str(), option->getInt("ForceOutput"), option->getInt("TestMax"));
 }
 
 //这里代替工厂了
@@ -91,6 +96,38 @@ Layer* Net::createLayer(LayerConnectionType mode)
     return layer;
 }
 
+//创建和设置整个神经网
+void Net::createLayers(int layerCount)
+{
+    Layers = new Layer*[layerCount];
+    LayerCount = layerCount;
+    for (int i = 0; i < layerCount; i++)
+    {
+        auto layer = createLayer(lc_Full);
+        Layers[i] = layer;
+        layer->Type = lt_Hidden;
+        if (i == 0) { layer->Type = lt_Input; }
+        if (i == layerCount - 1) { layer->Type = lt_Output; }
+
+        layer->Id = i;
+        layer->init(option, formatString("layer%d", i));
+    }
+}
+
+//设置数据组数
+int Net::resetGroupCount(int n)
+{
+    if (n == Layer::GroupCount) { return n; }
+    if (n > MaxGroup)
+    { n = MaxGroup; }
+    Layer::setGroupCount(n);
+    for (int i = 0; i < LayerCount; i++)
+    {
+        Layers[i]->resetGroupCount();
+    }
+    return n;
+}
+
 //设置学习模式
 void Net::setBatchType(NetBatchType bt, int lb /*= -1*/)
 {
@@ -112,20 +149,6 @@ void Net::setWorkType(ActiveFunctionType wt)
     WorkType = wt;
     getLastLayer()->setActiveFunction(wt);
 }
-
-//创建神经层
-void Net::createLayers(int layerCount)
-{
-    Layers = new Layer*[layerCount];
-    LayerCount = layerCount;
-    for (int i = 0; i < layerCount; i++)
-    {
-        auto layer = createLayer(lc_Full);
-        layer->Id = i;
-        Layers[i] = layer;
-    }
-}
-
 
 //训练一批数据，输出步数和误差，若训练次数为0可以理解为纯测试模式
 void Net::train(int times, int interval, real tol, real dtol)
@@ -270,46 +293,67 @@ void Net::readData(const char* filename, int* count, Matrix** pX, Matrix** pY)
     }
 }
 
-int Net::resetGroupCount(int n)
+void Net::readMNIST(int* train_count, Matrix** train_pX, Matrix** train_pY, int* test_count, Matrix** test_pX, Matrix** test_pY)
 {
-    if (n == Layer::GroupCount) { return n; }
-    if (n > MaxGroup)
-    { n = MaxGroup; }
-    Layer::setGroupCount(n);
-    for (int i = 0; i < LayerCount; i++)
-    {
-        Layers[i]->resetGroupCount();
-    }
-    return n;
+    //这两个在ini中设置
+    InputNodeCount = 784;
+    OutputNodeCount = 10;
+
+    *train_count = 60000;
+    *train_pX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+    *train_pY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+
+    *test_count = 10000;
+    *test_pX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+    *test_pY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+
+    Test::MNIST_readImageFile("train-images.idx3-ubyte", (*train_pX)->getDataPointer());
+    Test::MNIST_readLabelFile("train-labels.idx1-ubyte", (*train_pY)->getDataPointer());
+
+    Test::MNIST_readImageFile("t10k-images.idx3-ubyte", (*test_pX)->getDataPointer());
+    Test::MNIST_readLabelFile("t10k-labels.idx1-ubyte", (*test_pY)->getDataPointer());
 }
 
 //依据输入数据创建神经网，网络的节点数只对隐藏层有用
 //此处是具体的网络结构
-void Net::createByData(int layerCount /*= 3*/, int nodesPerLayer /*= 7*/)
+void Net::createByData(int layerCount /*= 3*/)
 {
     Layer::setGroupCount(MiniBatchCount);
 
     this->createLayers(layerCount);
 
-    LayerInitInfo info;
-
-    info.full.outputCount = InputNodeCount;
-    getFirstLayer()->initData(lt_Input, &info);
-    fprintf(stdout, "Layer %d has %d nodes.\n", 0, InputNodeCount);
-    for (int i = 1; i < layerCount - 1; i++)
-    {
-        info.full.outputCount = nodesPerLayer;
-        getLayer(i)->initData(lt_Hidden, &info);
-        fprintf(stdout, "Layer %d has %d nodes.\n", i, nodesPerLayer);
-    }
-    info.full.outputCount = OutputNodeCount;
-    getLastLayer()->initData(lt_Output, &info);
-    fprintf(stdout, "Layer %d has %d nodes.\n", layerCount - 1, OutputNodeCount);
-
     for (int i = 1; i < layerCount; i++)
     {
         Layers[i]->connetPrevlayer(Layers[i - 1]);
     }
+}
+
+//依据键结值创建神经网
+void Net::createByLoad(const std::string& filename)
+{
+    std::string str = readStringFromFile(filename);
+    if (str == "")
+    { return; }
+    std::vector<real> vv;
+    int n = findNumbers(str, &vv);
+    auto v = new real[n];
+    for (int i = 0; i < n; i++)
+    { v[i] = vv[i]; }
+
+    int k = 0;
+    int layerCount = int(v[k++]);
+    this->createLayers(layerCount);
+
+    k = 1 + layerCount * 2;
+    for (int i_layer = 0; i_layer < layerCount - 1; i_layer++)
+    {
+        auto& layer1 = Layers[i_layer];
+        auto& layer2 = Layers[i_layer + 1];
+        layer2->connetPrevlayer(layer1);
+        int readcount = layer2->loadInfo(v + k, n - k);
+        k += readcount;
+    }
+    delete[] v;
 }
 
 //输出键结值
@@ -341,70 +385,10 @@ void Net::saveInfo(const char* filename)
     { fclose(fout); }
 }
 
-//依据键结值创建神经网
-void Net::createByLoad(const char* filename)
-{
-    std::string str = readStringFromFile(filename);
-    if (str == "")
-    { return; }
-    std::vector<real> vv;
-    int n = findNumbers(str, &vv);
-    auto v = new real[n];
-    for (int i = 0; i < n; i++)
-    { v[i] = vv[i]; }
-
-    int k = 0;
-    int layerCount = int(v[k++]);
-    this->createLayers(layerCount);
-    getFirstLayer()->Type = lt_Input;
-    getLastLayer()->Type = lt_Output;
-    k++;
-    LayerInitInfo info;
-    for (int i_layer = 0; i_layer < layerCount; i_layer++)
-    {
-        info.full.outputCount = int(v[k]);
-        getLayer(i_layer)->initData(getLayer(i_layer)->Type, &info);
-        fprintf(stdout, "Layer %d has %d nodes.\n", i_layer, int(v[k]));
-        k += 2;
-    }
-    k = 1 + layerCount * 2;
-    for (int i_layer = 0; i_layer < layerCount - 1; i_layer++)
-    {
-        auto& layer1 = Layers[i_layer];
-        auto& layer2 = Layers[i_layer + 1];
-        layer2->connetPrevlayer(layer1);
-        int readcount = layer2->loadInfo(v + k, n - k);
-        k += readcount;
-    }
-    delete[] v;
-}
-
-void Net::readMNIST()
-{
-    InputNodeCount = 784;
-    OutputNodeCount = 10;
-
-    train_groupCount = 60000;
-    trainX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-    trainY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-
-    test_groupCount = 10000;
-    testX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-    testY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-
-    Test::MNIST_readImageFile("train-images.idx3-ubyte", trainX->getDataPointer());
-    Test::MNIST_readLabelFile("train-labels.idx1-ubyte", trainY->getDataPointer());
-
-    Test::MNIST_readImageFile("t10k-images.idx3-ubyte", testX->getDataPointer());
-    Test::MNIST_readLabelFile("t10k-labels.idx1-ubyte", testY->getDataPointer());
-}
-
-
 void Net::selectTest()
 {
 
 }
-
 
 //输出拟合的结果和测试集的结果
 void Net::test(int forceOutput /*= 0*/, int testMax /*= 0*/)

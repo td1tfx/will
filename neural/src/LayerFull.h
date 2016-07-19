@@ -16,7 +16,7 @@ public:
     Matrix* asBiasVector = nullptr;
 
 protected:
-    void initData2(LayerInitInfo* info) override;
+    void init(Option* op, const std::string& section) override;
     void resetGroupCount2() override;
     void connetPrevlayer2() override;
     void activeBackward2() override;

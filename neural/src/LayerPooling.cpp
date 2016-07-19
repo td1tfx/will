@@ -14,12 +14,12 @@ LayerPooling::~LayerPooling()
 }
 
 //采样层，参数为本层横向和纵向的采样像素个数
-void LayerPooling::initData2(LayerInitInfo* info)
+void LayerPooling::init(Option* op, const std::string& section)
 {
-    window_w = info->pooling.window_w;
-    window_h = info->pooling.window_h;
-    stride_w = info->pooling.stride_w;
-    stride_w = info->pooling.stride_h;
+//     window_w = info->pooling.window_w;
+//     window_h = info->pooling.window_h;
+//     stride_w = info->pooling.stride_w;
+//     stride_w = info->pooling.stride_h;
 }
 
 void LayerPooling::resetGroupCount2()

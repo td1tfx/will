@@ -4,6 +4,7 @@
 
 LayerFull::LayerFull()
 {
+    ConnetionType = lc_Full;
     //_activeFunctionType = af_Sigmoid;
 }
 
@@ -16,10 +17,10 @@ LayerFull::~LayerFull()
 }
 
 //全连接层中，x1是本层输出数
-void LayerFull::initData2(LayerInitInfo* info)
+void LayerFull::init(Option* op, const std::string& section)
 {
     //deleteData();
-    auto outputCount = info->full.outputCount;
+    auto outputCount = op->getInt(section, "nodeCount");
     this->OutputCountPerGroup = outputCount;
 
     if (Type == lt_Input)
