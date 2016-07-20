@@ -32,8 +32,8 @@ private:
 
     int MaxGroup = 100000;  //一次能处理的数据量，与内存或显存大小相关
 
-    int InputNodeCount;
-    int OutputNodeCount;
+    int XCount;
+    int YCount;
 
     //训练集
     Matrix* trainX = nullptr;
@@ -79,8 +79,8 @@ private:
 
     void getYData(Matrix* M, int groupCount, int col = 0);
 
-    void readData(const char* filename, int* count, Matrix** pX, Matrix** pY);
-    void readMNIST(int* train_count, Matrix** train_pX, Matrix** train_pY, int* test_count, Matrix** test_pX, Matrix** test_pY);
+    void readData(const char* filename, int* pXCount, int* pYCount, int* count, Matrix** pX, Matrix** pY);
+    void readMNIST(int* pXCount, int* pYCount, int* train_count, Matrix** train_pX, Matrix** train_pY, int* test_count, Matrix** test_pX, Matrix** test_pY);
 
     //具体设置
     void createByData(int layerCount = 3); //具体的网络均改写这里

@@ -33,14 +33,15 @@ void Net::init(Option* op)
 
     if (op->getInt("UseMNIST") == 0)
     {
-        readData(op->getString("TrainDataFile").c_str(), &train_groupCount, &trainX, &trainY);
-        readData(op->getString("TestDataFile").c_str(), &test_groupCount, &testX, &testY);
+        readData(op->getString("TrainDataFile").c_str(), &XCount, &YCount, &train_groupCount, &trainX, &trainY);
+        readData(op->getString("TestDataFile").c_str(), &XCount, &YCount, &test_groupCount, &testX, &testY);
     }
     else
     {
-        readMNIST(&train_groupCount, &trainX, &trainY, &test_groupCount, &testX, &testY);
+        readMNIST(&XCount, &YCount, &train_groupCount, &trainX, &trainY, &test_groupCount, &testX, &testY);
     }
 
+    //实际上网络结构由ini定义，注意XCount, YCount的被赋值位置
     if (op->getInt("LoadNet") == 0)
     { createByData(op->getInt("Layer", 3)); }
     else
@@ -232,7 +233,7 @@ void Net::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount
             {
                 getLastLayer()->activeBackward();
             }
-            *error += getLastLayer()->getdAMatrix()->dotSelf() / groupCount / OutputNodeCount;
+            *error += getLastLayer()->getdAMatrix()->dotSelf() / groupCount / YCount;
         }
     }
 }
@@ -240,13 +241,13 @@ void Net::active(Matrix* X, Matrix* Y, Matrix* A, int groupCount, int batchCount
 
 void Net::getYData(Matrix* M, int groupCount, int col /*= 0*/)
 {
-    getLastLayer()->getAMatrix()->memcpyDataOutToHost(M->getDataPointer(0, col), OutputNodeCount * groupCount);
+    getLastLayer()->getAMatrix()->memcpyDataOutToHost(M->getDataPointer(0, col), YCount * groupCount);
 }
 
 
 //读取数据
 //这里的处理可能不是很好
-void Net::readData(const char* filename, int* count, Matrix** pX, Matrix** pY)
+void Net::readData(const char* filename, int* pXCount, int* pYCount, int* count, Matrix** pX, Matrix** pY)
 {
     *count = 0;
     if (std::string(filename) == "")
@@ -260,42 +261,42 @@ void Net::readData(const char* filename, int* count, Matrix** pX, Matrix** pY)
     std::vector<real> v;
     int n = findNumbers(str, &v);
     if (n <= 0) { return; }
-    InputNodeCount = int(v[0]);
-    OutputNodeCount = int(v[1]);
+    *pXCount = int(v[0]);
+    *pYCount = int(v[1]);
 
-    *count = (n - mark) / (InputNodeCount + OutputNodeCount);
-    *pX = new Matrix(InputNodeCount, *count, md_Inside, mc_NoCuda);
-    *pY = new Matrix(OutputNodeCount, *count, md_Inside, mc_NoCuda);
+    *count = (n - mark) / (XCount + YCount);
+    *pX = new Matrix(XCount, *count, md_Inside, mc_NoCuda);
+    *pY = new Matrix(YCount, *count, md_Inside, mc_NoCuda);
 
     //写法太难看了
     int k = mark, k1 = 0, k2 = 0;
 
     for (int i_data = 1; i_data <= (*count); i_data++)
     {
-        for (int i = 1; i <= InputNodeCount; i++)
+        for (int i = 1; i <= XCount; i++)
         {
             (*pX)->getData(k1++) = v[k++];
         }
-        for (int i = 1; i <= OutputNodeCount; i++)
+        for (int i = 1; i <= YCount; i++)
         {
             (*pY)->getData(k2++) = v[k++];
         }
     }
 }
 
-void Net::readMNIST(int* train_count, Matrix** train_pX, Matrix** train_pY, int* test_count, Matrix** test_pX, Matrix** test_pY)
+void Net::readMNIST(int* pXCount, int* pYCount, int* train_count, Matrix** train_pX, Matrix** train_pY, int* test_count, Matrix** test_pX, Matrix** test_pY)
 {
     //这两个在ini中设置
-    InputNodeCount = 784;
-    OutputNodeCount = 10;
+    *pXCount = 784;
+    *pYCount = 10;
 
     *train_count = 60000;
-    *train_pX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-    *train_pY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+    *train_pX = new Matrix(XCount, train_groupCount, md_Inside, mc_NoCuda);
+    *train_pY = new Matrix(YCount, train_groupCount, md_Inside, mc_NoCuda);
 
     *test_count = 10000;
-    *test_pX = new Matrix(InputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
-    *test_pY = new Matrix(OutputNodeCount, train_groupCount, md_Inside, mc_NoCuda);
+    *test_pX = new Matrix(XCount, train_groupCount, md_Inside, mc_NoCuda);
+    *test_pY = new Matrix(YCount, train_groupCount, md_Inside, mc_NoCuda);
 
     Test::MNIST_readImageFile("train-images.idx3-ubyte", (*train_pX)->getDataPointer());
     Test::MNIST_readLabelFile("train-labels.idx1-ubyte", (*train_pY)->getDataPointer());
@@ -383,16 +384,16 @@ void Net::selectTest()
 //输出拟合的结果和测试集的结果
 void Net::test(int forceOutput /*= 0*/, int testMax /*= 0*/)
 {
-    outputTest("train", OutputNodeCount, train_groupCount, trainX, trainY, forceOutput, testMax);
-    outputTest("test", OutputNodeCount, test_groupCount, testX, testY, forceOutput, testMax);
+    outputTest("train", YCount, train_groupCount, trainX, trainY, forceOutput, testMax);
+    outputTest("test", YCount, test_groupCount, testX, testY, forceOutput, testMax);
 }
 
 void Net::extraTest(const char* filename, int forceOutput /*= 0*/, int testMax /*= 0*/)
 {
     int count = 0;
     Matrix* X = nullptr, *Y = nullptr;
-    readData(filename, &count, &X, &Y);
-    outputTest("extra test", OutputNodeCount, count, X, Y, forceOutput, testMax);
+    readData(filename, TODO, TODO, &count, &X, &Y);
+    outputTest("extra test", YCount, count, X, Y, forceOutput, testMax);
     safe_delete(X);
     safe_delete(Y);
 }

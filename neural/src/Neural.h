@@ -16,14 +16,5 @@ public:
         { delete pointer; }
         pointer = nullptr;
     }
-
-    // template <class T> void safe_delete(std::initializer_list<T*> pointer_list)
-    // {
-    //  for (auto& pointer : pointer_list)
-    //  {
-    //      safe_delete(pointer);
-    //  }
-    // }
-
 };
 
